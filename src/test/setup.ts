@@ -1,7 +1,10 @@
 import 'fake-indexeddb/auto'
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+
+// Les écrans complets (liste de plus de 900 exercices) mettent un peu de temps à s'afficher dans jsdom.
+configure({ asyncUtilTimeout: 5000 })
 
 afterEach(() => {
   cleanup()

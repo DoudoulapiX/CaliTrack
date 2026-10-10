@@ -1,4 +1,5 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { formatNumber, parseNumber } from '@/lib/units'
 
@@ -231,22 +232,29 @@ export function SelectField<T extends string>({
   return (
     <Field label={label} hint={hint} className={className}>
       {({ id, describedBy }) => (
-        <select
-          id={id}
-          aria-describedby={describedBy}
-          className={cn(CONTROL, 'appearance-none')}
-          value={value}
-          onChange={(e) => {
-            const next = options.find((o) => o.value === e.target.value)
-            if (next) onChange(next.value)
-          }}
-        >
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id={id}
+            aria-describedby={describedBy}
+            className={cn(CONTROL, 'appearance-none pr-10')}
+            value={value}
+            onChange={(e) => {
+              const next = options.find((o) => o.value === e.target.value)
+              if (next) onChange(next.value)
+            }}
+          >
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={18}
+            className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-3"
+            aria-hidden
+          />
+        </div>
       )}
     </Field>
   )

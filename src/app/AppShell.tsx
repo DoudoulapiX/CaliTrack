@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Navigate, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router'
-import { Splash } from '@/ui/Splash'
+import { CatalogProvider } from '@/features/library/CatalogProvider'
+import { PageSpinner } from '@/ui/PageSpinner'
 import { useSettings } from './data-context'
 import { TabBar } from './TabBar'
 
@@ -25,8 +26,10 @@ export function AppShell() {
 
   return (
     <>
-      <Suspense fallback={<Splash />}>
-        <Outlet />
+      <Suspense fallback={<PageSpinner />}>
+        <CatalogProvider>
+          <Outlet />
+        </CatalogProvider>
       </Suspense>
       {!hideTabBar && <TabBar />}
       <ScrollRestoration />

@@ -1,4 +1,13 @@
-import { posePaths, samplePoses, type FigureAnim, type FigurePaths, type Prop, type Vec } from './engine.ts'
+import {
+  posePaths,
+  samplePoses,
+  solvePose,
+  type FigureAnim,
+  type FigurePaths,
+  type Pose,
+  type Prop,
+  type Vec,
+} from './engine.ts'
 
 export interface RenderOptions {
   /** Anime la silhouette (sinon : première image clé, immobile). */
@@ -13,7 +22,12 @@ export interface RenderOptions {
   frame?: number
   className?: string
   title?: string
+  /** Cadre carré serré autour de la silhouette (vignettes de liste). */
+  fit?: boolean
 }
+
+/** Cadre du dessin : [x, y, largeur, hauteur]. */
+type View = readonly [number, number, number, number]
 
 const VIEW_W = 200
 const VIEW_H = 160
@@ -22,7 +36,7 @@ function n(v: number): string {
   return (Math.round(v * 10) / 10).toString()
 }
 
-function propSvg(prop: Prop, color: string, view: readonly [number, number, number, number]): string {
+function propSvg(prop: Prop, color: string, view: View): string {
   const [vx, vy, vw, vh] = view
   const s = `stroke="${color}" fill="none" stroke-linecap="round" stroke-linejoin="round"`
   switch (prop.kind) {
@@ -49,6 +63,54 @@ function propSvg(prop: Prop, color: string, view: readonly [number, number, numb
     case 'dumbbell':
       return ''
   }
+}
+
+/** Cadre carré qui entoure la silhouette d'une posture et les appuis proches (barre, anneaux, box…). */
+export function fitView(anim: FigureAnim, pose: Pose): View {
+  const j = solvePose(pose)
+  const points: Vec[] = [
+    j.hip,
+    j.neck,
+    j.headBase,
+    j.head,
+    j.elbow,
+    j.hand,
+    j.elbow2,
+    j.hand2,
+    j.knee,
+    j.ankle,
+    j.toe,
+    j.knee2,
+    j.ankle2,
+    j.toe2,
+  ]
+  for (const prop of anim.props ?? []) {
+    switch (prop.kind) {
+      case 'bar':
+      case 'rings':
+      case 'hangboard':
+      case 'parallettes':
+      case 'dipbars':
+        points.push([prop.x, prop.y])
+        break
+      case 'box':
+        points.push([prop.x, prop.y], [prop.x + prop.w, prop.y + prop.h])
+        break
+      default:
+        break
+    }
+  }
+  const xs = points.map((p) => p[0])
+  const ys = points.map((p) => p[1])
+  // Marges : la tête (rayon 8,5) et l'épaisseur des traits dépassent des articulations.
+  const minX = Math.min(...xs) - 12
+  const maxX = Math.max(...xs) + 12
+  const minY = Math.min(...ys) - 14
+  const maxY = Math.max(...ys) + 10
+  const size = Math.max(maxX - minX, maxY - minY)
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  return [Math.round(cx - size / 2), Math.round(cy - size / 2), Math.round(size), Math.round(size)]
 }
 
 function animated(attr: string, values: string[], dur: number): string {
@@ -99,7 +161,8 @@ export function renderFigureSvg(anim: FigureAnim, options: RenderOptions = {}): 
         : ''
     }</circle>`
 
-  const view = anim.view ?? ([0, 0, VIEW_W, VIEW_H] as const)
+  const view: View =
+    options.fit && !live && still ? fitView(anim, still) : (anim.view ?? ([0, 0, VIEW_W, VIEW_H] as const))
   const props = (anim.props ?? []).map((p) => propSvg(p, propColor, view)).join('')
   const weights = (anim.props ?? [])
     .filter((p): p is Extract<Prop, { kind: 'dumbbell' }> => p.kind === 'dumbbell')
@@ -112,7 +175,7 @@ export function renderFigureSvg(anim: FigureAnim, options: RenderOptions = {}): 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vx} ${vy} ${vw} ${vh}"${cls} role="img" aria-hidden="${title ? 'false' : 'true'}">` +
     title +
-    `<g>${props}</g>` +
+    `<g class="fig-props">${props}</g>` +
     `<g fill="none" stroke="${color}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">` +
     `<g opacity="${anim.frontal ? 1 : 0.38}">${limb('arm2')}${limb('leg2')}</g>` +
     limb('leg') +
@@ -120,7 +183,7 @@ export function renderFigureSvg(anim: FigureAnim, options: RenderOptions = {}): 
     limb('arm') +
     `</g>` +
     point((f) => f.head, 8.5, color) +
-    weights +
+    `<g class="fig-weights">${weights}</g>` +
     `</svg>`
   )
 }

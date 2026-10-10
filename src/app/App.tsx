@@ -1,7 +1,16 @@
+import { RouterProvider } from 'react-router'
+import { ToastProvider } from '@/ui/Toast'
+import { DataProvider } from './DataProvider'
+import { appRouter } from './router'
+import { UpdatePrompt } from './UpdatePrompt'
+
 export function App() {
   return (
-    <main className="min-h-dvh bg-canvas text-ink pt-safe">
-      <h1 className="p-4 text-2xl font-bold">CaliTrack</h1>
-    </main>
+    <DataProvider>
+      <ToastProvider>
+        <RouterProvider router={appRouter()} />
+        <UpdatePrompt />
+      </ToastProvider>
+    </DataProvider>
   )
 }

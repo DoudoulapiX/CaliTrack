@@ -129,9 +129,40 @@
   .no-scrollbar {
     scrollbar-width: none;
   }
+  /* Ligne de longue liste : le navigateur ne dessine que celles qui sont à l'écran. */
+  .cv-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 64px;
+  }
+  /* Deux photos d'un exercice qui alternent en fondu. */
+  .ct-flip {
+    animation: ct-flip 2.4s ease-in-out infinite;
+  }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
+
+@keyframes ct-flip {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  50%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Animations de silhouettes : décor et charges dans des couleurs à part. */
+.fig-props {
+  color: var(--ct-ink-3);
+}
+.fig-weights {
+  color: var(--ct-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
