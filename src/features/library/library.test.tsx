@@ -150,7 +150,16 @@ describe('bibliothèque d’exercices', () => {
       programSessionId: null,
       eventId: null,
       exercises: [
-        { id: 'we1', exerciseId: exercise.id, slotId: null, target: null, restSec: 60, sets: [], note: '' },
+        {
+          id: 'we1',
+          exerciseId: exercise.id,
+          slotId: null,
+          block: null,
+          target: null,
+          restSec: 60,
+          sets: [],
+          note: '',
+        },
       ],
       rpe: null,
       notes: '',

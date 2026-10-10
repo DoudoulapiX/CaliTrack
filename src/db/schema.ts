@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isISODate } from '@/lib/dates'
 import type {
   AppSettings,
   BodyMetric,
@@ -21,7 +22,7 @@ import type {
  * de types.ts : la vérification de compilation en bas du fichier échoue si l'un des deux change seul.
  */
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const isoDate = z.string().refine(isISODate, 'Date invalide')
 const timestamp = z.string().min(1)
 const weekday = z.literal([1, 2, 3, 4, 5, 6, 7])
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
@@ -208,9 +209,11 @@ const programSlot = z.object({
   failStreak: z.number().int().min(0),
 })
 
+const blockKind = z.enum(['warmup', 'skill', 'strength', 'core', 'conditioning', 'cooldown'])
+
 const programBlock = z.object({
   id: z.string().min(1),
-  kind: z.enum(['warmup', 'skill', 'strength', 'core', 'conditioning', 'cooldown']),
+  kind: blockKind,
   title: z.string(),
   slots: z.array(programSlot),
 })
@@ -291,6 +294,7 @@ const workoutExercise = z.object({
   id: z.string().min(1),
   exerciseId: z.string().min(1),
   slotId: z.string().nullable(),
+  block: blockKind.nullable(),
   target: slotTarget.nullable(),
   restSec: z.number().int().min(0).max(3600),
   sets: z.array(workoutSet),

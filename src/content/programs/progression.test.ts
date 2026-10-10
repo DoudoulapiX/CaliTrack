@@ -351,6 +351,7 @@ describe('progression d’un programme après une séance', () => {
     id: `e-${slotId}`,
     exerciseId,
     slotId,
+    block: 'strength' as const,
     target: null,
     restSec: 120,
     sets: sets(values),

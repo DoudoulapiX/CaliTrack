@@ -28,8 +28,14 @@ if (typeof window.matchMedia !== 'function') {
   })
 }
 
-// jsdom n'implémente pas scrollTo ni les boîtes de dialogue natives.
+// jsdom n'implémente pas le défilement ni les boîtes de dialogue natives.
 window.scrollTo = () => undefined
+if (!('scrollIntoView' in Element.prototype)) {
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: () => undefined,
+  })
+}
 if (!('showModal' in HTMLDialogElement.prototype)) {
   Object.defineProperties(HTMLDialogElement.prototype, {
     show: {

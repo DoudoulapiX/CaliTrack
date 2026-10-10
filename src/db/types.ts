@@ -335,6 +335,8 @@ export interface WorkoutExercise {
   id: string
   exerciseId: string
   slotId: string | null
+  /** Bloc de la séance prévue (échauffement, renforcement…) ; null pour un exercice ajouté en route. */
+  block: BlockKind | null
   target: SlotTarget | null
   restSec: number
   sets: WorkoutSet[]
