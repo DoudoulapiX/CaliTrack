@@ -220,15 +220,18 @@ export type SlotTarget =
 
 export interface ProgramSlot {
   id: string
-  /** Échelle de progression (voir content/ladders) ; null pour un exercice fixe. */
+  /** Progression suivie (voir content/programs/ladders) ; null pour un exercice fixe. */
   ladderId: string | null
   exerciseId: string
   sets: number
   target: SlotTarget
+  /** Charge ajoutée (haltère, kettlebell, gilet lesté) ; null au poids du corps. */
   loadKg: number | null
   restSec: number
   note: string
+  /** Séances réussies (toutes les séries en haut de la fourchette) d'affilée. */
   successStreak: number
+  /** Séances ratées (moyenne des séries sous le bas de la fourchette) d'affilée. */
   failStreak: number
 }
 
@@ -241,10 +244,14 @@ export interface ProgramBlock {
   slots: ProgramSlot[]
 }
 
+export type SessionEmphasis = 'full' | 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'skills'
+
 export interface ProgramSession {
   id: string
   name: string
-  emphasis: 'full' | 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'skills'
+  emphasis: SessionEmphasis
+  /** Jours de la semaine où cette séance est prévue. */
+  weekdays: Weekday[]
   blocks: ProgramBlock[]
 }
 
@@ -254,13 +261,14 @@ export interface Program {
   active: boolean
   source: 'generated' | 'custom'
   focuses: GoalFocus[]
+  /** Lieu dont le matériel sert au programme ; null : tout le matériel. */
   locationId: string | null
-  weekdays: Weekday[]
   sessions: ProgramSession[]
-  /** Index de la prochaine séance à proposer (rotation A, B, C…). */
-  nextSessionIndex: number
   startDate: ISODate
+  /** Une semaine allégée toutes les N semaines ; null : jamais. */
   deloadEveryWeeks: number | null
+  /** Pourquoi ce programme : explications écrites à sa création. */
+  rationale: string[]
   notes: string
   createdAt: string
   updatedAt: string
@@ -333,6 +341,10 @@ export interface WorkoutExercise {
   note: string
 }
 
+export type ProgressionKind =
+  'levelUp' | 'levelDown' | 'moreLoad' | 'lessLoad' | 'moreReps' | 'lessReps' | 'keep'
+
+/** Ce qui change pour la prochaine fois, après une séance (le texte est composé à l'affichage). */
 export interface ProgressionChange {
   slotId: string
   fromExerciseId: string
@@ -341,8 +353,7 @@ export interface ProgressionChange {
   toTarget: SlotTarget
   fromLoadKg: number | null
   toLoadKg: number | null
-  kind: 'levelUp' | 'levelDown' | 'moreLoad' | 'moreReps' | 'keep'
-  message: string
+  kind: ProgressionKind
 }
 
 export interface Workout {

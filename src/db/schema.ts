@@ -219,6 +219,7 @@ const programSession = z.object({
   id: z.string().min(1),
   name: z.string(),
   emphasis: z.enum(['full', 'push', 'pull', 'legs', 'upper', 'lower', 'skills']),
+  weekdays: z.array(weekday),
   blocks: z.array(programBlock),
 })
 
@@ -229,11 +230,10 @@ export const programSchema = z.object({
   source: z.enum(['generated', 'custom']),
   focuses: z.array(goalFocus),
   locationId: z.string().nullable(),
-  weekdays: z.array(weekday),
   sessions: z.array(programSession),
-  nextSessionIndex: z.number().int().min(0),
   startDate: isoDate,
-  deloadEveryWeeks: z.number().int().min(2).nullable(),
+  deloadEveryWeeks: z.number().int().min(2).max(52).nullable(),
+  rationale: z.array(z.string()),
   notes: z.string(),
   createdAt: timestamp,
   updatedAt: timestamp,
@@ -305,8 +305,7 @@ const progressionChange = z.object({
   toTarget: slotTarget,
   fromLoadKg: z.number().nullable(),
   toLoadKg: z.number().nullable(),
-  kind: z.enum(['levelUp', 'levelDown', 'moreLoad', 'moreReps', 'keep']),
-  message: z.string(),
+  kind: z.enum(['levelUp', 'levelDown', 'moreLoad', 'lessLoad', 'moreReps', 'lessReps', 'keep']),
 })
 
 export const workoutSchema = z.object({

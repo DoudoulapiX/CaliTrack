@@ -104,7 +104,7 @@ describe('bibliothèque d’exercices', () => {
       name: 'Pompes sur poings',
       source: 'custom',
       primaryMuscles: ['chest'],
-      instructions: ['Serre les poings', 'Descends : lentement'],
+      instructions: ['Serre les poings', 'Descends\u00a0: lentement'],
     })
 
     await user.click(screen.getByRole('link', { name: 'Modifier' }))

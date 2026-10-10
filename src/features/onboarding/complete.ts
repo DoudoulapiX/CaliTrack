@@ -1,11 +1,12 @@
 import { LOCATION_ICON_LABEL } from '@/content/equipment'
+import { defaultProgramLocation, generateProgram } from '@/content/programs/generator'
 import { db as defaultDb, type CaliTrackDB } from '@/db/db'
 import { defaultProfile } from '@/db/defaults'
 import { newEquipmentItem, newLocation } from '@/db/equipment'
 import { profileFromDraft, type ProfileDraft } from '@/db/profile'
-import { equipmentSchema, locationSchema } from '@/db/schema'
-import type { EquipmentItem, EquipmentKind, LocationIcon } from '@/db/types'
-import { nowISO } from '@/lib/dates'
+import { equipmentSchema, locationSchema, programSchema } from '@/db/schema'
+import type { EquipmentItem, EquipmentKind, Exercise, LocationIcon } from '@/db/types'
+import { nowISO, today } from '@/lib/dates'
 
 /** Un lieu choisi au premier lancement, avec le matériel coché. */
 export interface PlaceDraft {
@@ -15,20 +16,23 @@ export interface PlaceDraft {
 }
 
 /**
- * Enregistre tout ce qui a été saisi au premier lancement, en une fois : profil, lieux, matériel.
+ * Enregistre tout ce qui a été saisi au premier lancement, en une fois : profil, lieux, matériel,
+ * puis le premier programme, calculé d'après tout cela.
  * Un même matériel coché dans plusieurs lieux devient un seul objet rangé dans chacun d'eux.
  */
 export async function completeOnboarding(
   profile: ProfileDraft,
   places: readonly PlaceDraft[],
+  exercises: ReadonlyMap<string, Exercise>,
   database: CaliTrackDB = defaultDb,
 ): Promise<void> {
   await database.transaction(
     'rw',
-    [database.profile, database.settings, database.locations, database.equipment],
+    [database.profile, database.settings, database.locations, database.equipment, database.programs],
     async () => {
       const current = (await database.profile.get('me')) ?? defaultProfile()
-      await database.profile.put(profileFromDraft(profile, current))
+      const saved = profileFromDraft(profile, current)
+      await database.profile.put(saved)
 
       const byKind = new Map<EquipmentKind, EquipmentItem>()
       for (const item of await database.equipment.toArray()) byKind.set(item.kind, item)
@@ -40,7 +44,23 @@ export async function completeOnboarding(
           byKind.set(kind, { ...item, locationIds: [...new Set([...item.locationIds, location.id])] })
         }
       }
-      await database.equipment.bulkPut([...byKind.values()].map((item) => equipmentSchema.parse(item)))
+      const items = [...byKind.values()].map((item) => equipmentSchema.parse(item))
+      await database.equipment.bulkPut(items)
+
+      const locations = await database.locations.toArray()
+      const settings = await database.settings.get('app')
+      const program = generateProgram({
+        profile: saved,
+        items,
+        locations,
+        locationId: defaultProgramLocation(locations, settings?.currentLocationId ?? null),
+        exercises,
+        startDate: today(),
+        now: nowISO(),
+      })
+      await database.programs.filter((p) => p.active).modify({ active: false })
+      await database.programs.put(programSchema.parse(program))
+
       await database.settings.update('app', { onboardingDone: true, updatedAt: nowISO() })
     },
   )

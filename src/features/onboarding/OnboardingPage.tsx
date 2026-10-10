@@ -7,6 +7,7 @@ import { EMPTY_LEVEL_TEST, hasAnyResult, overallLevel, type LevelTestValues } fr
 import { today } from '@/lib/dates'
 import { frenchSpacing } from '@/lib/typography'
 import { ImportBackupButton } from '@/features/backup/ImportBackupButton'
+import { useCatalog } from '@/features/library/catalog-context'
 import {
   ExperiencePicker,
   GoalFields,
@@ -53,6 +54,7 @@ export function OnboardingPage() {
   const profile = useProfile()
   const settings = useSettings()
   const toast = useToast()
+  const catalog = useCatalog()
   const [index, setIndex] = useState(0)
   const saved = useMemo(() => draftFromProfile(profile), [profile])
   const [draft, setDraft] = useSyncedDraft<ProfileDraft>(saved)
@@ -93,9 +95,9 @@ export function OnboardingPage() {
     }
     setSaving(true)
     try {
-      await completeOnboarding(final, places)
+      await completeOnboarding(final, places, catalog.byId)
       // L'appli quitte l'accueil d'elle-même dès que le réglage est enregistré.
-      toast(frenchSpacing('Tout est prêt, bon entraînement !'), 'success')
+      toast('Tout est prêt, ton programme t’attend dans Entraînement.', 'success')
     } catch (e) {
       setSaving(false)
       setError(

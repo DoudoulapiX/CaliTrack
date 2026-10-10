@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { frenchSpacing } from './typography'
+import { frenchSpacing, joinFrench, lowerFirst } from './typography'
 
 describe('frenchSpacing', () => {
   it('remplace l’espace avant la ponctuation haute par une espace insécable', () => {
@@ -19,5 +19,29 @@ describe('frenchSpacing', () => {
   it('est idempotente', () => {
     const once = frenchSpacing('Garde le dos droit : regarde devant !')
     expect(frenchSpacing(once)).toBe(once)
+  })
+})
+
+describe('joinFrench', () => {
+  it('énumère avec des virgules puis « et »', () => {
+    expect(joinFrench([])).toBe('')
+    expect(joinFrench(['lundi'])).toBe('lundi')
+    expect(joinFrench(['lundi', 'mardi'])).toBe('lundi et mardi')
+    expect(joinFrench(['lundi', 'mardi', 'jeudi'])).toBe('lundi, mardi et jeudi')
+  })
+})
+
+describe('lowerFirst', () => {
+  it('met la première lettre en minuscule', () => {
+    expect(lowerFirst('Pompes archer')).toBe('pompes archer')
+    expect(lowerFirst('Élastiques')).toBe('élastiques')
+    expect(lowerFirst('Sangles de suspension (TRX)')).toBe('sangles de suspension (TRX)')
+  })
+
+  it('garde les sigles et les noms à tiret', () => {
+    expect(lowerFirst('L-sit groupé')).toBe('L-sit groupé')
+    expect(lowerFirst('HSPU au mur')).toBe('HSPU au mur')
+    expect(lowerFirst('V')).toBe('V')
+    expect(lowerFirst('')).toBe('')
   })
 })
