@@ -52,17 +52,21 @@ export function Page({
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-20 bg-canvas/95 pt-safe backdrop-blur-xl">
-        {/* Trois colonnes : le titre reste centré, quelle que soit la largeur des boutons. */}
-        <div className="grid min-h-12 grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
-          <div className="flex min-w-0 items-center">
+        {/*
+         * Trois colonnes : les côtés prennent la place de leurs boutons, puis se partagent le reste à
+         * parts égales pour garder le titre centré. Un titre trop long se décale, puis se tronque,
+         * sans jamais passer sous le bouton retour.
+         */}
+        <div className="grid min-h-12 grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)] items-center gap-1 px-2">
+          <div className="flex items-center">
             {(back || onBack) && (
               <button
                 type="button"
                 onClick={goBack}
                 className="flex h-11 items-center gap-0.5 rounded-lg pr-2 text-[17px] text-accent-text active:opacity-60"
               >
-                <ChevronLeft size={26} aria-hidden />
-                {backLabel}
+                <ChevronLeft size={26} className="shrink-0" aria-hidden />
+                <span className="max-w-30 truncate">{backLabel}</span>
               </button>
             )}
           </div>

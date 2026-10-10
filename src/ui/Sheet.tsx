@@ -11,11 +11,14 @@ export interface SheetProps {
   footer?: ReactNode
   /** Hauteur maximale : contenu (par défaut) ou presque plein écran. */
   tall?: boolean
+  /** Change quand la feuille passe à un autre écran (liste, puis réglages) : on revient en haut. */
+  scrollKey?: string
 }
 
 /** Feuille qui monte du bas de l'écran (boîte de dialogue native, accessible au clavier et aux lecteurs d'écran). */
-export function Sheet({ open, onClose, title, children, footer, tall = false }: SheetProps) {
+export function Sheet({ open, onClose, title, children, footer, tall = false, scrollKey }: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const onCloseRef = useRef(onClose)
   useEffect(() => {
@@ -40,6 +43,10 @@ export function Sheet({ open, onClose, title, children, footer, tall = false }: 
     },
     [],
   )
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = 0
+  }, [scrollKey])
 
   return (
     <dialog
@@ -75,7 +82,9 @@ export function Sheet({ open, onClose, title, children, footer, tall = false }: 
               <X size={18} aria-hidden />
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">{children}</div>
+          <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+            {children}
+          </div>
           {footer && (
             <div className="border-t border-line px-4 pt-3 pb-[calc(var(--safe-bottom)+12px)]">{footer}</div>
           )}

@@ -59,6 +59,11 @@ export const SLOT_LIMITS = {
 /* Progression d'un exercice                                           */
 /* ------------------------------------------------------------------ */
 
+/** Blocs dont les exercices suivent une progression : ni l'échauffement, ni le cardio, ni les étirements. */
+export function blockUsesLadder(kind: BlockKind): boolean {
+  return kind === 'skill' || kind === 'strength' || kind === 'core'
+}
+
 /**
  * Progression à suivre pour un exercice : celle du créneau si l'exercice en fait partie, sinon
  * la progression de base ou de figure qui le contient, sinon aucune.
@@ -85,8 +90,33 @@ function fixedTarget(measure: Exercise['measure']): SlotTarget {
   return measure === 'time' ? { kind: 'time', min: 30, max: 30 } : { kind: 'reps', min: 10, max: 10 }
 }
 
-/** Nouvel exercice ajouté à la main dans un bloc, avec des réglages adaptés au bloc. */
-export function newSlot(exercise: Exercise, blockKind: BlockKind, defaults: SlotDefaults): ProgramSlot {
+/** L'exercice se fait avec des poids (haltères, kettlebell…) : il lui faut une charge. */
+export function needsLoad(exercise: Pick<Exercise, 'equipment'>): boolean {
+  return (
+    exercise.equipment.length > 0 &&
+    exercise.equipment.every((group) => group.some((kind) => WEIGHT_KINDS.includes(kind)))
+  )
+}
+
+/** Fourchette conseillée pour un exercice : celle de son échelon s'il suit une progression. */
+export function targetForExercise(exercise: Exercise, ladderId: string | null, scheme: Scheme): SlotTarget {
+  const ladder = ladderFor(ladderId)
+  const index = ladder ? stepIndexOf(ladder, exercise.id) : -1
+  return ladder && index >= 0
+    ? targetForStep(ladder, index, exercise, scheme)
+    : baseTarget(scheme, exercise.measure)
+}
+
+/**
+ * Nouvel exercice ajouté à la main dans un bloc, avec des réglages adaptés au bloc. La progression
+ * préférée (celle du créneau que l'on modifie) passe avant les autres si elle contient l'exercice.
+ */
+export function newSlot(
+  exercise: Exercise,
+  blockKind: BlockKind,
+  defaults: SlotDefaults,
+  preferredLadderId: string | null = null,
+): ProgramSlot {
   const base = {
     id: defaults.newId(),
     exerciseId: exercise.id,
@@ -109,21 +139,15 @@ export function newSlot(exercise: Exercise, blockKind: BlockKind, defaults: Slot
       exercise.measure === 'time' ? { kind: 'time', min: 30, max: 45 } : { kind: 'reps', min: 10, max: 15 }
     return { ...base, ladderId: null, sets: 3, target, loadKg: null, restSec: 30 }
   }
-  const ladderId = ladderIdFor(exercise.id, null)
-  const ladder = ladderFor(ladderId)
-  const index = ladder ? stepIndexOf(ladder, exercise.id) : -1
-  const target = ladder && index >= 0 ? targetForStep(ladder, index, exercise, defaults.scheme) : null
+  const ladderId = ladderIdFor(exercise.id, preferredLadderId)
   // Un exercice qui se fait avec des poids (haltères…) démarre à la plus légère des charges.
-  const needsLoad =
-    exercise.equipment.length > 0 &&
-    exercise.equipment.every((group) => group.some((k) => WEIGHT_KINDS.includes(k)))
-  const loadKg = needsLoad ? (defaults.loadsOf(exercise)[0] ?? null) : null
+  const loadKg = needsLoad(exercise) ? (defaults.loadsOf(exercise)[0] ?? null) : null
   const skill = blockKind === 'skill'
   return {
     ...base,
     ladderId,
     sets: skill && exercise.measure === 'time' ? 4 : defaults.scheme.sets,
-    target: target ?? baseTarget(defaults.scheme, exercise.measure),
+    target: targetForExercise(exercise, ladderId, defaults.scheme),
     loadKg,
     restSec: skill ? SKILL_REST_SEC : blockKind === 'core' ? CORE_REST_SEC : defaults.scheme.restSec,
   }
@@ -143,18 +167,21 @@ export function cleanTarget(target: SlotTarget): SlotTarget {
   return { kind: target.kind, min, max }
 }
 
-function mapSlots(program: Program, fn: (slot: ProgramSlot) => ProgramSlot): Program {
+function mapSlots(program: Program, fn: (slot: ProgramSlot, block: ProgramBlock) => ProgramSlot): Program {
   return {
     ...program,
     sessions: program.sessions.map((session) => ({
       ...session,
-      blocks: session.blocks.map((block) => ({ ...block, slots: block.slots.map(fn) })),
+      blocks: session.blocks.map((block) => ({
+        ...block,
+        slots: block.slots.map((slot) => fn(slot, block)),
+      })),
     })),
   }
 }
 
 export function updateSlot(program: Program, slotId: string, patch: SlotPatch): Program {
-  return mapSlots(program, (slot) => {
+  return mapSlots(program, (slot, block) => {
     if (slot.id !== slotId) return slot
     const next: ProgramSlot = { ...slot, ...patch }
     if (patch.target) next.target = cleanTarget(patch.target)
@@ -170,7 +197,7 @@ export function updateSlot(program: Program, slotId: string, patch: SlotPatch): 
     if (patch.loadKg !== undefined && patch.loadKg !== null && patch.loadKg <= 0) next.loadKg = null
     // Autre exercice : il suit sa propre progression et repart de zéro.
     if (patch.exerciseId !== undefined && patch.exerciseId !== slot.exerciseId) {
-      next.ladderId = ladderIdFor(patch.exerciseId, slot.ladderId)
+      next.ladderId = blockUsesLadder(block.kind) ? ladderIdFor(patch.exerciseId, slot.ladderId) : null
       next.successStreak = 0
       next.failStreak = 0
       if (patch.note === undefined) next.note = ''
@@ -292,13 +319,18 @@ export function updateSession(
   }))
 }
 
-/** Copie d'une séance (nouveaux identifiants), sans jour prévu. */
-export function duplicateSession(program: Program, sessionId: string, newId: () => string): Program {
+/** Copie d'une séance (nouveaux identifiants, `copyId` pour elle), sans jour prévu. */
+export function duplicateSession(
+  program: Program,
+  sessionId: string,
+  newId: () => string,
+  copyId: string = newId(),
+): Program {
   const source = program.sessions.find((s) => s.id === sessionId)
   if (!source) return program
   const copy: ProgramSession = {
     ...source,
-    id: newId(),
+    id: copyId,
     name: `${source.name} (copie)`,
     weekdays: [],
     blocks: source.blocks.map((block) => ({

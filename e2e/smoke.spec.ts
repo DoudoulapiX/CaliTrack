@@ -98,3 +98,51 @@ test('profil, test de niveau et matériel', async ({ page }) => {
   await expect(page.getByRole('link', { name: /Haltères.*2 kg, 10 kg · Maison/ })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('programme : création, réglage d’un exercice, et tout reste après rechargement', async ({ page }) => {
+  const errors = collectErrors(page)
+  const next = page.getByRole('button', { name: 'Continuer' })
+
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  await next.click()
+  await next.click()
+  await next.click()
+  const where = page.getByRole('group', { name: /Où t’entraînes-tu/ })
+  await where.getByRole('button', { name: 'Maison' }).click()
+  const home = page.getByRole('group', { name: /Matériel.+Maison/ })
+  await home.getByRole('button', { name: 'Barre de traction' }).click()
+  await next.click()
+  await page.getByLabel('Tractions').fill('8')
+  await page.getByLabel('Pompes').fill('30')
+  await page.getByRole('button', { name: 'Terminer' }).click()
+
+  // L'accueil a préparé le programme : la semaine est déjà là.
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' })
+  await nav.getByRole('link', { name: 'Entraînement' }).click()
+  await expect(page.getByText('Cette semaine')).toBeVisible()
+  await page
+    .getByRole('link', { name: /^lundi .+ : / })
+    .first()
+    .click()
+
+  // Une série de plus sur le premier exercice de renforcement.
+  const strength = page.locator('section', { has: page.getByRole('heading', { name: 'Renforcement' }) })
+  const first = strength.getByRole('button').first()
+  await expect(first).toContainText('×')
+  const before = Number(/(\d+) ×/.exec((await first.textContent()) ?? '')?.[1])
+  expect(before).toBeGreaterThan(0)
+  await first.click()
+  const sheet = page.getByRole('dialog', { name: 'Renforcement' })
+  await sheet.getByRole('button', { name: 'Séries : plus', exact: true }).click()
+  await expect(sheet.getByRole('group', { name: 'Séries', exact: true }).getByRole('status')).toHaveText(
+    String(before + 1),
+  )
+  await sheet.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(page.getByText('Exercice enregistré')).toBeVisible()
+  await expect(first).toContainText(`${String(before + 1)} ×`)
+
+  await page.reload()
+  await expect(first).toContainText(`${String(before + 1)} ×`)
+  expect(errors).toEqual([])
+})

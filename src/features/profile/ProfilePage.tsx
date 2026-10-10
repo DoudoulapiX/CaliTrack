@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { ClipboardCheck } from 'lucide-react'
 import { useProfile, useSettings } from '@/app/data-context'
+import { useGoBack } from '@/app/useGoBack'
 import { useSyncedDraft } from '@/app/useSyncedDraft'
 import { frenchSpacing } from '@/lib/typography'
 import {
@@ -14,6 +16,7 @@ import { Button, ButtonLink } from '@/ui/Button'
 import { Page, Section } from '@/ui/Page'
 import { useToast } from '@/ui/toast-context'
 import { LevelTestResult } from './LevelTestForm'
+import { FROM_NEW_PROGRAM } from './links'
 import { ExperiencePicker, GoalFields, IdentityFields, PlanningFields } from './ProfileFields'
 
 function sameDraft(a: ProfileDraft, b: ProfileDraft): boolean {
@@ -24,6 +27,9 @@ export function ProfilePage() {
   const profile = useProfile()
   const settings = useSettings()
   const toast = useToast()
+  const [params] = useSearchParams()
+  const fromNewProgram = params.get('depuis') === FROM_NEW_PROGRAM
+  const goBack = useGoBack(fromNewProgram ? '/training/new' : '/more')
   const saved = useMemo(() => draftFromProfile(profile), [profile])
   // Le profil peut changer pendant que l'écran est ouvert (test de niveau tout juste enregistré).
   const [draft, setDraft] = useSyncedDraft<ProfileDraft>(saved)
@@ -58,8 +64,8 @@ export function ProfilePage() {
     <Page
       title="Profil et niveau"
       back
-      backTo="/more"
-      backLabel="Plus"
+      onBack={goBack}
+      backLabel={fromNewProgram ? 'Retour' : 'Plus'}
       noTabBar
       className="pt-2"
       footer={

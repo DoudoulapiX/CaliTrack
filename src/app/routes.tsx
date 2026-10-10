@@ -43,6 +43,31 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'training/new',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/training/NewProgramPage')).NewProgramPage,
+            }),
+          },
+          {
+            path: 'training/programs',
+            lazy: async () => ({
+              Component: (await import('@/features/training/ProgramsPage')).ProgramsPage,
+            }),
+          },
+          {
+            path: 'training/programs/:id',
+            lazy: async () => ({
+              Component: (await import('@/features/training/ProgramPage')).ProgramPage,
+            }),
+          },
+          {
+            path: 'training/programs/:id/sessions/:sessionId',
+            lazy: async () => ({
+              Component: (await import('@/features/training/SessionPage')).SessionPage,
+            }),
+          },
+          {
             path: 'climbing',
             lazy: async () => ({
               Component: (await import('@/features/climbing/ClimbingPage')).ClimbingPage,

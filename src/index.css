@@ -40,7 +40,7 @@
   --ct-line: #d1d1d6;
   --ct-danger: #c4261d;
   --ct-success: #12703a;
-  --ct-warning: #9a5400;
+  --ct-warning: #8a4b00;
   --ct-info: #0a5fc2;
 
   --safe-top: env(safe-area-inset-top, 0px);

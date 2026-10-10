@@ -3,6 +3,8 @@ import { item, profile, sequentialIds, testCatalog } from '@/test/fixtures'
 import {
   addSession,
   addSlot,
+  BLOCK_ORDER,
+  blockUsesLadder,
   cleanTarget,
   duplicateProgram,
   duplicateSession,
@@ -59,6 +61,18 @@ describe('modifier un exercice du programme', () => {
     expect(findSlot(other, first.id)?.slot.ladderId).toBeNull()
     // Le programme d'origine n'est pas modifié.
     expect(findSlot(program, first.id)?.slot.exerciseId).toBe(first.exerciseId)
+  })
+
+  it('ne fait pas suivre de progression à l’échauffement, au cardio ni aux étirements', async () => {
+    const program = await sample()
+    const blocks = program.sessions[0]?.blocks ?? []
+    const warmup = blocks.find((b) => b.kind === 'warmup')?.slots[0]
+    const cooldown = blocks.find((b) => b.kind === 'cooldown')?.slots[0]
+    if (!warmup || !cooldown) throw new Error('créneaux manquants')
+    for (const slot of [warmup, cooldown]) {
+      const changed = updateSlot(program, slot.id, { exerciseId: 'dead-hang' })
+      expect(findSlot(changed, slot.id)?.slot).toMatchObject({ exerciseId: 'dead-hang', ladderId: null })
+    }
   })
 
   it('range les valeurs saisies dans des bornes sûres', async () => {
@@ -167,6 +181,7 @@ describe('ajouter un exercice', () => {
     expect(ladderIdFor('pullup', 'skill:muscleUp')).toBe('skill:muscleUp')
     expect(ladderIdFor('front-lever-tuck', 'pullV')).toBe('skill:frontLever')
     expect(ladderIdFor('Dumbbell_Bicep_Curl', 'pullV')).toBeNull()
+    expect(BLOCK_ORDER.filter(blockUsesLadder)).toEqual(['skill', 'strength', 'core'])
   })
 })
 
