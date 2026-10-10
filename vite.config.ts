@@ -76,6 +76,7 @@ export default defineConfig({
     css: false,
     restoreMocks: true,
     testTimeout: 15000,
+    env: { TZ: 'Europe/Paris' },
     alias: {
       'virtual:pwa-register/react': fileURLToPath(
         new URL('./src/test/pwa-register-stub.ts', import.meta.url),

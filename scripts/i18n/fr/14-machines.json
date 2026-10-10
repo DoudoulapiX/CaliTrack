@@ -1,0 +1,594 @@
+{
+  "Ab_Crunch_Machine": {
+    "n": "Crunch à la machine",
+    "s": [
+      "Charge légère. Assis à la machine à abdos, pieds sous les rouleaux, mains sur les poignées du haut, coudes pliés à 90°, triceps sur les coussins.",
+      "Enroule le buste en montant les jambes en même temps. Expire.",
+      "Marque une pause, puis reviens lentement en inspirant."
+    ],
+    "t": ["Mouvement lent : ce sont les abdos qui travaillent, jambes relâchées."]
+  },
+  "Bicycling_Stationary": {
+    "n": "Vélo d’appartement",
+    "s": [
+      "Règle la selle à ta taille et installe-toi.",
+      "Choisis le mode manuel ou un programme ; pédale pour allumer l’écran si besoin.",
+      "Ajuste la résistance pendant la séance ; les poignées peuvent mesurer ton pouls pour garder la bonne intensité."
+    ]
+  },
+  "Butterfly": {
+    "n": "Butterfly (pec deck)",
+    "s": [
+      "Assis à la machine, dos plaqué contre le dossier. Règle-la pour avoir le haut des bras parallèle au sol, et attrape les poignées.",
+      "Rapproche lentement les poignées en serrant les pectoraux. Expire et tiens une seconde.",
+      "Reviens lentement jusqu’à bien étirer la poitrine en inspirant."
+    ]
+  },
+  "Calf-Machine_Shoulder_Shrug": {
+    "n": "Haussement d’épaules à la machine à mollets",
+    "s": [
+      "Place-toi sous les épaulières de la machine à mollets, buste droit, bras le long du corps.",
+      "Monte les épaules vers les oreilles en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Calf_Press": {
+    "n": "Mollets à la presse assise",
+    "s": [
+      "Règle le siège pour avoir les jambes presque tendues, avant des pieds bien posé sur la plateforme. Attrape les poignées.",
+      "Tends les jambes pour décoller à peine la charge, pointes de pieds vers toi.",
+      "Pousse avec l’avant des pieds le plus loin possible.",
+      "Marque une pause, puis reviens et enchaîne."
+    ]
+  },
+  "Calf_Press_On_The_Leg_Press_Machine": {
+    "n": "Mollets à la presse à cuisses",
+    "s": [
+      "Assis à la presse, pieds largeur d’épaules. Pousse la plateforme jusqu’aux jambes tendues sans verrouiller les genoux, et retire les sécurités (garde-les si ta presse le permet).",
+      "Place l’avant des pieds sur le bas de la plateforme, talons dans le vide.",
+      "Pousse en tendant les chevilles le plus loin possible, genoux immobiles. Expire et tiens une seconde.",
+      "Reviens lentement jusqu’à bien étirer les mollets en inspirant."
+    ]
+  },
+  "Chair_Squat": {
+    "n": "Squat assis à la Smith machine",
+    "s": [
+      "Règle la barre de la Smith machine à ta hauteur et place-la sur l’arrière des épaules. Déverrouille-la en tendant les jambes.",
+      "Avance les pieds d’environ 45 cm devant la barre, largeur d’épaules, pointes légèrement ouvertes. Regard devant, dos neutre.",
+      "Descends lentement comme pour t’asseoir, jusqu’à passer sous l’angle droit aux genoux.",
+      "Remonte en poussant dans les talons en expirant."
+    ],
+    "e": [["smithMachine"]]
+  },
+  "Decline_Smith_Press": {
+    "n": "Développé décliné à la Smith machine",
+    "s": [
+      "Banc décliné sous la Smith machine, barre réglée pour être atteinte bras presque tendus. Prise pronation plus large que les épaules, déverrouille la barre bras tendus.",
+      "Descends la barre en contrôlant jusqu’à effleurer la poitrine en inspirant.",
+      "Marque une pause, puis repousse en expirant.",
+      "À la fin, verrouille la barre."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Dip_Machine": {
+    "n": "Dips à la machine",
+    "s": [
+      "Assis bien calé à la machine à dips, charge réglée, poignées bien en main.",
+      "Coudes serrés contre le corps, pliés à 90°.",
+      "Pousse les poignées vers le bas en contractant les triceps. Expire. Garde un léger pli au coude en bas.",
+      "Remonte lentement en inspirant."
+    ]
+  },
+  "Elliptical_Trainer": {
+    "n": "Vélo elliptique",
+    "s": [
+      "Monte sur l’elliptique et choisis le mode manuel ou un programme.",
+      "Règle la résistance ou l’inclinaison pour changer l’intensité.",
+      "Les poignées peuvent mesurer ton pouls pour garder la bonne intensité."
+    ]
+  },
+  "Glute_Ham_Raise": {
+    "n": "Glute ham raise (GHD)",
+    "s": [
+      "Règle l’appareil à ta taille : à plat ventre, pieds contre la plaque entre les rouleaux, genoux juste derrière le coussin.",
+      "Pars buste vers le bas. Dos cambré, plie les genoux en poussant les orteils contre la plaque, jusqu’à te retrouver buste vertical, corps droit.",
+      "Redescends en contrôlant."
+    ]
+  },
+  "Hack_Squat": {
+    "n": "Hack squat à la machine",
+    "s": [
+      "Dos contre le dossier, épaules sous les épaulières. Pieds largeur d’épaules sur la plateforme, pointes légèrement ouvertes.",
+      "Mains sur les poignées latérales, retire les sécurités et tends les jambes sans verrouiller les genoux.",
+      "Descends lentement jusqu’à passer un peu sous l’horizontale, dos toujours contre le dossier. Inspire.",
+      "Remonte en poussant surtout dans les talons en expirant."
+    ]
+  },
+  "Jogging_Treadmill": {
+    "n": "Footing sur tapis de course",
+    "s": [
+      "Monte sur le tapis et choisis le mode manuel ou un programme.",
+      "Règle la vitesse pour un footing confortable ; l’inclinaison augmente l’intensité.",
+      "Cours bien droit et ne tiens les poignées que pour descendre ou mesurer ton pouls."
+    ],
+    "t": ["Moins d’impact qu’en extérieur."]
+  },
+  "Leg_Extensions": {
+    "n": "Leg extension",
+    "s": [
+      "Charge réglée, assis à la machine, coussin posé sur le bas des tibias juste au-dessus des pieds, genoux à 90°. Tiens les poignées.",
+      "Tends les jambes au maximum avec les quadriceps, le reste du corps immobile. Expire et tiens une seconde.",
+      "Redescends lentement sans dépasser 90° aux genoux en inspirant."
+    ]
+  },
+  "Leg_Press": {
+    "n": "Presse à cuisses",
+    "s": [
+      "Assis à la presse, pieds largeur d’épaules sur la plateforme.",
+      "Retire les sécurités et pousse jusqu’aux jambes tendues, sans verrouiller les genoux.",
+      "Descends lentement jusqu’à avoir les genoux à 90° en inspirant.",
+      "Repousse surtout avec les talons en expirant. À la fin, remets bien les sécurités."
+    ]
+  },
+  "Leverage_Chest_Press": {
+    "n": "Développé couché à la machine convergente",
+    "s": [
+      "Charge sur la machine, siège réglé pour avoir les poignées au niveau du bas ou du milieu des pectoraux.",
+      "Tête et poitrine hautes, omoplates serrées.",
+      "Pousse les poignées devant toi jusqu’aux bras tendus.",
+      "Marque une pause, puis reviens juste avant la butée pour garder la tension jusqu’à la fin de la série."
+    ]
+  },
+  "Leverage_Deadlift": {
+    "n": "Soulevé de terre à la machine",
+    "s": [
+      "Charge sur la machine. Place-toi entre les poignées et attrape les poignées du bas.",
+      "Inspire en baissant les hanches, regard devant, poitrine haute.",
+      "Pousse dans les talons pour te relever en tendant hanches et genoux, bras tendus, épaules en arrière en haut.",
+      "Redescends en contrôlant."
+    ]
+  },
+  "Leverage_Decline_Chest_Press": {
+    "n": "Développé décliné à la machine",
+    "s": [
+      "Charge sur la machine, siège réglé pour avoir les poignées au niveau du bas des pectoraux. Tête et poitrine hautes, omoplates serrées.",
+      "Pousse les poignées jusqu’aux bras tendus.",
+      "Marque une pause, puis reviens juste avant la butée pour garder la tension."
+    ]
+  },
+  "Leverage_High_Row": {
+    "n": "Tirage haut à la machine",
+    "s": [
+      "Charge sur la machine, siège réglé pour atteindre juste les poignées au-dessus de toi, cuisses bloquées. Prise pronation.",
+      "Tire les poignées vers le buste en serrant les omoplates.",
+      "Marque une pause, puis remonte lentement, sans laisser la charge se reposer."
+    ]
+  },
+  "Leverage_Incline_Chest_Press": {
+    "n": "Développé incliné à la machine",
+    "s": [
+      "Charge sur la machine, siège réglé pour avoir les poignées au niveau du haut des pectoraux. Tête et poitrine hautes, omoplates serrées.",
+      "Pousse les poignées jusqu’aux bras tendus.",
+      "Marque une pause, puis reviens juste avant la butée pour garder la tension."
+    ]
+  },
+  "Leverage_Iso_Row": {
+    "n": "Rowing à la machine",
+    "s": [
+      "Charge sur la machine, siège réglé pour avoir les poignées à hauteur de poitrine. Prise neutre ou pronation.",
+      "Tire les poignées vers le buste en serrant les omoplates.",
+      "Marque une pause, puis reviens lentement sans laisser la charge se reposer."
+    ]
+  },
+  "Leverage_Shoulder_Press": {
+    "n": "Développé épaules à la machine convergente",
+    "s": [
+      "Charge sur la machine, siège réglé pour avoir les poignées au niveau du haut des épaules. Tête et poitrine hautes, prise pronation.",
+      "Pousse les poignées vers le haut jusqu’aux bras tendus.",
+      "Marque une pause, puis reviens juste avant la butée pour garder la tension."
+    ]
+  },
+  "Leverage_Shrug": {
+    "n": "Haussement d’épaules à la machine",
+    "s": [
+      "Charge sur la machine, place-toi entre les poignées et attrape celles du haut. Inspire en baissant les hanches, regard devant, poitrine haute.",
+      "Pousse dans les talons pour te relever, bras tendus, épaules en arrière.",
+      "Monte les épaules vers les oreilles, bien à la verticale.",
+      "Marque une pause en haut, puis redescends."
+    ]
+  },
+  "Lunge_Sprint": {
+    "n": "Fentes sautées à la Smith machine",
+    "s": [
+      "Barre de la Smith machine sur l’arrière des épaules, déverrouillée. Pieds en fente, un devant, un derrière.",
+      "Descends jusqu’à ce que le genou arrière frôle le sol.",
+      "Inverse aussitôt en poussant fort dans le talon avant : saute et change de jambe en l’air.",
+      "Amortis et enchaîne."
+    ],
+    "m": "reps",
+    "e": [["smithMachine"]]
+  },
+  "Lying_Leg_Curls": {
+    "n": "Leg curl allongé",
+    "s": [
+      "Règle la machine à ta taille. À plat ventre, rouleau sur l’arrière des jambes, juste sous les mollets.",
+      "Buste à plat, jambes tendues, mains sur les poignées.",
+      "Plie les jambes le plus loin possible sans décoller les cuisses. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Une machine inclinée sollicite mieux les ischios qu’une machine plate."]
+  },
+  "Lying_Machine_Squat": {
+    "n": "Squat allongé à la machine",
+    "s": [
+      "Charge réglée. Installe-toi sur le dos dans la machine, épaules sous les épaulières, genoux pliés, cuisses un peu sous l’horizontale.",
+      "Mains sur les poignées, pieds largeur d’épaules, pointes légèrement ouvertes.",
+      "Pousse avec l’avant des pieds jusqu’à être tendu, en contractant les quadriceps. Expire et tiens une seconde.",
+      "Redescends lentement, jusqu’aux cuisses parallèles seulement, puis enchaîne."
+    ]
+  },
+  "Lying_T-Bar_Row": {
+    "n": "Rowing barre en T allongé",
+    "s": [
+      "Charge la machine et règle-la pour avoir le haut de la poitrine au bord du coussin.",
+      "À plat ventre, attrape les poignées (pronation, supination ou neutre selon la zone visée), décroche la barre bras tendus.",
+      "Tire la charge vers toi, bras près du corps, en serrant le dos. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant, sans décoller du coussin."
+    ]
+  },
+  "Machine_Bench_Press": {
+    "n": "Développé assis à la machine",
+    "s": [
+      "Assis à la machine, charge réglée. Appuie sur la pédale pour avancer les poignées et attrape-les, paumes vers le bas, bras tendus.",
+      "Coudes levés, haut des bras parallèles au sol.",
+      "Ramène les poignées vers toi en inspirant, puis repousse en contractant les pectoraux en expirant. Tiens une seconde.",
+      "À la fin, appuie de nouveau sur la pédale pour ramener doucement les poignées."
+    ]
+  },
+  "Machine_Bicep_Curl": {
+    "n": "Curl biceps à la machine",
+    "s": [
+      "Siège réglé, charge choisie. Haut des bras contre les coussins, poignées en main.",
+      "Plie les coudes pour ramener les avant-bras vers les bras.",
+      "Marque une pause en haut, puis redescends lentement sans laisser la charge se reposer."
+    ]
+  },
+  "Machine_Preacher_Curls": {
+    "n": "Curl pupitre à la machine",
+    "s": [
+      "Assis à la machine, charge choisie. Arrière des bras sur le pupitre, coudes rentrés, poignées en supination.",
+      "Monte les poignées en contractant les biceps. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant. Seuls les avant-bras bougent."
+    ]
+  },
+  "Machine_Shoulder_Military_Press": {
+    "n": "Développé militaire à la machine",
+    "s": [
+      "Assis à la machine, charge choisie. Poignées sur les côtés, coudes pliés dans l’alignement du buste.",
+      "Pousse les poignées jusqu’aux bras tendus en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Machine_Triceps_Extension": {
+    "n": "Extension des triceps à la machine",
+    "s": [
+      "Siège réglé, charge choisie. Haut des bras contre les coussins, poignées en main.",
+      "Tends les coudes pour éloigner les avant-bras des bras.",
+      "Marque une pause, puis reviens lentement sans laisser la charge se reposer."
+    ]
+  },
+  "Narrow_Stance_Hack_Squats": {
+    "n": "Hack squat pieds serrés",
+    "s": [
+      "Dos contre le dossier, épaules sous les épaulières. Pieds écartés de quelques centimètres seulement, pointes légèrement ouvertes.",
+      "Mains sur les poignées latérales, retire les sécurités et tends les jambes sans verrouiller les genoux.",
+      "Descends lentement jusqu’à passer un peu sous l’horizontale, dos contre le dossier. Inspire.",
+      "Remonte en poussant surtout dans les talons en expirant."
+    ]
+  },
+  "Narrow_Stance_Leg_Press": {
+    "n": "Presse à cuisses pieds serrés",
+    "s": [
+      "Assis à la presse, pieds écartés de quelques centimètres seulement, pointes légèrement ouvertes, dos contre le dossier.",
+      "Retire les sécurités et pousse jusqu’aux jambes tendues, sans verrouiller les genoux.",
+      "Descends lentement jusqu’à avoir les genoux à 90° en inspirant.",
+      "Repousse surtout avec les talons en expirant. À la fin, remets bien les sécurités."
+    ]
+  },
+  "Recumbent_Bike": {
+    "n": "Vélo semi-allongé",
+    "s": [
+      "Règle le siège à ta taille et installe-toi.",
+      "Choisis le mode manuel ou un programme ; pédale pour allumer l’écran si besoin.",
+      "Ajuste la résistance pendant la séance ; les poignées peuvent mesurer ton pouls."
+    ],
+    "t": ["Peu d’impact sur les articulations."]
+  },
+  "Reverse_Hyperextension": {
+    "n": "Extension inversée (reverse hyper)",
+    "s": [
+      "Charge réglée, pieds entre les rouleaux. À plat ventre sur le coussin du haut, hanches dans le vide, mains sur les poignées.",
+      "Plie les hanches pour ramener les jambes vers l’avant.",
+      "Inverse en tendant les hanches pour envoyer les jambes vers l’arrière, sans aller jusqu’à l’hyperextension.",
+      "Ramène les jambes le plus loin possible vers l’avant et enchaîne."
+    ]
+  },
+  "Reverse_Machine_Flyes": {
+    "n": "Oiseau à la machine (pec deck inversé)",
+    "s": [
+      "Poignées réglées tout à l’arrière, siège réglé pour les avoir à hauteur d’épaules. Attrape-les, paumes vers l’intérieur.",
+      "Écarte les bras en demi-cercle vers l’arrière en contractant l’arrière des épaules, coudes légèrement fléchis.",
+      "Marque une pause, puis reviens lentement."
+    ]
+  },
+  "Rowing_Stationary": {
+    "n": "Rameur",
+    "s": [
+      "Assis sur le rameur, talons calés au fond des cale-pieds, sangles serrées. Dos droit.",
+      "Attaque : genoux pliés contre la poitrine, buste légèrement penché en avant.",
+      "Poussée : pousse avec les jambes, puis ramène la poignée vers le haut du ventre en serrant les omoplates. Ce sont surtout les jambes et les hanches qui travaillent.",
+      "Retour : tends les bras, plie les genoux et reviens vers l’avant."
+    ]
+  },
+  "Running_Treadmill": {
+    "n": "Course sur tapis",
+    "s": [
+      "Monte sur le tapis et choisis le mode manuel ou un programme.",
+      "Règle la vitesse ; l’inclinaison augmente l’intensité.",
+      "Cours bien droit et ne tiens les poignées que pour descendre ou mesurer ton pouls."
+    ]
+  },
+  "Seated_Calf_Raise": {
+    "n": "Mollets assis à la machine",
+    "s": [
+      "Assis à la machine, avant des pieds sur la plateforme, talons dans le vide. Coussin réglé sur le bas des cuisses, mains dessus.",
+      "Monte légèrement les talons et retire la sécurité.",
+      "Descends lentement les talons jusqu’à bien étirer les mollets. Inspire.",
+      "Monte les talons le plus haut possible en expirant. Tiens une seconde."
+    ]
+  },
+  "Seated_Leg_Curl": {
+    "n": "Leg curl assis",
+    "s": [
+      "Règle la machine. Assis, dos contre le dossier, rouleau sous le bas des mollets, coussin bloqué sur les cuisses au-dessus des genoux. Jambes tendues, mains sur les poignées.",
+      "Ramène le rouleau vers l’arrière des cuisses en pliant les genoux, buste immobile. Expire et tiens une seconde.",
+      "Reviens lentement en inspirant."
+    ]
+  },
+  "Single-Leg_Leg_Extension": {
+    "n": "Leg extension une jambe",
+    "s": [
+      "Assis à la machine, coussin sur le bas du tibia sans toucher la cheville, axe de la machine aligné avec le genou. Charge adaptée.",
+      "Dos droit, tends complètement une jambe et marque une pause en haut.",
+      "Redescends sans laisser la charge se reposer. Termine la série puis change de jambe."
+    ]
+  },
+  "Smith_Machine_Behind_the_Back_Shrug": {
+    "n": "Haussement d’épaules derrière le dos à la Smith machine",
+    "s": [
+      "Barre de la Smith machine à hauteur de cuisses, dos à la barre. Prise pronation largeur d’épaules, déverrouille-la.",
+      "Debout, tête et poitrine hautes, bras tendus.",
+      "Monte les épaules bien droit, sans plier les bras ni les poignets.",
+      "Marque une pause, puis redescends. Verrouille la barre à la fin."
+    ]
+  },
+  "Smith_Machine_Bench_Press": {
+    "n": "Développé couché à la Smith machine",
+    "s": [
+      "Banc plat sous la Smith machine, barre réglée pour être atteinte bras presque tendus. Prise pronation plus large que les épaules, déverrouille la barre bras tendus.",
+      "Descends lentement jusqu’au milieu de la poitrine en inspirant.",
+      "Marque une pause, puis pousse avec les pectoraux en expirant.",
+      "À la fin, verrouille la barre."
+    ],
+    "t": ["Descends deux fois plus lentement que tu ne montes."],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Bent_Over_Row": {
+    "n": "Rowing buste penché à la Smith machine",
+    "s": [
+      "Barre de la Smith machine réglée environ 5 cm sous les genoux.",
+      "Genoux légèrement fléchis, penche-toi dos plat jusqu’à avoir le buste presque parallèle au sol, tête haute.",
+      "Prise pronation, déverrouille la barre, bras tendus.",
+      "Tire la barre vers toi, coudes près du corps, en serrant le dos. Expire et tiens une seconde, puis redescends lentement."
+    ]
+  },
+  "Smith_Machine_Calf_Raise": {
+    "n": "Mollets debout à la Smith machine",
+    "s": [
+      "Cale ou disque sous la barre de la Smith machine. Monte dessus avec l’avant des pieds et place la barre sur l’arrière des épaules ; déverrouille-la.",
+      "Monte les talons le plus haut possible en contractant les mollets, genoux tendus. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Smith_Machine_Close-Grip_Bench_Press": {
+    "n": "Développé couché serré à la Smith machine",
+    "s": [
+      "Banc plat sous la Smith machine. Prise pronation largeur d’épaules, déverrouille la barre bras tendus.",
+      "Descends lentement jusqu’au milieu de la poitrine en inspirant, coudes collés au corps.",
+      "Marque une pause, puis pousse avec les triceps en expirant.",
+      "À la fin, verrouille la barre."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Decline_Press": {
+    "n": "Développé décliné à la Smith machine, prise moyenne",
+    "s": [
+      "Banc décliné sous la Smith machine, barre au-dessus de la poitrine. Installe-toi et déverrouille la barre bras tendus, dos légèrement cambré, omoplates serrées.",
+      "Plie les bras pour descendre la barre jusqu’à la poitrine.",
+      "Marque une brève pause, puis repousse.",
+      "À la fin, verrouille la barre."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Hang_Power_Clean": {
+    "n": "Épaulé suspendu à la Smith machine",
+    "s": [
+      "Barre de la Smith machine à hauteur de genoux. Prise pronation plus large que les épaules, déverrouille-la, bras tendus, tête et poitrine hautes, hanches en arrière.",
+      "Tends violemment hanches et genoux, bras tendus.",
+      "En pleine extension, refléchis hanches et genoux pour passer sous la barre, en tournant les coudes autour pour la recevoir sur les épaules.",
+      "Redresse-toi, barre sur les épaules."
+    ]
+  },
+  "Smith_Machine_Hip_Raise": {
+    "n": "Relevé de bassin à la Smith machine",
+    "s": [
+      "Banc sous la Smith machine. Allongé sur le banc, plante des pieds contre la barre ; déverrouille-la en tendant les jambes. Tiens les montants pour la stabilité.",
+      "Genoux légèrement fléchis, enroule le bassin pour décoller les hanches du banc en poussant la barre.",
+      "Marque une pause, puis repose les hanches."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Incline_Bench_Press": {
+    "n": "Développé incliné à la Smith machine",
+    "s": [
+      "Banc incliné sous la Smith machine, haut de la poitrine sous la barre. Prise pronation plus large que les épaules, déverrouille la barre bras tendus.",
+      "Descends lentement jusqu’au haut de la poitrine en inspirant.",
+      "Marque une pause, puis pousse avec les pectoraux en expirant.",
+      "À la fin, verrouille la barre."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Leg_Press": {
+    "n": "Presse à la Smith machine",
+    "s": [
+      "Barre de la Smith machine posée sur les sécurités, à 60 cm du sol. Allongé dessous, milieu des pieds sur la barre, genoux vers la poitrine.",
+      "Pousse dans les pieds pour monter la barre en tendant hanches et genoux, sans verrouiller les genoux.",
+      "Marque une pause, puis redescends en contrôlant."
+    ]
+  },
+  "Smith_Machine_One-Arm_Upright_Row": {
+    "n": "Tirage menton un bras à la Smith machine",
+    "s": [
+      "Barre de la Smith machine à hauteur de cuisses. Prise large, déverrouille la barre puis lâche-la de la main libre. Debout, tête et poitrine hautes, bras tendu.",
+      "Plie le coude pour monter le haut du bras sur le côté, coude vers l’extérieur, jusqu’à l’horizontale.",
+      "Marque une pause, puis redescends. Termine la série puis change de bras."
+    ]
+  },
+  "Smith_Machine_Overhead_Shoulder_Press": {
+    "n": "Développé épaules à la Smith machine",
+    "s": [
+      "Banc (idéalement avec dossier) sous la Smith machine, barre réglée pour être atteinte bras presque tendus. Assis légèrement derrière la barre, nez dans son axe.",
+      "Prise pronation, déverrouille la barre et tends les bras.",
+      "Descends lentement jusqu’au niveau du menton en inspirant.",
+      "Repousse avec les épaules en expirant."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Smith_Machine_Pistol_Squat": {
+    "n": "Squat sur une jambe à la Smith machine",
+    "s": [
+      "Barre de la Smith machine sur l’arrière des épaules, déverrouillée.",
+      "Avance un pied d’environ 30 cm devant la barre et tends l’autre jambe devant toi, décollée du sol. Regard devant, dos neutre.",
+      "Descends en pliant le genou et la hanche, aussi bas que ta souplesse le permet.",
+      "Marque une pause, puis remonte en poussant dans le talon. Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Smith_Machine_Reverse_Calf_Raises": {
+    "n": "Relevé des pointes de pieds à la Smith machine",
+    "s": [
+      "Plateforme sous la barre de la Smith machine. Monte dessus avec les talons, avant des pieds dans le vide, pieds largeur d’épaules.",
+      "Barre sur l’arrière des épaules (juste pour l’équilibre), redresse-toi, genoux très légèrement fléchis.",
+      "Relève la pointe des pieds le plus haut possible. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Renforce l’avant des jambes (tibial antérieur)."]
+  },
+  "Smith_Machine_Squat": {
+    "n": "Squat à la Smith machine",
+    "s": [
+      "Barre de la Smith machine réglée à ta hauteur, sur l’arrière des épaules. Déverrouille-la en tendant les jambes.",
+      "Pieds largeur d’épaules, pointes légèrement ouvertes, tête haute, dos droit.",
+      "Descends lentement jusqu’à passer un peu sous l’horizontale en inspirant.",
+      "Remonte en poussant dans les talons en expirant."
+    ]
+  },
+  "Smith_Machine_Stiff-Legged_Deadlift": {
+    "n": "Soulevé de terre jambes tendues à la Smith machine",
+    "s": [
+      "Barre de la Smith machine à mi-cuisse. Prise pronation largeur d’épaules, déverrouille-la, dos droit, genoux légèrement fléchis.",
+      "Genoux fixes, penche-toi dos plat en descendant la barre vers le dessus des pieds, jusqu’à sentir l’étirement des ischios.",
+      "Redresse-toi en tendant les hanches."
+    ]
+  },
+  "Smith_Machine_Upright_Row": {
+    "n": "Tirage menton à la Smith machine",
+    "s": [
+      "Barre de la Smith machine à mi-cuisse. Prise pronation largeur d’épaules, déverrouille-la, bras tendus, dos droit.",
+      "Monte la barre près du corps jusqu’au menton en menant avec les coudes, toujours plus hauts que les avant-bras. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Smith_Single-Leg_Split_Squat": {
+    "n": "Squat bulgare à la Smith machine",
+    "s": [
+      "Banc plat à 60–90 cm derrière la Smith machine. Barre sur l’arrière des épaules, déverrouillée.",
+      "Un pied légèrement en avant sous la barre, le dessus de l’autre pied posé sur le banc derrière toi.",
+      "Descends lentement jusqu’à passer un peu sous l’horizontale, buste droit. Inspire.",
+      "Remonte en poussant dans le talon avant en expirant. Termine la série puis change de jambe."
+    ],
+    "e": [["smithMachine", "bench"]]
+  },
+  "Stairmaster": {
+    "n": "Simulateur d’escalier",
+    "s": [
+      "Monte sur la machine et choisis le mode manuel ou un programme.",
+      "Monte et descends les jambes à un rythme régulier, sans laisser les pédales toucher le bas.",
+      "Garde les mains sur les poignées pour ne pas tomber ; elles peuvent aussi mesurer ton pouls."
+    ],
+    "t": ["Plus dur que la plupart des appareils de cardio."]
+  },
+  "Standing_Calf_Raises": {
+    "n": "Mollets debout à la machine",
+    "s": [
+      "Règle la machine à ta taille. Épaules sous les épaulières, avant des pieds sur la cale, talons dans le vide.",
+      "Redresse-toi, genoux très légèrement fléchis.",
+      "Monte les talons le plus haut possible, genoux immobiles. Expire et tiens une seconde.",
+      "Redescends lentement jusqu’à bien étirer les mollets en inspirant."
+    ],
+    "t": ["Pointes vers l’avant, l’intérieur ou l’extérieur pour varier."]
+  },
+  "Standing_Leg_Curl": {
+    "n": "Leg curl debout",
+    "s": [
+      "Règle la machine. Buste penché vers l’avant de 30 à 45°, rouleau sous le mollet droit, avant de la cuisse contre le coussin.",
+      "Jambe tendue, mains sur les poignées.",
+      "Plie la jambe le plus loin possible sans décoller la cuisse. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant. Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Step_Mill": {
+    "n": "Escalier roulant (step mill)",
+    "s": [
+      "Monte sur la machine et choisis le mode manuel ou un programme.",
+      "Monte les marches à un rythme régulier en faisant attention à ne pas trébucher.",
+      "Garde les mains sur les poignées pour ne pas tomber."
+    ],
+    "t": ["Plus dur que la plupart des appareils de cardio."]
+  },
+  "Thigh_Abductor": {
+    "n": "Abducteurs à la machine",
+    "s": [
+      "Assis à la machine, charge confortable, jambes en place, mains sur les poignées. Le haut du corps ne bouge pas.",
+      "Écarte lentement les jambes en poussant contre les coussins. Expire.",
+      "Tiens une seconde, puis reviens lentement en inspirant."
+    ]
+  },
+  "Thigh_Adductor": {
+    "n": "Adducteurs à la machine",
+    "s": [
+      "Assis à la machine, charge confortable, jambes sur les coussins, mains sur les poignées. Le haut du corps ne bouge pas.",
+      "Rapproche lentement les jambes en serrant les cuisses. Expire.",
+      "Tiens une seconde, puis reviens lentement en inspirant, sans à-coup."
+    ]
+  },
+  "Walking_Treadmill": {
+    "n": "Marche sur tapis",
+    "s": [
+      "Monte sur le tapis et choisis le mode manuel ou un programme.",
+      "Marche d’un bon pas, pas en flânant ; l’inclinaison augmente l’intensité.",
+      "Marche bien droit et ne tiens les poignées que pour descendre ou mesurer ton pouls."
+    ]
+  }
+}

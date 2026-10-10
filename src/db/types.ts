@@ -33,6 +33,8 @@ export interface AppSettings {
   onboardingDone: boolean
   activeGradeScaleId: string
   climbingGym: string
+  /** Lieu utilisé pour filtrer les exercices « avec mon matériel ». */
+  currentLocationId: string | null
   createdAt: string
   updatedAt: string
 }
@@ -111,6 +113,7 @@ export type EquipmentKind =
   | 'gymMachines'
   | 'smithMachine'
   | 'sled'
+  | 'pole'
   | 'floor'
   | 'wall'
   | 'other'
@@ -176,9 +179,6 @@ export type ExerciseLevel = 'beginner' | 'intermediate' | 'expert'
 /** Ce que l'on note pour chaque série. */
 export type ExerciseMeasure = 'reps' | 'time'
 
-export type ExerciseMedia =
-  { kind: 'frames'; frames: string[] } | { kind: 'figure'; animation: string } | { kind: 'none' }
-
 export interface Exercise {
   id: string
   name: string
@@ -194,7 +194,10 @@ export interface Exercise {
   equipment: EquipmentKind[][]
   instructions: string[]
   tips: string[]
-  media: ExerciseMedia
+  /** Animation de silhouette (exercices CaliTrack), identifiant dans content/figures. */
+  figure: string | null
+  /** Photos de démonstration (chemins relatifs dans public/ex). */
+  frames: string[]
   measure: ExerciseMeasure
   /** Vrai si l'exercice se fait un côté après l'autre. */
   unilateral: boolean
@@ -301,9 +304,8 @@ export interface EventSeries {
   time: string | null
   durationMin: number | null
   notes: string
-  /** Dernier jour pour lequel les occurrences ont été créées. */
-  generatedUntil: ISODate
   createdAt: string
+  updatedAt: string
 }
 
 /* ------------------------------------------------------------------ */
@@ -356,6 +358,8 @@ export interface Workout {
   rpe: number | null
   notes: string
   status: 'active' | 'done'
+  /** Semaine allégée : moins de séries et pas de progression. */
+  deload: boolean
   progression: ProgressionChange[]
 }
 

@@ -1,0 +1,553 @@
+{
+  "Alternate_Hammer_Curl": {
+    "n": "Curl marteau alterné",
+    "s": [
+      "Debout, buste droit, un haltère dans chaque main bras tendus, coudes près du corps, paumes face au corps.",
+      "Coude fixe, monte l’haltère droit jusqu’à l’épaule en expirant. Serre le biceps une seconde.",
+      "Redescends lentement en inspirant, puis fais l’autre bras. Les deux bras comptent pour une répétition."
+    ],
+    "t": ["Seul l’avant-bras bouge."]
+  },
+  "Alternate_Incline_Dumbbell_Curl": {
+    "n": "Curl incliné alterné",
+    "s": [
+      "Assis sur un banc incliné, un haltère dans chaque main bras tendus, coudes près du corps.",
+      "Coude fixe, monte l’haltère droit en tournant la paume vers le haut, jusqu’à l’épaule. Expire et serre une seconde.",
+      "Redescends lentement en inspirant, puis fais l’autre bras."
+    ]
+  },
+  "Alternating_Deltoid_Raise": {
+    "n": "Élévations frontales et latérales alternées",
+    "s": [
+      "Debout, un haltère dans chaque main le long du corps.",
+      "Coudes légèrement fléchis, monte les haltères devant toi à hauteur d’épaules, sans élan, puis redescends.",
+      "À la répétition suivante, monte-les sur les côtés à hauteur d’épaules, puis redescends.",
+      "Alterne devant et côté."
+    ]
+  },
+  "Arnold_Dumbbell_Press": {
+    "n": "Développé Arnold",
+    "s": [
+      "Assis sur un banc avec dossier (ou debout), haltères devant le haut de la poitrine, paumes vers toi, coudes pliés.",
+      "Pousse les haltères vers le haut en tournant les paumes vers l’avant, jusqu’aux bras tendus. Expire.",
+      "Marque une pause puis redescends en retournant les paumes vers toi, en inspirant."
+    ]
+  },
+  "Around_The_Worlds": {
+    "n": "Tour du monde aux haltères",
+    "s": [
+      "Allongé sur un banc plat (ou au sol), un haltère dans chaque main près des cuisses, paumes vers le plafond, coudes légèrement fléchis.",
+      "Bras parallèles au sol, fais passer les haltères en demi-cercle jusqu’au-dessus de la tête, en inspirant.",
+      "Reviens par le même chemin en expirant."
+    ]
+  },
+  "Bent-Arm_Dumbbell_Pullover": {
+    "n": "Pull-over bras fléchis",
+    "s": [
+      "Allongé en travers d’un banc, seulement les épaules dessus, hanches plus basses, pieds bien au sol.",
+      "Tiens un haltère à deux mains au-dessus de la poitrine, bras fléchis, paumes sous un des disques.",
+      "Bras bloqués dans cette flexion, descends l’haltère en arc derrière la tête en inspirant, jusqu’à sentir l’étirement de la poitrine.",
+      "Ramène-le par le même arc en expirant."
+    ],
+    "t": ["Vérifie que les disques de l’haltère sont bien serrés."],
+    "e": [["dumbbells", "bench"]]
+  },
+  "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench": {
+    "n": "Oiseau, front appuyé sur un banc incliné",
+    "s": [
+      "Debout devant un banc incliné, un haltère dans chaque main.",
+      "Dos plat, penche-toi jusqu’à poser le front sur le banc, buste parallèle au sol, bras pendants, paumes face à face.",
+      "Bras presque tendus, monte les haltères sur les côtés jusqu’à l’horizontale en expirant, sans balancer.",
+      "Tiens une seconde puis redescends lentement."
+    ]
+  },
+  "Bent_Over_Two-Dumbbell_Row": {
+    "n": "Rowing penché aux haltères",
+    "s": [
+      "Un haltère dans chaque main, genoux légèrement fléchis, penche le buste dos plat presque à l’horizontale, tête haute.",
+      "Bras pendants, tire les haltères le long du corps en gardant les coudes près du buste. Expire.",
+      "Serre le dos une seconde en haut puis redescends lentement en inspirant."
+    ]
+  },
+  "Bent_Over_Two-Dumbbell_Row_With_Palms_In": {
+    "n": "Rowing penché aux haltères, prise neutre",
+    "s": [
+      "Un haltère dans chaque main, paumes face à face, genoux légèrement fléchis, buste penché dos plat presque à l’horizontale.",
+      "Tire les haltères sur les côtés en serrant les omoplates. Expire.",
+      "Tiens une seconde puis redescends lentement en inspirant."
+    ]
+  },
+  "Calf_Raise_On_A_Dumbbell": {
+    "n": "Mollets debout sur un haltère",
+    "s": [
+      "Tiens-toi à un support stable et monte avec l’avant d’un pied sur la barre d’un haltère (à disques ronds, il roule et travaille l’équilibre).",
+      "Laisse le talon descendre pour étirer le mollet.",
+      "Monte sur la pointe le plus haut possible en faisant rouler l’haltère légèrement en arrière. Tiens une seconde.",
+      "Redescends lentement. Change de pied."
+    ],
+    "u": true
+  },
+  "Close-Grip_Dumbbell_Press": {
+    "n": "Développé un haltère à deux mains",
+    "s": [
+      "Allongé en travers d’un banc, seulement les épaules dessus, hanches plus basses, pieds au sol.",
+      "Tiens un haltère à deux mains au-dessus de la poitrine, bras tendus, paumes contre un des disques.",
+      "Descends l’haltère jusqu’à la poitrine.",
+      "Pousse pour revenir bras tendus."
+    ],
+    "e": [["dumbbells", "bench"]]
+  },
+  "Concentration_Curls": {
+    "n": "Curl concentré",
+    "s": [
+      "Assis au bord d’un banc ou d’une chaise, jambes écartées, un haltère au sol entre les pieds.",
+      "Prends-le d’une main et cale l’arrière du bras contre l’intérieur de la cuisse, bras tendu, paume vers l’avant.",
+      "Coude fixe, monte l’haltère vers l’épaule en expirant ; en haut, le petit doigt est plus haut que le pouce. Serre une seconde.",
+      "Redescends lentement sans balancer. Termine la série puis change de bras."
+    ],
+    "e": [["dumbbells", "bench"], ["dumbbells", "chair"]],
+    "u": true
+  },
+  "Cross_Body_Hammer_Curl": {
+    "n": "Curl marteau croisé",
+    "s": [
+      "Debout, un haltère dans chaque main le long du corps, paumes face au corps.",
+      "Sans tourner le poignet, monte l’haltère droit en travers du corps vers l’épaule gauche. Expire et tiens une seconde.",
+      "Redescends par le même chemin, puis fais l’autre bras."
+    ]
+  },
+  "Cuban_Press": {
+    "n": "Développé cubain",
+    "s": [
+      "Debout, un haltère dans chaque main en pronation, monte les coudes à hauteur d’épaules, avant-bras pendants (position d’épouvantail).",
+      "Sans bouger les coudes, fais pivoter les avant-bras vers le haut jusqu’à ce que les poignets soient au-dessus des coudes.",
+      "Pousse les haltères au-dessus de la tête.",
+      "Reviens en refaisant les étapes à l’envers."
+    ],
+    "t": ["Prends des charges légères : c’est un exercice de santé des épaules."]
+  },
+  "Decline_Dumbbell_Bench_Press": {
+    "n": "Développé décliné aux haltères",
+    "s": [
+      "Jambes bloquées en haut d’un banc décliné, allonge-toi avec un haltère sur chaque cuisse.",
+      "Amène les haltères au-dessus de la poitrine, largeur d’épaules, puis tourne les paumes vers l’avant.",
+      "Descends lentement les haltères sur les côtés de la poitrine en inspirant, avant-bras verticaux.",
+      "Pousse avec les pectoraux pour revenir bras tendus en expirant. Descends deux fois plus lentement que tu ne montes."
+    ]
+  },
+  "Decline_Dumbbell_Flyes": {
+    "n": "Écarté décliné aux haltères",
+    "s": [
+      "Jambes bloquées sur un banc décliné, allongé, haltères au-dessus de la poitrine, bras tendus, paumes face à face.",
+      "Coudes légèrement fléchis, ouvre les bras sur les côtés en grand arc jusqu’à sentir l’étirement des pectoraux. Inspire.",
+      "Referme par le même arc en serrant les pectoraux et en expirant."
+    ]
+  },
+  "Decline_Dumbbell_Triceps_Extension": {
+    "n": "Extension des triceps sur banc décliné",
+    "s": [
+      "Jambes bloquées sur un banc décliné, allongé, haltères au-dessus de la poitrine, bras tendus, paumes face à face.",
+      "Haut des bras fixe et coudes serrés, descends les haltères en arc jusqu’à ce que les pouces arrivent près des oreilles. Inspire.",
+      "Tends les bras en contractant les triceps et en expirant."
+    ]
+  },
+  "Dumbbell_Alternate_Bicep_Curl": {
+    "n": "Curl alterné aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main bras tendus, coudes près du corps, paumes vers les cuisses.",
+      "Coude fixe, monte l’haltère droit en tournant la paume vers le haut jusqu’à l’épaule. Expire et serre une seconde.",
+      "Redescends lentement en retournant la paume vers la cuisse, puis fais l’autre bras."
+    ]
+  },
+  "Dumbbell_Bench_Press": {
+    "n": "Développé couché aux haltères",
+    "s": [
+      "Assis au bout d’un banc plat, haltères sur les cuisses ; allonge-toi en les amenant de chaque côté de la poitrine, paumes vers l’avant, coudes à 90°.",
+      "Pousse les haltères vers le haut avec les pectoraux en expirant. Serre une seconde bras tendus.",
+      "Redescends lentement, deux fois plus lentement que la montée."
+    ]
+  },
+  "Dumbbell_Bench_Press_with_Neutral_Grip": {
+    "n": "Développé couché aux haltères, prise neutre",
+    "s": [
+      "Allongé sur un banc plat, pieds au sol, omoplates serrées, haltères au-dessus de toi bras tendus, paumes face à face.",
+      "Plie les coudes pour descendre les haltères jusqu’au buste, coudes le long du corps.",
+      "Marque une pause puis pousse pour revenir bras tendus."
+    ]
+  },
+  "Dumbbell_Bicep_Curl": {
+    "n": "Curl biceps aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main bras tendus, coudes près du corps, paumes vers l’avant.",
+      "Coudes fixes, monte les haltères jusqu’aux épaules en expirant. Serre une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Dumbbell_Clean": {
+    "n": "Épaulé aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main, pieds largeur d’épaules.",
+      "Pousse les hanches en arrière et plie les genoux jusqu’à ce que les haltères touchent le sol.",
+      "Saute de façon explosive en tendant hanches, genoux et chevilles, bras tendus.",
+      "Replie-toi aussitôt en squat pour recevoir les haltères sur les épaules, puis redresse-toi."
+    ]
+  },
+  "Dumbbell_Floor_Press": {
+    "n": "Développé au sol aux haltères",
+    "s": [
+      "Allongé au sol, genoux pliés, haltères au-dessus de toi bras tendus.",
+      "Descends jusqu’à ce que le haut des bras touche le sol : coudes serrés pour les triceps, plus ouverts pour les pectoraux.",
+      "Marque une pause puis pousse pour rapprocher les haltères en haut."
+    ],
+    "t": ["Idéal à la maison sans banc."]
+  },
+  "Dumbbell_Flyes": {
+    "n": "Écarté couché aux haltères",
+    "s": [
+      "Allongé sur un banc plat, haltères au-dessus de la poitrine, paumes face à face, bras presque tendus.",
+      "Coudes légèrement fléchis, ouvre les bras en grand arc jusqu’à sentir l’étirement des pectoraux. Inspire.",
+      "Referme par le même arc en serrant les pectoraux et en expirant. Tiens une seconde."
+    ],
+    "e": [["dumbbells", "bench"]]
+  },
+  "Dumbbell_Incline_Row": {
+    "n": "Rowing poitrine sur banc incliné",
+    "s": [
+      "Allonge-toi à plat ventre sur un banc incliné, un haltère dans chaque main, bras tendus, paumes face à face.",
+      "Serre les omoplates et plie les coudes pour tirer les haltères le long du corps.",
+      "Marque une pause en haut puis redescends."
+    ]
+  },
+  "Dumbbell_Incline_Shoulder_Raise": {
+    "n": "Protraction des épaules aux haltères, banc incliné",
+    "s": [
+      "Assis sur un banc incliné, monte les haltères au-dessus des épaules et allonge-toi, bras tendus, paumes vers l’avant.",
+      "Bras bloqués, pousse les haltères vers le plafond en décollant les épaules du banc. Expire.",
+      "Reviens en reposant les épaules en inspirant."
+    ]
+  },
+  "Dumbbell_Lunges": {
+    "n": "Fentes avant aux haltères",
+    "s": [
+      "Debout, buste droit, un haltère dans chaque main le long du corps.",
+      "Fais un grand pas en avant et descends jusqu’à ce que le genou arrière frôle le sol, tibia avant vertical. Inspire.",
+      "Pousse dans le talon avant pour revenir debout en expirant.",
+      "Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Dumbbell_Lying_One-Arm_Rear_Lateral_Raise": {
+    "n": "Oiseau un bras, allongé sur banc incliné",
+    "s": [
+      "Allongé à plat ventre sur un banc légèrement incliné (environ 15°), un haltère dans une main ; l’autre main tient le banc.",
+      "Bras tendu, coude légèrement fléchi, paume face au corps.",
+      "Monte le bras sur le côté jusqu’à l’horizontale en expirant. Tiens une seconde.",
+      "Redescends lentement. Termine la série puis change de bras."
+    ]
+  },
+  "Dumbbell_Lying_Pronation": {
+    "n": "Rotation des épaules à plat ventre",
+    "s": [
+      "Allongé à plat ventre sur un banc, un haltère dans une main, tête posée sur l’autre bras.",
+      "Monte le coude à hauteur d’épaule, bras à 90° du buste, avant-bras pendant à la verticale.",
+      "En gardant l’angle de 90°, fais pivoter l’avant-bras vers l’avant jusqu’à l’horizontale. Tiens une seconde.",
+      "Reviens lentement. Termine la série puis change de bras."
+    ],
+    "t": ["Charge légère : renforcement de la coiffe des rotateurs."],
+    "u": true
+  },
+  "Dumbbell_Lying_Rear_Lateral_Raise": {
+    "n": "Oiseau allongé sur banc incliné",
+    "s": [
+      "Allongé à plat ventre sur un banc légèrement incliné, un haltère dans chaque main, paumes face au corps, bras presque tendus.",
+      "Monte les bras sur les côtés jusqu’à l’horizontale en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Dumbbell_Lying_Supination": {
+    "n": "Rotation externe couché sur le côté",
+    "s": [
+      "Allongé sur le côté sur un banc, un haltère dans la main du dessus, tête posée sur l’autre bras.",
+      "Coude collé au corps et plié à 90°, avant-bras devant le ventre.",
+      "Fais pivoter l’avant-bras vers le haut jusqu’à la verticale en gardant le coude contre toi. Tiens une seconde.",
+      "Redescends lentement. Termine la série puis change de côté."
+    ],
+    "t": ["Charge légère : renforcement de la coiffe des rotateurs."],
+    "u": true
+  },
+  "Dumbbell_One-Arm_Shoulder_Press": {
+    "n": "Développé épaule un bras",
+    "s": [
+      "Assis sur un banc avec dossier ou debout, monte un haltère à hauteur d’épaule, paume vers l’avant ; l’autre main sur la hanche ou sur un appui.",
+      "Pousse l’haltère vers le haut jusqu’au bras tendu en expirant.",
+      "Marque une pause puis redescends lentement. Termine la série puis change de bras."
+    ]
+  },
+  "Dumbbell_One-Arm_Triceps_Extension": {
+    "n": "Extension des triceps un bras au-dessus de la tête",
+    "s": [
+      "Assis ou debout, monte un haltère au-dessus de la tête, bras vertical contre la tête, paume vers l’avant.",
+      "Haut du bras immobile, descends l’haltère derrière la tête en inspirant, jusqu’à l’étirement du triceps.",
+      "Tends le bras pour remonter en expirant. Termine la série puis change de bras."
+    ],
+    "t": ["Seul l’avant-bras bouge : tiens le bras avec l’autre main si besoin."]
+  },
+  "Dumbbell_One-Arm_Upright_Row": {
+    "n": "Tirage menton un bras",
+    "s": [
+      "Debout, un haltère dans une main devant la cuisse, paume vers toi ; l’autre main sur la hanche ou sur un appui.",
+      "Monte l’haltère le long du corps jusqu’au menton en menant avec le coude, toujours plus haut que l’avant-bras. Expire.",
+      "Tiens une seconde puis redescends lentement. Termine la série puis change de bras."
+    ]
+  },
+  "Dumbbell_Prone_Incline_Curl": {
+    "n": "Curl allongé sur banc incliné",
+    "s": [
+      "Allongé à plat ventre sur un banc incliné, épaules en haut du dossier, un haltère dans chaque main.",
+      "Bras pendants à la verticale, coudes près du corps, paumes vers l’avant.",
+      "Monte les haltères en contractant les biceps, haut des bras immobile. Expire.",
+      "Redescends jusqu’aux bras tendus."
+    ]
+  },
+  "Dumbbell_Raise": {
+    "n": "Tirage menton aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main le long des cuisses, paumes vers l’arrière, coudes légèrement fléchis.",
+      "Monte les haltères le long du corps jusqu’au menton en menant avec les coudes. Expire.",
+      "Tiens une seconde puis redescends lentement en inspirant."
+    ]
+  },
+  "Dumbbell_Rear_Lunge": {
+    "n": "Fentes arrière aux haltères",
+    "s": [
+      "Debout, buste droit, un haltère dans chaque main le long du corps.",
+      "Recule d’un grand pas et descends jusqu’à ce que le genou arrière frôle le sol, tibia avant vertical. Inspire.",
+      "Pousse sur la jambe avant pour revenir debout en expirant. Alterne les jambes."
+    ],
+    "t": ["Un grand pas cible les fessiers, un petit pas les quadriceps."]
+  },
+  "Dumbbell_Scaption": {
+    "n": "Élévation en Y (scaption)",
+    "s": [
+      "Debout, un haltère léger dans chaque main le long du corps, pouces vers le haut.",
+      "Bras tendus, monte-les devant toi en les écartant d’environ 30° (en V).",
+      "Arrête à l’horizontale puis redescends."
+    ],
+    "t": ["Exercice de stabilité des omoplates : charges légères."]
+  },
+  "Dumbbell_Seated_Box_Jump": {
+    "n": "Saut sur caisse depuis la position assise",
+    "s": [
+      "Place une caisse à 60 cm devant un banc. Assis sur le banc face à la caisse, tiens un haltère contre la poitrine.",
+      "Pieds bien ancrés, penche-toi en avant et saute vers le haut et l’avant en tendant hanches et genoux.",
+      "Atterris sur la caisse à deux pieds en amortissant.",
+      "Redescends en marchant et rassieds-toi."
+    ],
+    "e": [["dumbbells", "bench", "box"]]
+  },
+  "Dumbbell_Seated_One-Leg_Calf_Raise": {
+    "n": "Mollet assis un côté avec haltère",
+    "s": [
+      "Pose une cale à 30 cm d’un banc. Assis sur le banc, pose un haltère sur la cuisse gauche, juste au-dessus du genou.",
+      "Place l’avant du pied gauche sur la cale.",
+      "Monte le talon le plus haut possible en contractant le mollet. Tiens une seconde.",
+      "Redescends lentement au maximum. Termine la série puis change de jambe."
+    ]
+  },
+  "Dumbbell_Shoulder_Press": {
+    "n": "Développé épaules aux haltères",
+    "s": [
+      "Assis sur un banc avec dossier, haltères sur les cuisses ; monte-les à hauteur d’épaules en t’aidant des cuisses.",
+      "Paumes vers l’avant, pousse les haltères vers le haut jusqu’à ce qu’ils se touchent. Expire.",
+      "Marque une pause puis redescends lentement en inspirant."
+    ]
+  },
+  "Dumbbell_Shrug": {
+    "n": "Haussements d’épaules aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main le long du corps, paumes face au corps.",
+      "Monte les épaules le plus haut possible en expirant, bras tendus. Tiens une seconde.",
+      "Redescends lentement."
+    ],
+    "t": ["N’utilise pas les biceps : seules les épaules bougent."]
+  },
+  "Dumbbell_Side_Bend": {
+    "n": "Flexion latérale avec haltère",
+    "s": [
+      "Debout, pieds largeur d’épaules, un haltère dans la main gauche, main droite sur la taille.",
+      "Dos droit, tête haute, penche-toi à droite le plus loin possible en inspirant, puis remonte en expirant.",
+      "Penche-toi ensuite à gauche et remonte.",
+      "Termine la série puis change de main."
+    ],
+    "u": true
+  },
+  "Dumbbell_Squat": {
+    "n": "Squat aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main le long des jambes, pieds largeur d’épaules, pointes légèrement ouvertes.",
+      "Dos droit, tête haute, descends en pliant les genoux jusqu’à avoir les cuisses parallèles au sol.",
+      "Remonte en poussant surtout dans les talons en expirant."
+    ],
+    "t": ["Les genoux suivent la direction des pointes de pied."]
+  },
+  "Dumbbell_Squat_To_A_Bench": {
+    "n": "Squat aux haltères jusqu’au banc",
+    "s": [
+      "Debout, un banc derrière toi, un haltère dans chaque main le long des jambes, pieds largeur d’épaules.",
+      "Dos droit, tête haute, descends jusqu’à effleurer le banc avec les fesses. Inspire.",
+      "Remonte en poussant dans les talons en expirant."
+    ]
+  },
+  "Dumbbell_Step_Ups": {
+    "n": "Montées sur banc aux haltères",
+    "s": [
+      "Debout, un haltère dans chaque main, face à un banc ou une caisse stable.",
+      "Pose le pied droit dessus et pousse surtout avec le talon pour monter, puis pose le pied gauche.",
+      "Redescends le pied gauche puis le droit en contrôlant.",
+      "Termine la série puis change de jambe."
+    ],
+    "e": [["dumbbells", "box"], ["dumbbells", "bench"]],
+    "u": true
+  },
+  "Dumbbell_Tricep_Extension_-Pronated_Grip": {
+    "n": "Barre au front aux haltères (prise pronation)",
+    "s": [
+      "Allongé sur un banc plat, haltères au-dessus des épaules, bras tendus, paumes vers l’avant, coudes serrés.",
+      "Haut des bras immobile, descends lentement les haltères près des oreilles en inspirant.",
+      "Tends les bras avec les triceps en expirant."
+    ],
+    "e": [["dumbbells", "bench"]]
+  },
+  "External_Rotation": {
+    "n": "Rotation externe de l’épaule couché",
+    "s": [
+      "Allongé sur le côté sur un banc, un haltère dans la main du dessus, tête posée sur l’autre bras.",
+      "Coude collé au corps et plié à 90°, avant-bras devant le ventre.",
+      "Fais pivoter l’avant-bras vers le haut jusqu’à la verticale. Tiens une seconde.",
+      "Redescends lentement. Termine la série puis change de côté."
+    ],
+    "t": ["Charge très légère : c’est de la prévention des blessures d’épaule."],
+    "e": [["dumbbells", "bench"]],
+    "u": true
+  },
+  "Flexor_Incline_Dumbbell_Curls": {
+    "n": "Curl incliné poignets en arrière",
+    "s": [
+      "Assis sur un banc incliné à 45°, un haltère dans chaque main, bras pendants, coudes serrés, paumes vers l’avant.",
+      "Garde les poignets bien en arrière et ne les tourne pas pendant le mouvement.",
+      "Monte les deux haltères jusqu’à la contraction complète des biceps, sans élan. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Front_Dumbbell_Raise": {
+    "n": "Élévation frontale alternée",
+    "s": [
+      "Debout, haltères devant les cuisses, paumes vers les cuisses.",
+      "Sans balancer, monte l’haltère gauche devant toi, coude légèrement fléchi, un peu au-dessus de l’horizontale. Tiens une seconde.",
+      "Redescends-le pendant que tu montes le droit, et alterne."
+    ]
+  },
+  "Front_Incline_Dumbbell_Raise": {
+    "n": "Élévation frontale sur banc incliné",
+    "s": [
+      "Assis sur un banc incliné entre 30 et 60°, un haltère dans chaque main.",
+      "Bras tendus devant toi, paumes vers le bas, haltères juste au-dessus des cuisses.",
+      "Monte les haltères bras tendus un peu au-dessus des épaules. Serre une seconde en expirant.",
+      "Redescends en inspirant, tête toujours contre le banc."
+    ]
+  },
+  "Front_Two-Dumbbell_Raise": {
+    "n": "Élévation frontale aux deux haltères",
+    "s": [
+      "Debout, haltères devant les cuisses, paumes vers les cuisses.",
+      "Sans balancer, monte les deux haltères devant toi, coudes légèrement fléchis, un peu au-dessus de l’horizontale. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Hammer_Curls": {
+    "n": "Curl marteau",
+    "s": [
+      "Debout, buste droit, un haltère dans chaque main bras tendus, coudes près du corps, paumes face au corps.",
+      "Coudes fixes, monte les haltères jusqu’aux épaules en expirant. Serre une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Renforce aussi les avant-bras : très utile en escalade."]
+  },
+  "Hammer_Grip_Incline_DB_Bench_Press": {
+    "n": "Développé incliné aux haltères, prise marteau",
+    "s": [
+      "Allongé sur un banc incliné, haltères sur les cuisses ; monte-les un par un à hauteur d’épaules, paumes face à face.",
+      "Descends lentement les haltères sur les côtés de la poitrine en inspirant.",
+      "Pousse avec les pectoraux jusqu’aux bras tendus en expirant. Tiens une seconde.",
+      "À la fin, repose les haltères sur les cuisses puis au sol."
+    ]
+  },
+  "Incline_Dumbbell_Bench_With_Palms_Facing_In": {
+    "n": "Développé incliné aux haltères, paumes face à face",
+    "s": [
+      "Allongé sur un banc incliné, haltères sur les cuisses ; monte-les un par un à hauteur d’épaules, paumes face à face, coudes ouverts.",
+      "Descends lentement les haltères sur les côtés en inspirant.",
+      "Pousse jusqu’aux bras tendus en expirant. Tiens une seconde.",
+      "Descends deux fois plus lentement que tu ne montes."
+    ]
+  },
+  "Incline_Dumbbell_Curl": {
+    "n": "Curl incliné aux haltères",
+    "s": [
+      "Assis sur un banc incliné, un haltère dans chaque main bras tendus, coudes près du corps, paumes vers l’avant.",
+      "Coudes fixes, monte les haltères jusqu’aux épaules en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Incline_Dumbbell_Flyes": {
+    "n": "Écarté incliné aux haltères",
+    "s": [
+      "Allongé sur un banc incliné à 30° maximum, haltères au-dessus de toi, coudes légèrement fléchis, petits doigts face à face.",
+      "Ouvre lentement les bras sur les côtés en tournant les poignets jusqu’à avoir les paumes vers le plafond. Inspire.",
+      "Remonte par le même chemin en tournant les poignets. Expire."
+    ],
+    "t": ["Les coudes ne bougent pas : seules les épaules et les poignets tournent."]
+  },
+  "Incline_Dumbbell_Flyes_-_With_A_Twist": {
+    "n": "Écarté incliné avec rotation des poignets",
+    "s": [
+      "Allongé sur un banc incliné à 30° maximum, haltères au-dessus de toi, coudes légèrement fléchis, paumes vers toi.",
+      "Ouvre lentement les bras en tournant les poignets jusqu’à avoir les paumes vers le plafond. Inspire.",
+      "Remonte en tournant les poignets dans l’autre sens jusqu’à rapprocher les petits doigts. Expire."
+    ]
+  },
+  "Incline_Dumbbell_Press": {
+    "n": "Développé incliné aux haltères",
+    "s": [
+      "Allongé sur un banc incliné, haltères sur les cuisses ; monte-les un par un à hauteur d’épaules, paumes vers l’avant.",
+      "Pousse les haltères avec les pectoraux jusqu’aux bras tendus en expirant. Tiens une seconde.",
+      "Redescends lentement, deux fois plus lentement que la montée.",
+      "À la fin, repose les haltères sur les cuisses puis au sol."
+    ]
+  },
+  "Incline_Hammer_Curls": {
+    "n": "Curl marteau incliné",
+    "s": [
+      "Assis sur un banc incliné, dos bien plaqué, pieds joints, haltères pendants le long du corps, paumes face à face.",
+      "Plie les coudes pour monter les haltères, haut des bras immobile.",
+      "Marque une pause en haut puis redescends lentement."
+    ]
+  },
+  "Incline_Inner_Biceps_Curl": {
+    "n": "Curl incliné bras écartés",
+    "s": [
+      "Allongé sur un banc incliné, haltères pendants le long du corps, paumes vers l’extérieur.",
+      "Monte les haltères vers l’extérieur et le haut, avant-bras alignés avec les épaules, jusqu’à la hauteur des épaules (comme une pose double biceps). Expire.",
+      "Tiens une seconde puis redescends par le même chemin."
+    ]
+  },
+  "Iron_Cross": {
+    "n": "Croix de fer aux haltères (squat et élévations)",
+    "s": [
+      "Debout, pieds largeur d’épaules, un haltère léger dans chaque main devant les cuisses.",
+      "Descends en squat en montant les haltères bras tendus devant toi jusqu’à hauteur d’épaules.",
+      "Remonte en ouvrant les bras sur les côtés, à l’horizontale, pour former une croix.",
+      "Redescends les bras et recommence."
+    ]
+  }
+}

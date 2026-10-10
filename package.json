@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build && npm run e2e",
-    "data:exercises": "node scripts/build-exercises.mjs",
+    "data:exercises": "node scripts/build-exercises.ts",
     "data:icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {

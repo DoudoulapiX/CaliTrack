@@ -142,3 +142,18 @@ export function nowISO(): string {
 export function isValidTime(value: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
 }
+
+/** Jour local (AAAA-MM-JJ) d'un horodatage ISO. */
+export function localDateOf(timestamp: string): ISODate {
+  return toISODate(new Date(timestamp))
+}
+
+/** Heure locale « 18:05 » d'un horodatage ISO. */
+export function formatTimeOf(timestamp: string): string {
+  return format(new Date(timestamp), 'HH:mm')
+}
+
+/** Minutes écoulées entre deux horodatages ISO. */
+export function minutesBetween(start: string, end: string): number {
+  return Math.max(0, Math.round((Date.parse(end) - Date.parse(start)) / 60_000))
+}

@@ -1,0 +1,507 @@
+{
+  "Kettlebell_Sumo_High_Pull": {
+    "n": "Tirage haut sumo à la kettlebell",
+    "s": [
+      "Kettlebell au sol entre les pieds, pieds très écartés. Attrape-la à deux mains, hanches bien en arrière, genoux pliés, poitrine et tête hautes.",
+      "Tends hanches et genoux en tirant en même temps la kettlebell jusqu’aux épaules, coudes hauts.",
+      "Redescends en contrôlant jusqu’à la position de départ."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Kettlebell_Thruster": {
+    "n": "Thruster aux kettlebells",
+    "s": [
+      "Monte deux kettlebells aux épaules en tendant jambes et hanches et en tournant les poignets.",
+      "Descends en squat le plus bas possible, dos droit, hanches entre les jambes.",
+      "En bas, remonte en poussant dans les talons et, dans l’élan, pousse les kettlebells au-dessus de la tête, bras tendus.",
+      "Ramène-les aux épaules en commençant la répétition suivante."
+    ],
+    "t": ["Marche aussi avec des haltères."],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Kettlebell_Turkish_Get-Up_Lunge_style": {
+    "n": "Turkish get-up par la fente",
+    "s": [
+      "Allongé sur le dos, pousse une kettlebell au-dessus de toi, bras verrouillé. Plie le genou du même côté.",
+      "Bras toujours verrouillé, roule vers le côté opposé et pousse sur la main libre pour t’asseoir, puis monte sur un genou.",
+      "Les yeux sur la kettlebell, relève-toi lentement depuis la fente.",
+      "Refais le chemin inverse jusqu’au sol. Termine la série puis change de bras."
+    ],
+    "t": ["Apprends le mouvement sans poids, ou avec une chaussure posée sur le poing."],
+    "u": true
+  },
+  "Kettlebell_Turkish_Get-Up_Squat_style": {
+    "n": "Turkish get-up par le squat",
+    "s": [
+      "Allongé sur le dos, pousse une kettlebell au-dessus de toi, bras verrouillé. Plie le genou du même côté.",
+      "Bras toujours verrouillé, roule vers le côté opposé et pousse sur la main libre pour t’asseoir.",
+      "Ramène les pieds sous toi et, les yeux sur la kettlebell, relève-toi lentement en passant par le squat.",
+      "Refais le chemin inverse jusqu’au sol. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Kettlebell_Windmill": {
+    "n": "Moulin à vent à la kettlebell, main au sol",
+    "s": [
+      "Monte une kettlebell au-dessus de la tête, bras verrouillé, pieds tournés à 45° à l’opposé du bras chargé.",
+      "Pousse les fesses du côté de la kettlebell et penche-toi lentement de l’autre côté jusqu’à toucher le sol avec la main libre, les yeux toujours sur la kettlebell.",
+      "Marque une pause, puis remonte. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Lateral_Raise_-_With_Bands": {
+    "n": "Élévations latérales à l’élastique",
+    "s": [
+      "Debout sur l’élastique, une extrémité dans chaque main le long des cuisses, coudes légèrement fléchis, dos droit.",
+      "Monte les mains sur les côtés jusqu’à un peu au-dessus de l’horizontale, petit doigt un peu plus haut comme pour verser une carafe. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Latissimus_Dorsi-SMR": {
+    "n": "Auto-massage des dorsaux",
+    "s": [
+      "Allongé sur le côté, rouleau de massage sous le flanc, juste derrière l’aisselle.",
+      "Bras du dessous tendu derrière la tête, mets ton poids sur le dorsal, haut du corps décollé du sol.",
+      "Tiens 10 à 30 secondes en roulant doucement, puis change de côté."
+    ],
+    "u": true
+  },
+  "Leg-Over_Floor_Press": {
+    "n": "Développé au sol un bras, jambe croisée",
+    "s": [
+      "Allongé au sol, une kettlebell sur la poitrine tenue par la poignée. Croise la jambe du côté qui travaille par-dessus l’autre, bras libre ouvert au sol.",
+      "Pousse la kettlebell jusqu’au bras verrouillé.",
+      "Redescends jusqu’à poser le coude au sol, kettlebell au-dessus du coude. Termine la série puis change de côté."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]],
+    "u": true
+  },
+  "Lower_Back-SMR": {
+    "n": "Auto-massage du bas du dos",
+    "s": [
+      "Assis, rouleau de massage sous le bas du dos, bras croisés devant toi, épaules en avant.",
+      "Décolle les hanches et penche-toi en arrière, poids sur le bas du dos.",
+      "Bascule un peu d’un côté pour appuyer sur les muscles, pas sur la colonne, et roule en t’arrêtant 10 à 30 secondes sur les points tendus. Change de côté."
+    ],
+    "u": true
+  },
+  "Lunge_Pass_Through": {
+    "n": "Fente avec passage de kettlebell sous la jambe",
+    "s": [
+      "Debout, buste droit, une kettlebell dans la main droite.",
+      "Fais un pas en avant avec le pied gauche et descends jusqu’à ce que le genou arrière frôle le sol, buste droit.",
+      "Pendant la fente, passe la kettlebell sous la cuisse avant à l’autre main.",
+      "Remonte en poussant dans le talon avant. Continue en alternant les jambes."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Medicine_Ball_Chest_Pass": {
+    "n": "Passe poitrine au médecine-ball",
+    "s": [
+      "Face à un partenaire ou à un mur, médecine-ball tenu à deux mains devant toi.",
+      "Ramène-le contre la poitrine, puis lance-le fort en tendant les bras. Tu peux faire un pas en lançant.",
+      "Rattrape la passe de retour à deux mains, à hauteur de poitrine, et enchaîne."
+    ]
+  },
+  "Medicine_Ball_Full_Twist": {
+    "n": "Passe en rotation dos à dos",
+    "s": [
+      "Dos à dos avec un partenaire, à environ 70 cm, médecine-ball tenu devant le ventre.",
+      "Tournez-vous en même temps du même côté en ouvrant les hanches et les épaules.",
+      "Passe-lui le ballon, puis tournez-vous tous les deux de l’autre côté pour la passe suivante."
+    ]
+  },
+  "Medicine_Ball_Scoop_Throw": {
+    "n": "Lancer arrière en cuillère",
+    "s": [
+      "Demi-squat, médecine-ball tenu bras tendus près des pieds.",
+      "Pousse les hanches vers l’avant en tendant les jambes, jusqu’à sauter.",
+      "Dans l’élan, monte les bras tendus au-dessus de la tête et lâche le ballon au sommet pour l’envoyer le plus loin possible derrière toi."
+    ]
+  },
+  "Monster_Walk": {
+    "n": "Marche du monstre à l’élastique",
+    "s": [
+      "Mini-bande autour des chevilles et une autre autour des genoux, tendues quand les pieds sont écartés largeur d’épaules.",
+      "Avance à petits pas en alternant pied gauche et pied droit, élastiques toujours tendus.",
+      "Après quelques pas, recule de la même façon jusqu’au départ."
+    ],
+    "t": ["Genoux poussés vers l’extérieur : ça cible le moyen fessier."]
+  },
+  "One-Arm_Kettlebell_Clean": {
+    "n": "Épaulé un bras à la kettlebell",
+    "s": [
+      "Kettlebell entre les pieds. Pousse les fesses en arrière, regard droit devant, et attrape-la d’une main.",
+      "Monte-la à l’épaule en tendant jambes et hanches et en tournant le poignet.",
+      "Redescends-la et recommence. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Clean_and_Jerk": {
+    "n": "Épaulé-jeté un bras à la kettlebell",
+    "s": [
+      "Monte la kettlebell à l’épaule en tendant jambes et hanches, paume vers l’avant.",
+      "Fléchis légèrement les genoux, buste droit, puis inverse aussitôt en poussant dans les talons.",
+      "Dans l’élan, pousse la kettlebell au-dessus de la tête et passe dessous en fléchissant les jambes, bras verrouillé.",
+      "Redresse-toi, kettlebell en haut, puis redescends-la au sol. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Floor_Press": {
+    "n": "Développé au sol un bras à la kettlebell",
+    "s": [
+      "Allongé au sol, kettlebell en main, haut du bras posé au sol, paume vers l’intérieur.",
+      "Pousse la kettlebell vers le plafond en tournant le poignet.",
+      "Redescends jusqu’au sol et recommence. Termine la série puis change de bras."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "One-Arm_Kettlebell_Jerk": {
+    "n": "Jeté un bras à la kettlebell",
+    "s": [
+      "Monte la kettlebell à l’épaule en tendant jambes et hanches, paume vers l’avant.",
+      "Fléchis légèrement les genoux, buste droit, puis inverse aussitôt en poussant dans les talons.",
+      "Dans l’élan, pousse la kettlebell au-dessus de la tête et passe dessous en fléchissant les jambes, bras verrouillé. Redresse-toi.",
+      "Redescends-la à l’épaule. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Military_Press_To_The_Side": {
+    "n": "Développé militaire un bras à la kettlebell",
+    "s": [
+      "Monte la kettlebell à l’épaule, paume vers l’intérieur.",
+      "Les yeux sur la kettlebell, pousse-la vers le haut et légèrement sur le côté jusqu’au bras verrouillé.",
+      "Redescends à l’épaule en contrôlant. Termine la série puis change de bras."
+    ],
+    "t": ["Contracte fort dorsaux, fessiers et abdos pour être stable."],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "One-Arm_Kettlebell_Para_Press": {
+    "n": "Développé un bras à la kettlebell, coude ouvert",
+    "s": [
+      "Monte la kettlebell à l’épaule, paume vers l’avant, coude ouvert sur le côté.",
+      "Pousse-la vers le haut et légèrement vers l’extérieur jusqu’au bras verrouillé.",
+      "Redescends à l’épaule en contrôlant. Termine la série puis change de bras."
+    ],
+    "t": ["Contracte fort dorsaux, fessiers et abdos pour être stable."],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "One-Arm_Kettlebell_Push_Press": {
+    "n": "Développé poussé un bras à la kettlebell",
+    "s": [
+      "Monte la kettlebell à l’épaule en tendant jambes et hanches, paume vers l’avant.",
+      "Fléchis légèrement les genoux, buste droit.",
+      "Inverse aussitôt en poussant dans les talons et, dans l’élan, pousse la kettlebell jusqu’au bras verrouillé.",
+      "Redescends-la à l’épaule. Termine la série puis change de bras."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "One-Arm_Kettlebell_Row": {
+    "n": "Rowing un bras à la kettlebell",
+    "s": [
+      "Kettlebell devant les pieds. Genoux légèrement fléchis, fesses bien en arrière, penche-toi dos plat et attrape-la.",
+      "Tire-la vers le ventre en serrant l’omoplate, coude près du corps.",
+      "Redescends en contrôlant. Termine la série puis change de bras."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "One-Arm_Kettlebell_Snatch": {
+    "n": "Arraché un bras à la kettlebell",
+    "s": [
+      "Kettlebell entre les pieds. Plie les genoux et recule les fesses pour l’attraper d’une main.",
+      "Regard droit devant, balance-la en arrière entre les jambes.",
+      "Inverse aussitôt en poussant avec les hanches et les genoux : la kettlebell monte. Quand elle passe l’épaule, tourne la main et pousse vers le ciel pour la recevoir bras verrouillé.",
+      "Redescends-la entre les jambes et enchaîne. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Split_Jerk": {
+    "n": "Jeté fendu un bras à la kettlebell",
+    "s": [
+      "Monte la kettlebell à l’épaule en tendant jambes et hanches, paume vers l’avant.",
+      "Fléchis légèrement les genoux, buste droit, puis inverse aussitôt en poussant dans les talons.",
+      "Dans l’élan, pousse la kettlebell au-dessus de la tête et reçois-la en fente, un pied devant, un pied derrière, bras verrouillé.",
+      "Ramène les pieds, kettlebell en haut, puis redescends-la. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Split_Snatch": {
+    "n": "Arraché fendu un bras à la kettlebell",
+    "s": [
+      "Kettlebell dans une main, entre les jambes.",
+      "Fléchis les jambes, puis tends hanches, genoux et chevilles pour monter la kettlebell au-dessus de la tête.",
+      "À l’extension complète, descends en fente pour la recevoir bras verrouillé, d’un seul mouvement.",
+      "Redresse-toi, ramène les pieds, puis redescends la kettlebell. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Kettlebell_Swings": {
+    "n": "Swing un bras à la kettlebell",
+    "s": [
+      "Kettlebell au sol un peu devant toi, pieds un peu plus larges que les hanches. Plie aux hanches, dos plat, et attrape la poignée d’une main.",
+      "Lance-la en arrière entre les jambes.",
+      "Tends les hanches d’un coup en serrant les fessiers : la kettlebell monte jusqu’à hauteur de poitrine, bras tendu.",
+      "Laisse-la redescendre entre les jambes en pliant aux hanches et enchaîne. Termine la série puis change de main."
+    ],
+    "t": ["La force vient des hanches, pas du bras ni du dos. Garde le dos plat."]
+  },
+  "One-Arm_Medicine_Ball_Slam": {
+    "n": "Slam un bras au médecine-ball",
+    "s": [
+      "Debout, pieds décalés, médecine-ball dans la main du côté de la jambe arrière.",
+      "Monte le ballon au-dessus de la tête en tendant hanches, genoux et chevilles.",
+      "Au sommet, enroule épaules, buste et hanches pour projeter le ballon au sol juste devant toi.",
+      "Rattrape-le au rebond et enchaîne. Termine la série puis change de bras."
+    ]
+  },
+  "One-Arm_Open_Palm_Kettlebell_Clean": {
+    "n": "Épaulé paume ouverte un bras",
+    "s": [
+      "Kettlebell entre les pieds, attrape la poignée d’une main.",
+      "Monte-la vite et laisse-la se retourner pour que la boule retombe dans ta paume ouverte.",
+      "Relance-la devant toi et rattrape la poignée d’une main.",
+      "Repose-la au sol et recommence. Termine la série puis change de bras."
+    ],
+    "t": ["Exercice technique : commence très léger, sur un sol qui ne craint rien."]
+  },
+  "One-Arm_Overhead_Kettlebell_Squats": {
+    "n": "Squat un bras tendu au-dessus de la tête",
+    "s": [
+      "Monte une kettlebell au-dessus de la tête, bras verrouillé.",
+      "Regard droit devant, kettlebell toujours verrouillée, descends en squat entre tes jambes, tête et poitrine hautes.",
+      "Marque une pause en bas, puis remonte en poussant dans les talons. Termine la série puis change de bras."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Open_Palm_Kettlebell_Clean": {
+    "n": "Épaulé paume ouverte à deux mains",
+    "s": [
+      "Kettlebell entre les pieds. Tends jambes et hanches pour la monter vers les épaules.",
+      "Lâche la poignée en montant et laisse-la se retourner pour que la boule retombe dans tes paumes.",
+      "Relance-la devant toi et rattrape la poignée à deux mains, puis redescends-la entre les pieds."
+    ],
+    "t": ["Exercice technique : commence très léger, sur un sol qui ne craint rien."]
+  },
+  "Overhead_Slam": {
+    "n": "Slam au médecine-ball",
+    "s": [
+      "Debout, pieds largeur d’épaules, médecine-ball à deux mains.",
+      "Monte le ballon au-dessus de la tête en t’étirant complètement.",
+      "Projette-le au sol juste devant toi le plus fort possible.",
+      "Rattrape-le au rebond à deux mains et enchaîne."
+    ]
+  },
+  "Peroneals-SMR": {
+    "n": "Auto-massage de l’extérieur du mollet",
+    "s": [
+      "Allongé sur le côté, appuyé sur l’avant-bras, rouleau de massage sous l’extérieur de la jambe du dessous. L’autre jambe repose dessus ou se croise devant.",
+      "Décolle les hanches et roule de sous le genou jusqu’au-dessus de la cheville.",
+      "Arrête-toi 10 à 30 secondes sur les points tendus. Change de jambe."
+    ],
+    "u": true
+  },
+  "Physioball_Hip_Bridge": {
+    "n": "Pont fessier sur swiss ball",
+    "s": [
+      "Haut du dos posé sur un swiss ball, hanches dans le vide, pieds à plat au sol, écartés au moins largeur de hanches.",
+      "Monte les hanches avec les fessiers et les ischios jusqu’à aligner cuisses et buste.",
+      "Marque une pause en haut puis redescends."
+    ]
+  },
+  "Piriformis-SMR": {
+    "n": "Auto-massage du fessier (piriforme)",
+    "s": [
+      "Assis sur le rouleau de massage, genoux pliés. Croise une jambe, cheville posée sur le genou opposé.",
+      "Bascule ton poids du côté de la jambe croisée et roule sur la fesse jusqu’à sentir le point tendu. Tu peux tirer le genou plié vers la poitrine.",
+      "Tiens 10 à 30 secondes, puis change de côté."
+    ],
+    "u": true
+  },
+  "Plyo_Kettlebell_Pushups": {
+    "n": "Pompes sautées autour d’une kettlebell",
+    "s": [
+      "En position de pompe sur les orteils, une main au sol et l’autre sur la poignée d’une kettlebell posée au sol, bras tendus.",
+      "Descends le plus bas possible, dos droit.",
+      "Pousse fort pour passer de l’autre côté de la kettlebell en changeant de main. Enchaîne d’un côté à l’autre."
+    ],
+    "t": ["Vérifie que la kettlebell ne peut pas basculer."]
+  },
+  "Push-Ups_With_Feet_On_An_Exercise_Ball": {
+    "n": "Pompes pieds sur swiss ball",
+    "s": [
+      "Mains au sol un peu plus larges que les épaules, bras tendus, pointes de pieds posées sur un swiss ball.",
+      "Corps gainé, descends jusqu’à ce que la poitrine frôle le sol en inspirant.",
+      "Pousse avec les pectoraux pour remonter en expirant. Serre une seconde en haut."
+    ]
+  },
+  "Pyramid": {
+    "n": "Pyramide sur swiss ball",
+    "s": [
+      "Roule le buste vers l’avant sur un swiss ball jusqu’à ce que les hanches soient posées dessus et forment le point le plus haut du corps.",
+      "Mains et pieds au sol, bras et jambes tendus ou légèrement fléchis selon ta souplesse et la taille du ballon.",
+      "Relâche le dos et respire calmement dans la position."
+    ]
+  },
+  "Quadriceps-SMR": {
+    "n": "Auto-massage des quadriceps",
+    "s": [
+      "À plat ventre, appuyé sur les mains ou les avant-bras, rouleau de massage sous l’avant d’une cuisse, pied décollé du sol. Relâche la jambe.",
+      "Mets autant de poids que tu le supportes sur cette jambe.",
+      "Roule de au-dessus du genou jusque sous la hanche en t’arrêtant 10 à 30 secondes sur les points tendus. Change de jambe."
+    ],
+    "u": true
+  },
+  "Return_Push_from_Stance": {
+    "n": "Passe de retour depuis un départ",
+    "s": [
+      "Avec un partenaire : place-toi en position de départ athlétique, à deux ou trois appuis.",
+      "Au signal, déplace-toi pour recevoir la passe.",
+      "Attrape le médecine-ball à deux mains et renvoie-le aussitôt.",
+      "Varie les déplacements à chaque passe."
+    ]
+  },
+  "Rhomboids-SMR": {
+    "n": "Auto-massage du haut du dos",
+    "s": [
+      "Allongé sur le dos, rouleau de massage sous le haut du dos, bras croisés devant toi, épaules en avant.",
+      "Décolle les hanches pour mettre ton poids sur le rouleau.",
+      "Bascule d’un côté puis de l’autre en roulant sur le milieu et le haut du dos. Arrête-toi 10 à 30 secondes sur les points tendus."
+    ]
+  },
+  "Shoulder_Press_-_With_Bands": {
+    "n": "Développé épaules à l’élastique",
+    "s": [
+      "Debout sur l’élastique, monte les extrémités à hauteur d’épaules de chaque côté.",
+      "Paumes vers l’avant, coudes pliés sous les mains.",
+      "Pousse vers le haut jusqu’aux bras tendus au-dessus de la tête en expirant.",
+      "Redescends lentement aux épaules en inspirant."
+    ]
+  },
+  "Speed_Band_Overhead_Triceps": {
+    "n": "Extension des triceps à l’élastique au-dessus de la tête",
+    "s": [
+      "Accroche un élastique au sol (pied d’un banc) ou bloque-le sous tes pieds.",
+      "Tire l’élastique derrière la tête, prise paumes vers l’avant, coudes pointés vers le haut.",
+      "Haut des bras immobile, tends les coudes jusqu’aux bras tendus.",
+      "Marque une pause, puis reviens en contrôlant."
+    ]
+  },
+  "Squats_-_With_Bands": {
+    "n": "Squat à l’élastique",
+    "s": [
+      "Pieds au milieu de l’élastique, écartés largeur d’épaules ; une extrémité dans chaque main, à la même hauteur.",
+      "Monte les mains à côté du visage, paumes vers l’avant.",
+      "Descends lentement jusqu’à avoir les cuisses parallèles au sol.",
+      "Remonte en poussant dans les talons."
+    ]
+  },
+  "Standing_Two-Arm_Overhead_Throw": {
+    "n": "Lancer du médecine-ball par-dessus la tête, debout",
+    "s": [
+      "Debout, pieds largeur d’épaules, médecine-ball à deux mains.",
+      "Emmène le ballon loin derrière la tête en fléchissant un peu les genoux et en te penchant en arrière.",
+      "Lance-le fort vers l’avant en pliant aux hanches, avec tout le corps.",
+      "Lance vers un partenaire ou un mur et rattrape le rebond."
+    ]
+  },
+  "Supine_Chest_Throw": {
+    "n": "Lancer poitrine allongé",
+    "s": [
+      "Allongé sur le dos, genoux pliés, médecine-ball sur la poitrine, mains dessous.",
+      "Pousse d’un coup en tendant les bras pour lancer le ballon le plus haut possible à la verticale.",
+      "Rattrape-le à deux mains et enchaîne."
+    ],
+    "t": ["Idéal quand tu n’as ni partenaire ni mur."]
+  },
+  "Supine_One-Arm_Overhead_Throw": {
+    "n": "Lancer un bras allongé, en se relevant",
+    "s": [
+      "Allongé sur le dos, genoux pliés, médecine-ball dans une main, bras tendu derrière la tête.",
+      "Lance le ballon droit devant toi depuis l’épaule en te redressant, le plus loin possible.",
+      "Vers un partenaire ou un mur. Termine la série puis change de bras."
+    ]
+  },
+  "Supine_Two-Arm_Overhead_Throw": {
+    "n": "Lancer à deux mains allongé, en se relevant",
+    "s": [
+      "Allongé sur le dos, genoux pliés, médecine-ball à deux mains, bras tendus derrière la tête.",
+      "Lance le ballon droit devant toi depuis les épaules en te redressant, le plus loin possible.",
+      "Vers un partenaire ou un mur."
+    ]
+  },
+  "Torso_Rotation": {
+    "n": "Rotations du buste avec swiss ball",
+    "s": [
+      "Debout, swiss ball tenu à deux mains, bras tendus devant toi.",
+      "Tourne le buste d’un côté en suivant le ballon des yeux.",
+      "Tourne de l’autre côté. Fais 10 à 20 rotations."
+    ],
+    "m": "reps"
+  },
+  "Two-Arm_Kettlebell_Clean": {
+    "n": "Épaulé aux deux kettlebells",
+    "s": [
+      "Deux kettlebells entre les pieds. Pousse les fesses en arrière, regard droit devant, et attrape-les.",
+      "Monte-les aux épaules en tendant jambes et hanches et en tournant les poignets.",
+      "Redescends-les entre les pieds et recommence."
+    ]
+  },
+  "Two-Arm_Kettlebell_Jerk": {
+    "n": "Jeté aux deux kettlebells, réception en squat",
+    "s": [
+      "Monte deux kettlebells aux épaules, paumes vers l’avant.",
+      "Fléchis les genoux de quelques centimètres et inverse vite pour pousser les kettlebells vers le haut.",
+      "Juste après la poussée, refléchis les jambes pour passer sous les kettlebells, bras verrouillés.",
+      "Redresse-toi, kettlebells en haut, puis redescends-les aux épaules."
+    ]
+  },
+  "Two-Arm_Kettlebell_Military_Press": {
+    "n": "Développé militaire aux deux kettlebells",
+    "s": [
+      "Monte deux kettlebells aux épaules, paumes vers l’avant.",
+      "Pousse-les vers le haut ; quand elles passent la tête, avance légèrement le buste sous elles pour finir bras verrouillés.",
+      "Redescends aux épaules en contrôlant."
+    ],
+    "t": ["Contracte dorsaux, fessiers et abdos pour être stable."],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Two-Arm_Kettlebell_Row": {
+    "n": "Rowing aux deux kettlebells",
+    "s": [
+      "Deux kettlebells devant les pieds. Genoux légèrement fléchis, fesses bien en arrière, penche-toi dos plat et attrape-les.",
+      "Tire-les vers le ventre en serrant les omoplates, coudes près du corps.",
+      "Redescends en contrôlant."
+    ],
+    "e": [["kettlebell"], ["dumbbells"]]
+  },
+  "Upright_Row_-_With_Bands": {
+    "n": "Tirage menton à l’élastique",
+    "s": [
+      "Debout sur l’élastique, une extrémité dans chaque main devant les cuisses, paumes vers toi, mains un peu moins larges que les épaules.",
+      "Monte les mains le long du corps jusqu’au menton, coudes toujours plus hauts que les avant-bras. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Weighted_Ball_Hyperextension": {
+    "n": "Extension lombaire sur swiss ball",
+    "s": [
+      "À plat ventre sur un swiss ball, buste parallèle au sol, pointes de pieds au sol pour l’équilibre. Pour plus de difficulté, tiens un disque contre la poitrine.",
+      "Relève le buste en contractant le bas du dos en expirant.",
+      "Tiens une seconde puis redescends en inspirant."
+    ]
+  },
+  "Weighted_Ball_Side_Bend": {
+    "n": "Flexion latérale sur swiss ball",
+    "s": [
+      "Allongé sur le côté gauche sur un swiss ball (taille, hanche et épaule contre le ballon), jambes croisées, pieds au sol.",
+      "Main gauche sur les obliques ; main droite derrière l’oreille, ou tenant un disque contre la tête pour plus de difficulté.",
+      "Relève le buste sur le côté en contractant les obliques. Expire et tiens une seconde.",
+      "Redescends lentement. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Weighted_Crunches": {
+    "n": "Crunch lesté",
+    "s": [
+      "Allongé sur le dos, genoux pliés à 90°, pieds au sol ou sur un banc.",
+      "Tiens une charge contre la poitrine ou bras tendus au-dessus de toi.",
+      "Enroule les épaules en décollant le haut du dos d’une dizaine de centimètres, bas du dos au sol. Expire et serre une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "e": [["medicineBall"], ["dumbbells"], ["plates"], ["kettlebell"]]
+  }
+}
