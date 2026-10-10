@@ -15,8 +15,9 @@ export const ACCENT_PRESETS: { color: string; name: string }[] = [
   { color: '#ca8a04', name: 'Or' },
 ]
 
-const PALETTE = {
-  light: { canvas: '#f2f2f7', surface: '#ffffff', surface2: '#f2f2f7' },
+/** Fonds des deux thèmes, identiques aux variables --ct-* de index.css (vérifié par les tests). */
+export const PALETTE = {
+  light: { canvas: '#f2f2f7', surface: '#ffffff', surface2: '#e5e5ea' },
   dark: { canvas: '#0b0b0f', surface: '#1c1c1f', surface2: '#26262a' },
 }
 

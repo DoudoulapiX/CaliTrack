@@ -9,7 +9,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/90 pb-safe backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/95 pb-safe backdrop-blur-xl"
     >
       <ul className="mx-auto flex h-[var(--tabbar-height)] max-w-xl items-stretch">
         {tabs.map((tab) => {

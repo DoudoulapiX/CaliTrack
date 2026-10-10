@@ -20,9 +20,11 @@ export function AppShell() {
   const matches = useMatches()
   const hideTabBar = matches.some((m) => isRouteHandle(m.handle) && m.handle.hideTabBar === true)
 
-  if (!settings.onboardingDone && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />
-  }
+  // L'accueil s'ouvre et se ferme ici, d'après le réglage enregistré : une fois l'accueil terminé,
+  // on n'en sort qu'après la mise à jour des réglages (sinon on y serait renvoyé aussitôt).
+  const onOnboarding = location.pathname === '/onboarding'
+  if (!settings.onboardingDone && !onOnboarding) return <Navigate to="/onboarding" replace />
+  if (settings.onboardingDone && onOnboarding) return <Navigate to="/" replace />
 
   return (
     <>

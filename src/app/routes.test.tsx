@@ -8,6 +8,12 @@ describe('navigation', () => {
     expect(router.state.location.pathname).toBe('/onboarding')
   })
 
+  it('quitte l’accueil une fois terminé', async () => {
+    const { router } = await renderApp('/onboarding')
+    expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+  })
+
   it('affiche une page introuvable pour une adresse inconnue', async () => {
     await renderApp('/nimporte-quoi')
     expect(await screen.findByText('Cette page n’existe pas')).toBeInTheDocument()

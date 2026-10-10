@@ -47,26 +47,26 @@ export function Page({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-20 bg-canvas/90 pt-safe backdrop-blur-xl">
-        <div className="flex min-h-12 items-center gap-1 px-2">
-          {back ? (
-            <button
-              type="button"
-              onClick={goBack}
-              className="flex h-11 items-center gap-0.5 rounded-lg pr-2 text-[17px] text-accent-text active:opacity-60"
-            >
-              <ChevronLeft size={26} aria-hidden />
-              {backLabel}
-            </button>
+      <header className="sticky top-0 z-20 bg-canvas/95 pt-safe backdrop-blur-xl">
+        {/* Trois colonnes : le titre reste centré, quelle que soit la largeur des boutons. */}
+        <div className="grid min-h-12 grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
+          <div className="flex min-w-0 items-center">
+            {back && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="flex h-11 items-center gap-0.5 rounded-lg pr-2 text-[17px] text-accent-text active:opacity-60"
+              >
+                <ChevronLeft size={26} aria-hidden />
+                {backLabel}
+              </button>
+            )}
+          </div>
+          {large ? (
+            <span />
           ) : (
-            <span className="w-2" />
+            <h1 className="min-w-0 truncate text-center text-[17px] font-semibold text-ink">{title}</h1>
           )}
-          {!large && (
-            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-ink">
-              {title}
-            </h1>
-          )}
-          {large && <span className="flex-1" />}
           <div className="flex min-w-11 items-center justify-end gap-1">{actions}</div>
         </div>
         {toolbar && <div className="px-4 pb-2">{toolbar}</div>}

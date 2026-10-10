@@ -27,16 +27,16 @@
 :root {
   --ct-accent: #ff6a2b;
   --ct-accent-ink: #0b0b0f;
-  --ct-accent-soft: #ffe8de;
-  --ct-accent-text: #b8410f;
+  --ct-accent-soft: #ffeae1;
+  --ct-accent-text: #a6451c;
 
   --ct-canvas: #f2f2f7;
   --ct-surface: #ffffff;
-  --ct-surface-2: #f2f2f7;
-  --ct-surface-3: #e5e5ea;
+  --ct-surface-2: #e5e5ea;
+  --ct-surface-3: #d8d8dd;
   --ct-ink: #0b0b0f;
   --ct-ink-2: #5c5c63;
-  --ct-ink-3: #6c6c72;
+  --ct-ink-3: #66666c;
   --ct-line: #d1d1d6;
   --ct-danger: #c4261d;
   --ct-success: #12703a;
@@ -53,8 +53,8 @@
 }
 
 [data-theme='dark'] {
-  --ct-accent-soft: #4d2a1e;
-  --ct-accent-text: #ff7a42;
+  --ct-accent-soft: #492c21;
+  --ct-accent-text: #ff7136;
   --ct-canvas: #0b0b0f;
   --ct-surface: #1c1c1f;
   --ct-surface-2: #26262a;
