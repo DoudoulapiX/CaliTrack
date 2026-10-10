@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <title>CaliTrack</title>
+    <meta name="description" content="Calisthénie, escalade, nutrition et coach IA." />
+    <meta name="theme-color" content="#0b0b0f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CaliTrack" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      // Applique le thème avant le premier rendu pour éviter un flash de couleur.
+      ;(function () {
+        try {
+          var raw = localStorage.getItem('calitrack.theme')
+          var pref = raw ? JSON.parse(raw) : null
+          var mode = pref && pref.mode ? pref.mode : 'system'
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+          if (pref && pref.accent) document.documentElement.style.setProperty('--ct-accent', pref.accent)
+        } catch (e) {
+          /* stockage indisponible : thème par défaut */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>CaliTrack a besoin de JavaScript pour fonctionner.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

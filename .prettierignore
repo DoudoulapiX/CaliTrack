@@ -1,0 +1,11 @@
+dist
+dev-dist
+coverage
+playwright-report
+test-results
+public
+node_modules
+package-lock.json
+scripts/.cache
+src/data/*.json
+scripts/i18n/**/*.json
