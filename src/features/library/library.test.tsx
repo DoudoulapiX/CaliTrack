@@ -115,7 +115,7 @@ describe('bibliothèque d’exercices', () => {
     expect(await screen.findByRole('heading', { name: 'Pompes poings fermés', level: 1 })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Supprimer' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Supprimer cet exercice ?' })
+    const dialog = await screen.findByRole('dialog', { name: /Supprimer cet exercice/ })
     await user.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/library')

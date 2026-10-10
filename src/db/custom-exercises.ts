@@ -1,6 +1,7 @@
 import { db as defaultDb, type CaliTrackDB } from './db'
 import { exerciseSchema } from './schema'
 import type { Exercise } from './types'
+import { frenchSpacing } from '@/lib/typography'
 
 export const CUSTOM_PREFIX = 'perso-'
 
@@ -64,7 +65,7 @@ export async function deleteCustomExercise(
     [database.customExercises, database.exerciseMeta, database.programs, database.workouts, database.goals],
     async () => {
       if (isUsed(await exerciseUsage(exerciseId, database))) {
-        throw new Error('Cet exercice est utilisé : il ne peut pas être supprimé.')
+        throw new Error(frenchSpacing('Cet exercice est utilisé : il ne peut pas être supprimé.'))
       }
       await database.customExercises.delete(exerciseId)
       await database.exerciseMeta.delete(exerciseId)

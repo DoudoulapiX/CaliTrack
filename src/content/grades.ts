@@ -4,7 +4,7 @@ export const VERTICAL_ART_SCALE_ID = 'vertical-art'
 export const FONTAINEBLEAU_SCALE_ID = 'fontainebleau'
 
 /**
- * Couleurs des salles Vertical'Art, de la plus facile à la plus difficile, avec l'équivalence
+ * Couleurs des salles Vertical’Art, de la plus facile à la plus difficile, avec l'équivalence
  * Fontainebleau observée (table publique de Kaskad Coaching, pas une norme officielle).
  * Modifiable dans l'appli si la salle change ses couleurs.
  */
@@ -60,7 +60,7 @@ export const FONTAINEBLEAU_GRADES: Grade[] = FONT_LABELS.map((label, i) => ({
 
 export function defaultGradeScales(): GradeScale[] {
   return [
-    { id: VERTICAL_ART_SCALE_ID, name: "Vertical'Art", grades: VERTICAL_ART_GRADES, builtIn: true },
+    { id: VERTICAL_ART_SCALE_ID, name: 'Vertical’Art', grades: VERTICAL_ART_GRADES, builtIn: true },
     { id: FONTAINEBLEAU_SCALE_ID, name: 'Fontainebleau', grades: FONTAINEBLEAU_GRADES, builtIn: true },
   ]
 }

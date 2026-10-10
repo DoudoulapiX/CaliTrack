@@ -78,6 +78,38 @@ export const appRoutes: RouteObject[] = [
             path: 'more',
             lazy: async () => ({ Component: (await import('@/features/more/MorePage')).MorePage }),
           },
+          {
+            path: 'more/profile',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/profile/ProfilePage')).ProfilePage }),
+          },
+          {
+            path: 'more/profile/test',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/profile/LevelTestPage')).LevelTestPage,
+            }),
+          },
+          {
+            path: 'more/equipment',
+            lazy: async () => ({
+              Component: (await import('@/features/equipment/EquipmentPage')).EquipmentPage,
+            }),
+          },
+          {
+            path: 'more/equipment/new/:kind',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/equipment/EquipmentItemPage')).EquipmentItemPage,
+            }),
+          },
+          {
+            path: 'more/equipment/:id',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/equipment/EquipmentItemPage')).EquipmentItemPage,
+            }),
+          },
           { path: '*', Component: NotFound },
         ],
       },

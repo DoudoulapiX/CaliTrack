@@ -1,4 +1,5 @@
 import { resetDb } from '@/test/db'
+import { frenchSpacing } from '@/lib/typography'
 import {
   BACKUP_FORMAT,
   MAX_SNAPSHOTS,
@@ -93,7 +94,7 @@ describe('sauvegardes', () => {
     const parsed = parseBackup(JSON.stringify(broken))
     expect(parsed).toEqual({
       ok: false,
-      error: 'Sauvegarde abîmée (mesures, élément 1, champ « weightKg »).',
+      error: frenchSpacing('Sauvegarde abîmée (mesures, élément 1, champ « weightKg »).'),
     })
   })
 

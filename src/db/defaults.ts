@@ -34,7 +34,7 @@ export function defaultSettings(now: string = nowISO()): AppSettings {
     lastBackupAt: null,
     onboardingDone: false,
     activeGradeScaleId: VERTICAL_ART_SCALE_ID,
-    climbingGym: "Vertical'Art",
+    climbingGym: 'Vertical’Art',
     currentLocationId: null,
     createdAt: now,
     updatedAt: now,

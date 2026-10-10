@@ -107,7 +107,7 @@ export function formatMonth(year: number, monthIndex: number): string {
 /** « aujourd'hui », « demain », « hier » ou la date. */
 export function relativeDayLabel(value: ISODate, reference: ISODate = today()): string {
   const delta = diffDays(value, reference)
-  if (delta === 0) return "aujourd'hui"
+  if (delta === 0) return 'aujourd’hui'
   if (delta === 1) return 'demain'
   if (delta === -1) return 'hier'
   return formatDay(value, 'EEEE d MMMM')

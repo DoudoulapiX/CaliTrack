@@ -82,7 +82,7 @@ export function FilterSheet({
         />
         {filter.equipment === 'mine' && !hasInventory && (
           <p className="mt-2 px-1 text-[13px] text-ink-3">
-            Ton inventaire est vide : seuls les exercices sans matériel s’affichent.{' '}
+            Ton inventaire est vide&nbsp;: seuls les exercices sans matériel s’affichent.{' '}
             <Link to="/more/equipment" className="font-medium text-accent-text" onClick={onClose}>
               Ajouter mon matériel
             </Link>

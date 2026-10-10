@@ -53,6 +53,14 @@ export const EQUIPMENT_PRESETS: EquipmentPreset[] = [
     hint: 'L-sit, planche, pompes profondes',
   },
   {
+    kind: 'pole',
+    label: 'Poteau vertical',
+    group: 'calisthenics',
+    hasWeights: false,
+    hasLevels: false,
+    hint: 'Drapeau (human flag)',
+  },
+  {
     kind: 'lowBar',
     label: 'Barre basse',
     group: 'calisthenics',
@@ -194,8 +202,99 @@ export const LOCATION_ICON_LABEL: Record<LocationIcon, string> = {
   home: 'Maison',
   gym: 'Salle de sport',
   park: 'Parc / street workout',
-  climb: "Salle d'escalade",
+  climb: 'Salle d’escalade',
   other: 'Autre',
 }
 
 export const DEFAULT_BAND_LEVELS = ['Léger', 'Moyen', 'Fort', 'Très fort']
+
+/** Charges proposées d'un tap quand on décrit ses haltères, kettlebells, disques… */
+export const COMMON_WEIGHTS_KG = [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32]
+
+export interface LocationPreset {
+  icon: LocationIcon
+  name: string
+  /** Matériel proposé pour ce lieu, du plus courant au plus rare. */
+  suggestions: EquipmentKind[]
+  /** Matériel coché d'office (on le décoche s'il manque). */
+  preselected: EquipmentKind[]
+}
+
+/** Lieux proposés au premier lancement. */
+export const LOCATION_PRESETS: LocationPreset[] = [
+  {
+    icon: 'home',
+    name: 'Maison',
+    suggestions: [
+      'pullupBar',
+      'dumbbells',
+      'bands',
+      'mat',
+      'parallettes',
+      'rings',
+      'kettlebell',
+      'weightVest',
+      'jumpRope',
+      'abWheel',
+      'bench',
+      'chair',
+      'table',
+      'box',
+      'trx',
+      'foamRoller',
+      'hangboard',
+    ],
+    preselected: [],
+  },
+  {
+    icon: 'gym',
+    name: 'Salle de sport',
+    suggestions: [
+      'barbell',
+      'dumbbells',
+      'bench',
+      'pullupBar',
+      'dipBars',
+      'cableMachine',
+      'gymMachines',
+      'plates',
+      'smithMachine',
+      'kettlebell',
+      'ezBar',
+      'box',
+      'mat',
+      'rings',
+      'bands',
+      'trx',
+      'abWheel',
+      'medicineBall',
+      'swissBall',
+      'jumpRope',
+      'foamRoller',
+      'sled',
+    ],
+    preselected: [
+      'barbell',
+      'dumbbells',
+      'bench',
+      'pullupBar',
+      'dipBars',
+      'cableMachine',
+      'gymMachines',
+      'plates',
+      'mat',
+    ],
+  },
+  {
+    icon: 'park',
+    name: 'Parc',
+    suggestions: ['pullupBar', 'dipBars', 'lowBar', 'parallettes', 'rings', 'bench', 'box', 'pole'],
+    preselected: ['pullupBar', 'dipBars', 'lowBar'],
+  },
+  {
+    icon: 'climb',
+    name: 'Salle d’escalade',
+    suggestions: ['hangboard', 'pullupBar', 'mat', 'rings', 'bands', 'dumbbells', 'kettlebell', 'box', 'trx'],
+    preselected: ['hangboard', 'pullupBar', 'mat'],
+  },
+]

@@ -159,6 +159,49 @@ export function ChipGroup<T extends string | number>({
   )
 }
 
+export interface ChoiceChipsProps<T extends string> {
+  label: string
+  value: T
+  onChange: (value: T) => void
+  options: { value: T; label: ReactNode; icon?: ReactNode }[]
+  className?: string
+}
+
+/** Choix unique en pastilles, quand les options sont trop nombreuses pour un contrôle segmenté. */
+export function ChoiceChips<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  className,
+}: ChoiceChipsProps<T>) {
+  return (
+    <div role="radiogroup" aria-label={label} className={cn('flex flex-wrap gap-2', className)}>
+      {options.map((o) => {
+        const selected = o.value === value
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => {
+              onChange(o.value)
+            }}
+            className={cn(
+              'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-medium transition-colors',
+              selected ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-2 active:bg-surface-3',
+            )}
+          >
+            {o.icon}
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export interface StepperProps {
   value: number
   onChange: (value: number) => void

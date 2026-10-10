@@ -11,6 +11,8 @@ export interface PageProps {
   back?: boolean
   backTo?: string
   backLabel?: string
+  /** Action du bouton retour à la place de la navigation (étapes d'un assistant). */
+  onBack?: () => void
   actions?: ReactNode
   children: ReactNode
   /** Grand titre style iOS (par défaut) ou titre compact pour les sous-pages. */
@@ -30,6 +32,7 @@ export function Page({
   back = false,
   backTo,
   backLabel = 'Retour',
+  onBack,
   actions,
   children,
   large = !back,
@@ -40,7 +43,8 @@ export function Page({
 }: PageProps) {
   const navigate = useNavigate()
   const goBack = () => {
-    if (backTo) void navigate(backTo)
+    if (onBack) onBack()
+    else if (backTo) void navigate(backTo)
     else if (window.history.length > 1) void navigate(-1)
     else void navigate('/')
   }
@@ -51,7 +55,7 @@ export function Page({
         {/* Trois colonnes : le titre reste centré, quelle que soit la largeur des boutons. */}
         <div className="grid min-h-12 grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
           <div className="flex min-w-0 items-center">
-            {back && (
+            {(back || onBack) && (
               <button
                 type="button"
                 onClick={goBack}
@@ -114,7 +118,7 @@ export function Section({
   return (
     <section className={cn('mb-6', className)}>
       {(title ?? action) && (
-        <div className="mb-2 flex items-end justify-between gap-2 px-1">
+        <div className="mb-2 flex min-h-5 items-center justify-between gap-2 px-1">
           {title && <h2 className="text-[13px] font-semibold tracking-wide text-ink-3 uppercase">{title}</h2>}
           {action}
         </div>

@@ -26,6 +26,8 @@ import { ConfirmSheet, Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { ExerciseMedia } from './ExerciseMedia'
 import { useCatalog } from './catalog-context'
+import { userMessage } from '@/lib/errors'
+import { frenchSpacing } from '@/lib/typography'
 
 function NoteEditor({ exerciseId, initial }: { exerciseId: string; initial: string }) {
   const [note, setNote] = useState(initial)
@@ -38,7 +40,7 @@ function NoteEditor({ exerciseId, initial }: { exerciseId: string; initial: stri
       onBlur={() => {
         if (note !== initial) void setExerciseNote(exerciseId, note)
       }}
-      placeholder="Ex. : prise neutre, élastique rouge"
+      placeholder={frenchSpacing('Ex. : prise neutre, élastique rouge')}
     />
   )
 }
@@ -89,8 +91,8 @@ function CustomActions({ exercise }: { exercise: Exercise }) {
         onClose={() => {
           setConfirmOpen(false)
         }}
-        title="Supprimer cet exercice ?"
-        message={`« ${exercise.name} » sera supprimé définitivement.`}
+        title={frenchSpacing('Supprimer cet exercice ?')}
+        message={frenchSpacing(`« ${exercise.name} » sera supprimé définitivement.`)}
         confirmLabel="Supprimer"
         onConfirm={() => {
           deleteCustomExercise(exercise.id).then(
@@ -99,7 +101,7 @@ function CustomActions({ exercise }: { exercise: Exercise }) {
               void navigate('/library', { replace: true })
             },
             (error: unknown) => {
-              toast(error instanceof Error ? error.message : 'Suppression impossible', 'error')
+              toast(userMessage(error, 'Suppression impossible'), 'error')
             },
           )
         }}
@@ -194,7 +196,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
         ) : (
           <>
             {exercise.equipment.length > 1 && (
-              <p className="mb-2 px-1 text-[13px] text-ink-3">Une de ces options suffit :</p>
+              <p className="mb-2 px-1 text-[13px] text-ink-3">Une de ces options suffit&nbsp;:</p>
             )}
             <ListGroup>
               {exercise.equipment.map((group) => {
@@ -261,7 +263,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 
       {exercise.nameEn && (
         <p className="mb-6 px-1 text-[13px] text-ink-3">
-          Nom anglais (pratique pour chercher une vidéo) : <span lang="en">{exercise.nameEn}</span>
+          Nom anglais (pratique pour chercher une vidéo)&nbsp;: <span lang="en">{exercise.nameEn}</span>
         </p>
       )}
 

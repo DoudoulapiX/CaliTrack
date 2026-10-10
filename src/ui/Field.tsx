@@ -3,7 +3,8 @@ import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { formatNumber, parseNumber } from '@/lib/units'
 
-const CONTROL =
+/** Style commun des champs de saisie. */
+export const INPUT_CLASS =
   'w-full rounded-xl bg-surface-2 px-3.5 py-3 text-[16px] text-ink placeholder:text-ink-3 outline-none ' +
   'focus:ring-2 focus:ring-accent disabled:opacity-50'
 
@@ -57,7 +58,7 @@ export function TextField({ label, value, onChange, hint, error, className, ...r
           id={id}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
-          className={CONTROL}
+          className={INPUT_CLASS}
           value={value}
           onChange={(e) => {
             onChange(e.target.value)
@@ -95,7 +96,7 @@ export function TextAreaField({
           id={id}
           aria-describedby={describedBy}
           rows={rows}
-          className={cn(CONTROL, 'resize-none leading-snug')}
+          className={cn(INPUT_CLASS, 'resize-none leading-snug')}
           value={value}
           onChange={(e) => {
             onChange(e.target.value)
@@ -128,7 +129,7 @@ export interface NumberInputProps {
   disabled?: boolean
 }
 
-/** Champ numérique qui accepte la virgule, garde la saisie en cours et borne la valeur. */
+/** Champ numérique qui accepte la virgule, garde la saisie en cours et borne la valeur en sortant du champ. */
 export function NumberInput({
   value,
   onChange,
@@ -152,17 +153,9 @@ export function NumberInput({
     if (parseNumber(draft) !== value) setDraft(display(value))
   }
 
-  const commit = (text: string) => {
-    const parsed = parseNumber(text)
-    if (parsed === null) {
-      onChange(null)
-      return
-    }
-    let next = decimal ? parsed : Math.round(parsed)
-    if (min !== undefined) next = Math.max(min, next)
-    if (max !== undefined) next = Math.min(max, next)
-    onChange(next)
-  }
+  const round = (parsed: number) => (decimal ? parsed : Math.round(parsed))
+  const inRange = (n: number) => (min === undefined || n >= min) && (max === undefined || n <= max)
+  const clamp = (n: number) => Math.min(max ?? n, Math.max(min ?? n, n))
 
   return (
     <div className={cn('relative', className)}>
@@ -176,17 +169,29 @@ export function NumberInput({
         enterKeyHint="done"
         placeholder={placeholder}
         disabled={disabled}
-        className={cn(CONTROL, 'tabular', suffix && 'pr-12', inputClassName)}
+        className={cn(INPUT_CLASS, 'tabular', suffix && 'pr-12', inputClassName)}
         value={draft}
         onChange={(e) => {
-          setDraft(e.target.value)
-          const parsed = parseNumber(e.target.value)
-          if (e.target.value.trim() === '') onChange(null)
-          else if (parsed !== null) commit(e.target.value)
+          const text = e.target.value
+          setDraft(text)
+          if (text.trim() === '') {
+            onChange(null)
+            return
+          }
+          const parsed = parseNumber(text)
+          // Pendant la frappe, une valeur encore hors bornes (« 19 » pour 1990) attend la suite.
+          if (parsed !== null && inRange(round(parsed))) onChange(round(parsed))
         }}
         onBlur={() => {
-          commit(draft)
-          setDraft(display(parseNumber(draft) === null ? null : value))
+          const parsed = parseNumber(draft)
+          if (parsed === null) {
+            // Saisie illisible : on revient à la dernière valeur valable.
+            setDraft(display(value))
+            return
+          }
+          const next = clamp(round(parsed))
+          setDraft(display(next))
+          if (next !== value) onChange(next)
         }}
       />
       {suffix && (
@@ -236,7 +241,7 @@ export function SelectField<T extends string>({
           <select
             id={id}
             aria-describedby={describedBy}
-            className={cn(CONTROL, 'appearance-none pr-10')}
+            className={cn(INPUT_CLASS, 'appearance-none pr-10')}
             value={value}
             onChange={(e) => {
               const next = options.find((o) => o.value === e.target.value)

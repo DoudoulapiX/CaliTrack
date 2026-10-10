@@ -33,6 +33,7 @@ import {
   type ExerciseForm,
 } from './exercise-form'
 import { useCatalog } from './catalog-context'
+import { userMessage } from '@/lib/errors'
 
 const EQUIPMENT_CHOICES: { group: string; options: { value: EquipmentKind; label: string }[] }[] = [
   ...(['calisthenics', 'weights', 'climbing', 'home', 'gym'] as const).map((group) => ({
@@ -113,7 +114,7 @@ function EquipmentEditor({
         {value.length === 0 ? 'Ajouter du matériel' : 'Ajouter une autre option'}
       </Button>
       {value.length > 1 && (
-        <p className="px-1 text-[12px] text-ink-3">Plusieurs options : l’une ou l’autre suffit.</p>
+        <p className="px-1 text-[12px] text-ink-3">Plusieurs options&nbsp;: l’une ou l’autre suffit.</p>
       )}
 
       <Sheet
@@ -177,7 +178,7 @@ function ExerciseFormView({
       toast('Exercice enregistré')
       void navigate(`/library/${id}`, { replace: true })
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Enregistrement impossible', 'error')
+      toast(userMessage(e, 'Enregistrement impossible'), 'error')
       setSaving(false)
     }
   }

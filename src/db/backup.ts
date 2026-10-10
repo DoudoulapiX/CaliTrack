@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { formatDay, formatTimeOf, localDateOf, nowISO, today } from '@/lib/dates'
 import { newId } from '@/lib/ids'
+import { frenchSpacing } from '@/lib/typography'
 import { DATA_TABLES, DB_VERSION, db as defaultDb, type CaliTrackDB, type DataTableName } from './db'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
@@ -102,7 +103,7 @@ function describePath(path: readonly PropertyKey[]): string {
   const [index, ...rest] = path
   const field = rest.filter((p) => typeof p === 'string').join('.')
   const position = typeof index === 'number' ? `élément ${index + 1}` : 'contenu'
-  return field ? `${position}, champ « ${field} »` : position
+  return field ? frenchSpacing(`${position}, champ « ${field} »`) : position
 }
 
 /** Vérifie entièrement un fichier de sauvegarde avant de l'importer. */

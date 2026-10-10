@@ -26,7 +26,7 @@ const timestamp = z.string().min(1)
 const weekday = z.literal([1, 2, 3, 4, 5, 6, 7])
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
 
-const equipmentKind = z.enum([
+export const equipmentKind = z.enum([
   'pullupBar',
   'rings',
   'dipBars',

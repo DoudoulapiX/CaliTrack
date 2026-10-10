@@ -1,6 +1,7 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 import { TriangleAlert } from 'lucide-react'
 import { buttonClass } from '@/ui/button-class'
+import { frenchSpacing } from '@/lib/typography'
 
 /** Écran affiché si une page plante : l'appli reste utilisable et les données sont intactes. */
 export function RouteError() {
@@ -21,7 +22,9 @@ export function RouteError() {
       <p className="max-w-sm text-[15px] text-ink-2">
         {notFound
           ? 'Cette adresse n’existe pas dans CaliTrack.'
-          : 'Tes données sont intactes. Recharge l’appli ; si le problème revient, fais une sauvegarde depuis Plus › Sauvegarde.'}
+          : frenchSpacing(
+              'Tes données sont intactes. Recharge l’appli ; si le problème revient, fais une sauvegarde depuis Plus › Sauvegarde.',
+            )}
       </p>
       {!notFound && <p className="max-w-sm text-[12px] break-words text-ink-3">{detail}</p>}
       <div className="flex gap-2">

@@ -57,7 +57,7 @@ describe('dates', () => {
   })
 
   it('affiche des libellés relatifs', () => {
-    expect(relativeDayLabel('2026-10-10', '2026-10-10')).toBe("aujourd'hui")
+    expect(relativeDayLabel('2026-10-10', '2026-10-10')).toBe('aujourd’hui')
     expect(relativeDayLabel('2026-10-11', '2026-10-10')).toBe('demain')
     expect(relativeDayLabel('2026-10-09', '2026-10-10')).toBe('hier')
     expect(relativeDayLabel('2026-10-14', '2026-10-10')).toBe('mercredi 14 octobre')
