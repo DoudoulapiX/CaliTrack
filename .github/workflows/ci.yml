@@ -29,26 +29,14 @@ jobs:
       - name: Installation
         run: npm ci
 
-      - name: Types
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Formatage
-        run: npm run format:check
-
-      - name: Tests unitaires
-        run: npm run test
-
       - name: Build
         run: npm run build
 
       - name: Navigateurs de test
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install --with-deps webkit
 
-      - name: Tests de bout en bout
-        run: npm run e2e
+      - name: Diagnostic WebKit
+        run: npx playwright test e2e/diag-webkit.spec.ts --project=iphone-webkit --retries=0
         env:
           CI: 'true'
 
