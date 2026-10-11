@@ -59,6 +59,9 @@ les anciens fichiers.
 - La navigation entre écrans est asynchrone (routes chargées à la demande) : attendre avec `waitFor` ou
   `findBy…`.
 - Playwright simule un iPhone 13 : Chromium en local, Chromium et WebKit en CI.
+- Un test qui simule un service extérieur avec `page.route` bloque le service worker
+  (`test.use({ serviceWorkers: 'block' })`) : sous WebKit, les requêtes d'une page qu'il contrôle échappent
+  à `page.route` et partent sur le vrai réseau.
 
 ## Mise en ligne
 

@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { collectErrors, NUTELLA_PRODUCT, onboard } from './nutrition-helpers'
 
+// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
+// services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
+test.use({ serviceWorkers: 'block' })
+
 test('nutrition : un aliment de la table Ciqual, puis un produit au code-barres tapé', async ({ page }) => {
   const errors = collectErrors(page)
   // Un mercredi midi : l'ajout vise le déjeuner.

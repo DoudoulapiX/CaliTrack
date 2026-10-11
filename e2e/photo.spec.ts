@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { CLAUDE_KEY, collectErrors, fakeClaude, jpegSize, onboard, solidPng } from './nutrition-helpers'
 
+// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
+// services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
+test.use({ serviceWorkers: 'block' })
+
 test('photo du repas : clé enregistrée, photo réduite et envoyée, aliments ajoutés', async ({ page }) => {
   const errors = collectErrors(page)
   await page.clock.setFixedTime(new Date('2026-10-21T20:00:00+02:00'))

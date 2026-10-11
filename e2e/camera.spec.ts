@@ -2,6 +2,10 @@ import { expect, test } from '@playwright/test'
 import { FAKE_CAMERA_BARCODE } from './fake-camera'
 import { collectErrors, NUTELLA_PRODUCT, onboard } from './nutrition-helpers'
 
+// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
+// services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
+test.use({ serviceWorkers: 'block' })
+
 // Chromium seulement : sa fausse caméra filme un code-barres (voir playwright.config.ts).
 test('scan : la caméra lit le code-barres, le produit va au petit-déjeuner', async ({ page, context }) => {
   const errors = collectErrors(page)
