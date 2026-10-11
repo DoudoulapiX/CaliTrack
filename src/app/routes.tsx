@@ -68,6 +68,31 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'training/history',
+            lazy: async () => ({
+              Component: (await import('@/features/workout/HistoryPage')).HistoryPage,
+            }),
+          },
+          {
+            path: 'training/history/:id',
+            lazy: async () => ({
+              Component: (await import('@/features/workout/WorkoutPage')).HistoryWorkoutPage,
+            }),
+          },
+          {
+            path: 'training/records',
+            lazy: async () => ({
+              Component: (await import('@/features/workout/RecordsPage')).RecordsPage,
+            }),
+          },
+          {
+            path: 'workout/:id',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/workout/WorkoutPage')).WorkoutPage,
+            }),
+          },
+          {
             path: 'climbing',
             lazy: async () => ({
               Component: (await import('@/features/climbing/ClimbingPage')).ClimbingPage,

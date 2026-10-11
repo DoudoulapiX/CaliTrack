@@ -48,6 +48,8 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --tabbar-height: 56px;
+  /* Barre « séance en cours » au-dessus des onglets (0 quand il n'y en a pas). */
+  --workout-bar-height: 0px;
 
   color-scheme: light;
 }
@@ -121,7 +123,14 @@
     padding-bottom: var(--safe-bottom);
   }
   .pb-tabbar {
-    padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 24px);
+    padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--workout-bar-height) + 24px);
+  }
+  /* Place pour une barre d'actions collée en bas (au-dessus des onglets ou non). */
+  .pb-footer {
+    padding-bottom: calc(var(--safe-bottom) + 112px);
+  }
+  .pb-tabbar-footer {
+    padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--workout-bar-height) + 112px);
   }
   .tabular {
     font-variant-numeric: tabular-nums;

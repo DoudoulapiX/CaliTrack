@@ -10,9 +10,12 @@ import {
   formatWorkoutDuration,
   groupByBlock,
   groupByMonth,
+  loadFromDisplay,
+  loadToDisplay,
   prescriptionOf,
   recordsLine,
   rpeLabel,
+  typedLoad,
   workoutSubtitle,
 } from './workout-view'
 
@@ -125,6 +128,8 @@ describe('écrans de séance', () => {
     expect(prescriptionOf(dips!, 'kg')).toBe('3 × 5 à 8 rép. · 10 kg')
     expect(prescriptionOf({ ...pullups!, target: null }, 'kg')).toBe('3 séries')
     expect(prescriptionOf({ ...pullups!, target: null, sets: [pullups!.sets[0]!] }, 'kg')).toBe('1 série')
+    expect(prescriptionOf(dips!, 'kg', true)).toBe('3 × 5 à 8 rép. par côté · 10 kg')
+    expect(prescriptionOf({ ...pullups!, target: null }, 'kg', true)).toBe('3 séries')
 
     expect(formatElapsed(0)).toBe('0:00')
     expect(formatElapsed(245.7)).toBe('4:05')
@@ -148,6 +153,24 @@ describe('écrans de séance', () => {
     const [, firstPullups] = done.exercises
     const finished = completeSet(done, firstPullups!.id, firstPullups!.sets[0]!.id, { reps: 8 }, NOW)
     expect(workoutSubtitle(finished)).toBe('52 min · 1 série · Dur')
+  })
+
+  it('convertit les charges saisies en kilos ou en livres, sans dériver', () => {
+    expect(loadToDisplay(null, 'kg')).toBeNull()
+    expect(loadToDisplay(12.5, 'kg')).toBe(12.5)
+    expect(loadToDisplay(11.34, 'lb')).toBe(25)
+    expect(loadFromDisplay(25, 'lb')).toBe(11.34)
+    expect(loadFromDisplay(12.345, 'kg')).toBe(12.35)
+    expect(loadFromDisplay(0, 'kg')).toBeNull()
+    expect(loadFromDisplay(null, 'kg')).toBeNull()
+    // Ce qui est tapé est ce qui sera relu après enregistrement.
+    for (const value of [2.5, 12.5, 25, 25.5, 44, 100.2]) {
+      expect(typedLoad(value, 'lb')).toBe(loadToDisplay(loadFromDisplay(value, 'lb'), 'lb'))
+      expect(typedLoad(value, 'kg')).toBe(value)
+    }
+    expect(typedLoad(25, 'lb')).toBe(25)
+    expect(typedLoad(0, 'kg')).toBe(0)
+    expect(typedLoad(null, 'kg')).toBeNull()
   })
 
   it('range l’historique par mois et résume les records', () => {

@@ -24,6 +24,7 @@ import { ListGroup, ListRow } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
 import { ConfirmSheet, Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { ExerciseHistory } from '@/features/workout/ExerciseHistory'
 import { ExerciseMedia } from './ExerciseMedia'
 import { useCatalog } from './catalog-context'
 import { userMessage } from '@/lib/errors'
@@ -158,6 +159,8 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
         {exercise.unilateral && <Badge>Un côté puis l’autre</Badge>}
         {exercise.source === 'custom' && <Badge tone="success">Mon exercice</Badge>}
       </div>
+
+      <ExerciseHistory exercise={exercise} />
 
       <Section title="Muscles">
         <div className="rounded-2xl bg-surface p-4">

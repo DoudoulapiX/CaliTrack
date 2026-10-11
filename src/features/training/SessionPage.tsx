@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ArrowDown, ArrowUp, ChevronRight, Copy, Plus, Settings2, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronRight, Copy, Play, Plus, Settings2, Trash2 } from 'lucide-react'
 import { useProfile, useSettings } from '@/app/data-context'
 import { NotFound } from '@/app/NotFound'
 import {
@@ -15,13 +15,16 @@ import {
 } from '@/content/programs/edit'
 import { formatPrescription, formatRest } from '@/content/programs/format'
 import type { TrainingContext } from '@/content/programs/resolve'
+import { isDeloadWeek } from '@/content/programs/schedule'
 import { schemeFor, type Scheme } from '@/content/programs/schemes'
+import { workoutFromSession } from '@/content/workouts/workout'
 import { updateProgram } from '@/db/programs'
 import type { BlockKind, Exercise, Program, ProgramBlock, ProgramSession } from '@/db/types'
+import { nowISO, today } from '@/lib/dates'
 import { newId } from '@/lib/ids'
 import { userMessage } from '@/lib/errors'
 import { frenchSpacing } from '@/lib/typography'
-import { Button, IconButton } from '@/ui/Button'
+import { Button, ButtonLink, IconButton } from '@/ui/Button'
 import { ChoiceChips, EmptyState } from '@/ui/Controls'
 import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
@@ -29,6 +32,8 @@ import { ConfirmSheet, Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { ExerciseThumb } from '@/features/library/ExerciseThumb'
 import { useCatalog } from '@/features/library/catalog-context'
+import { StartWorkoutButton } from '@/features/workout/StartWorkoutButton'
+import { useActiveWorkout, workoutPath } from '@/features/workout/useWorkouts'
 import { ExercisePicker } from './ExercisePicker'
 import { daysLabel, sessionSummary } from './program-view'
 import { SessionSheet } from './SessionSheet'
@@ -179,6 +184,9 @@ function SessionContent({
     ...new Set(program.sessions.filter((s) => s.id !== session.id).flatMap((s) => s.weekdays)),
   ]
   const empty = session.blocks.every((block) => block.slots.length === 0)
+  const active = useActiveWorkout()
+  const resumable = active?.programSessionId === session.id ? active : null
+  const deload = isDeloadWeek(program, today())
 
   const change = async (fn: (current: Program) => Program, failure: string): Promise<boolean> => {
     try {
@@ -197,6 +205,32 @@ function SessionContent({
       backTo={programPath}
       backLabel="Programme"
       className="pt-2"
+      footer={
+        empty ? undefined : resumable ? (
+          <ButtonLink to={workoutPath(resumable.id)} block size="lg" icon={<Play size={18} aria-hidden />}>
+            Reprendre la séance
+          </ButtonLink>
+        ) : (
+          <StartWorkoutButton
+            block
+            size="lg"
+            icon={<Play size={18} aria-hidden />}
+            build={() => {
+              const date = today()
+              return workoutFromSession({
+                programId: program.id,
+                session,
+                date,
+                now: nowISO(),
+                deload: isDeloadWeek(program, date),
+                newId,
+              })
+            }}
+          >
+            Commencer la séance
+          </StartWorkoutButton>
+        )
+      }
       actions={
         <IconButton
           label="Réglages de la séance"
@@ -212,6 +246,11 @@ function SessionContent({
         {daysLabel(session.weekdays)} · {sessionSummary(session, catalog.byId)}
         {!program.active && ` · ${program.name}`}
       </p>
+      {deload && program.active && (
+        <p className="mb-5 rounded-2xl bg-success/10 px-4 py-3 text-[14px] text-ink-2">
+          Semaine allégée&nbsp;: la séance aura moitié moins de séries.
+        </p>
+      )}
 
       {empty ? (
         <EmptyState

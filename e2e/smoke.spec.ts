@@ -146,3 +146,65 @@ test('programme : création, réglage d’un exercice, et tout reste après rech
   await expect(first).toContainText(`${String(before + 1)} ×`)
   expect(errors).toEqual([])
 })
+
+test('séance libre : série cochée, repos qui défile, rechargement, puis bilan et historique', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByRole('button', { name: 'Terminer' }).click()
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' })
+  await nav.getByRole('link', { name: 'Entraînement' }).click()
+
+  // Séance libre, avec des pompes ajoutées depuis le répertoire.
+  await page.getByRole('button', { name: /^Séance libre/ }).click()
+  await expect(page.getByRole('heading', { name: 'Séance libre', level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: 'Ajouter un exercice' }).click()
+  const picker = page.getByRole('dialog', { name: 'Ajouter un exercice' })
+  await picker.getByRole('searchbox', { name: 'Rechercher un exercice' }).fill('pompes')
+  await picker.getByRole('button', { name: /^Pompes\s?Sans matériel/ }).click()
+  const pushups = page.getByRole('article', { name: 'Pompes' })
+  await expect(pushups).toBeVisible()
+
+  // Première série : 10 répétitions, cochée ; le repos défile vraiment.
+  await pushups.getByRole('textbox', { name: 'Pompes, série 1 : répétitions' }).fill('10')
+  const firstSet = pushups.getByRole('button', { name: 'Pompes, série 1 faite' })
+  await firstSet.click()
+  await expect(firstSet).toHaveAttribute('aria-pressed', 'true')
+  const timer = page.getByRole('timer', { name: 'Repos restant' })
+  await expect(timer).toBeVisible()
+  const start = await timer.textContent()
+  await expect(timer).not.toHaveText(start ?? '', { timeout: 5_000 })
+  await expect(page.getByText(/Pompes · série 2 sur 3 · 10 rép\./)).toBeVisible()
+
+  // L'appli fermée puis rouverte : la séance, la série et le repos sont toujours là.
+  await page.reload()
+  await expect(firstSet).toHaveAttribute('aria-pressed', 'true')
+  await expect(pushups.getByRole('textbox', { name: 'Pompes, série 1 : répétitions' })).toHaveValue('10')
+  await expect(timer).toBeVisible()
+
+  // On peut quitter l'écran : la barre au-dessus des onglets ramène à la séance.
+  await page.getByRole('button', { name: 'Retour' }).click()
+  const bar = page.getByRole('link', { name: 'Reprendre la séance en cours : Séance libre' })
+  await expect(bar).toBeVisible()
+  await expect(bar).toContainText(/Repos \d:\d\d/)
+  await bar.click()
+  await expect(pushups).toBeVisible()
+
+  // Fin de séance, bilan puis historique.
+  await page.getByRole('button', { name: 'Passer' }).click()
+  await page.getByRole('button', { name: 'Terminer la séance' }).click()
+  const finish = page.getByRole('dialog', { name: 'Terminer la séance' })
+  await finish.getByRole('radio', { name: 'Correct' }).click()
+  await finish.getByRole('button', { name: 'Enregistrer la séance' }).click()
+  await expect(page.getByText('Séance terminée')).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Pompes\s?10 rép\./ })).toBeVisible()
+  await page.getByRole('button', { name: 'Terminé' }).click()
+  await expect(bar).toBeHidden()
+  await page.getByRole('link', { name: 'Historique' }).click()
+  await expect(page.getByRole('link', { name: /^Séance libre/ })).toContainText('1 série · Correct')
+  expect(errors).toEqual([])
+})

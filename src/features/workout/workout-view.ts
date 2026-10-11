@@ -6,7 +6,7 @@ import { workoutDurationSec, workoutStats } from '@/content/workouts/stats'
 import { measureOf, nextPendingSet, suggestedValue, type PendingSet } from '@/content/workouts/workout'
 import type { BlockKind, Exercise, ExerciseMeasure, Workout, WorkoutExercise } from '@/db/types'
 import { capitalize, formatDuration, formatMonth } from '@/lib/dates'
-import { formatWeight, type WeightUnit } from '@/lib/units'
+import { formatNumber, formatWeight, kgToUnit, unitToKg, type WeightUnit } from '@/lib/units'
 
 /* Textes et regroupements des écrans de séance (séance en cours, bilan, historique, records). */
 
@@ -85,7 +85,7 @@ export function describePending(
 }
 
 /** « 3 × 5 à 8 rép. », « 1 série », avec la charge de la première série. */
-export function prescriptionOf(exercise: WorkoutExercise, unit: WeightUnit): string {
+export function prescriptionOf(exercise: WorkoutExercise, unit: WeightUnit, unilateral = false): string {
   const count = exercise.sets.length
   const sets = count > 1 ? `${String(count)} séries` : '1 série'
   const base = exercise.target
@@ -93,8 +93,36 @@ export function prescriptionOf(exercise: WorkoutExercise, unit: WeightUnit): str
       ? `${String(count)} × ${formatTarget(exercise.target)}`
       : formatTarget(exercise.target)
     : sets
+  const side = exercise.target && unilateral ? ' par côté' : ''
   const load = exercise.sets[0]?.loadKg ?? null
-  return load === null ? base : `${base} · ${formatWeight(load, unit)}`
+  return load === null ? `${base}${side}` : `${base}${side} · ${formatWeight(load, unit)}`
+}
+
+/** Ancre d'un exercice de la séance, pour y faire défiler l'écran. */
+export function exerciseAnchor(workoutExerciseId: string): string {
+  return `exercice-${workoutExerciseId}`
+}
+
+/** Charge à afficher dans l'unité choisie : au centième en kilos, au dixième en livres. */
+export function loadToDisplay(kg: number | null, unit: WeightUnit): number | null {
+  if (kg === null) return null
+  const digits = unit === 'kg' ? 100 : 10
+  return Math.round(kgToUnit(kg, unit) * digits) / digits
+}
+
+/** Charge saisie (dans l'unité choisie) vers des kilos au centième ; zéro ou rien : pas de charge. */
+export function loadFromDisplay(value: number | null, unit: WeightUnit): number | null {
+  if (value === null || value <= 0) return null
+  return Math.round(unitToKg(value, unit) * 100) / 100
+}
+
+/**
+ * Charge saisie, telle qu'elle sera relue après enregistrement (25 lb restent 25 lb). Zéro reste
+ * affiché tel quel pendant la frappe (« 0,5 »).
+ */
+export function typedLoad(value: number | null, unit: WeightUnit): number | null {
+  if (value === null || value <= 0) return value
+  return loadToDisplay(loadFromDisplay(value, unit), unit)
 }
 
 /** Chrono de séance : « 4:05 », « 1:02:03 ». */
@@ -109,6 +137,27 @@ export function formatElapsed(totalSec: number): string {
 /** Durée d'une séance à la minute : « 52 min », « 1 h 05 » (au moins une minute). */
 export function formatWorkoutDuration(totalSec: number): string {
   return formatDuration(Math.max(60, Math.round(totalSec / 60) * 60))
+}
+
+/** Chiffres d'une séance en tuiles : durée, séries, puis ce qui a été fait. */
+export function statItems(
+  workout: Pick<Workout, 'exercises'>,
+  durationSec: number,
+  unit: WeightUnit,
+): { label: string; value: string }[] {
+  const stats = workoutStats(workout)
+  const sets =
+    stats.setsDone === stats.setsTotal
+      ? String(stats.setsDone)
+      : `${String(stats.setsDone)} sur ${String(stats.setsTotal)}`
+  const items = [
+    { label: 'Durée', value: formatWorkoutDuration(durationSec) },
+    { label: 'Séries', value: sets },
+  ]
+  if (stats.reps > 0) items.push({ label: 'Répétitions', value: formatNumber(stats.reps) })
+  if (stats.holdSec > 0) items.push({ label: 'Maintien', value: formatDuration(stats.holdSec) })
+  if (stats.volumeKg > 0) items.push({ label: 'Charge soulevée', value: formatWeight(stats.volumeKg, unit) })
+  return items
 }
 
 /** Ressenti de la séance, du plus facile au plus dur (échelle d'effort sur 10). */
@@ -162,7 +211,8 @@ export function groupByMonth(workouts: readonly Workout[]): MonthGroup[] {
   return groups
 }
 
-const RECORD_ORDER: readonly RecordKind[] = ['reps', 'hold', 'load']
+/** Records d'un exercice, dans l'ordre où on les montre. */
+export const RECORD_ORDER: readonly RecordKind[] = ['reps', 'hold', 'load']
 
 /** Les records d'un exercice en une ligne : « 12 rép. · 20 kg × 5 ». */
 export function recordsLine(records: ExerciseRecords, unit: WeightUnit): string {

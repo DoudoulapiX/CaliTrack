@@ -12,6 +12,8 @@ import { ListGroup, ListRow } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { useCatalog } from '@/features/library/catalog-context'
+import { TodayWorkoutCard } from '@/features/workout/TodayWorkoutCard'
+import { WorkoutLinks } from '@/features/workout/WorkoutLinks'
 import { locationLabel, programOutdated, sessionSummary } from './program-view'
 import { RationaleList } from './RationaleList'
 import { useActiveProgram, useInventory, usePrograms } from './useTraining'
@@ -115,6 +117,8 @@ function ActiveProgram({ program }: { program: Program }) {
 
   return (
     <>
+      <TodayWorkoutCard program={program} />
+
       <Card className="mb-6">
         <Link to={`/training/programs/${program.id}`} className="-m-4 flex items-center gap-3 p-4">
           <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
@@ -166,6 +170,10 @@ function ActiveProgram({ program }: { program: Program }) {
         </ul>
       </Section>
 
+      <Section title="Séances">
+        <WorkoutLinks />
+      </Section>
+
       {program.rationale.length > 0 && (
         <Section title="Pourquoi ce programme">
           <RationaleList lines={program.rationale} />
@@ -203,6 +211,7 @@ export function TrainingPage() {
         <ActiveProgram program={active} />
       ) : (
         <>
+          <TodayWorkoutCard program={null} />
           <EmptyState
             icon={<Dumbbell size={36} aria-hidden />}
             title="Pas encore de programme"
@@ -222,6 +231,9 @@ export function TrainingPage() {
               </ListGroup>
             </Section>
           )}
+          <Section title="Séances" className="mt-6">
+            <WorkoutLinks />
+          </Section>
         </>
       )}
     </Page>

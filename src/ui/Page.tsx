@@ -80,7 +80,11 @@ export function Page({
         {toolbar && <div className="px-4 pb-2">{toolbar}</div>}
       </header>
       <main
-        className={cn('flex-1 px-4', footer ? 'pb-28' : noTabBar ? 'pb-safe pb-8' : 'pb-tabbar', className)}
+        className={cn(
+          'flex-1 px-4',
+          footer ? (noTabBar ? 'pb-footer' : 'pb-tabbar-footer') : noTabBar ? 'pb-safe pb-8' : 'pb-tabbar',
+          className,
+        )}
       >
         {large && (
           <div className="mb-4 pt-1">
@@ -91,19 +95,20 @@ export function Page({
           </div>
         )}
         {children}
+        {/* Collée en bas de l'écran, mais dans la zone principale (repère pour les lecteurs d'écran). */}
+        {footer && (
+          <div
+            className={cn(
+              'fixed inset-x-0 z-30 border-t border-line bg-canvas/95 px-4 pt-3 backdrop-blur-xl',
+              noTabBar
+                ? 'bottom-0 pb-[calc(var(--safe-bottom)+12px)]'
+                : 'bottom-[calc(var(--tabbar-height)+var(--safe-bottom)+var(--workout-bar-height))] pb-3',
+            )}
+          >
+            {footer}
+          </div>
+        )}
       </main>
-      {footer && (
-        <div
-          className={cn(
-            'fixed inset-x-0 z-30 border-t border-line bg-canvas/95 px-4 pt-3 backdrop-blur-xl',
-            noTabBar
-              ? 'bottom-0 pb-[calc(var(--safe-bottom)+12px)]'
-              : 'bottom-[calc(var(--tabbar-height)+var(--safe-bottom))] pb-3',
-          )}
-        >
-          {footer}
-        </div>
-      )}
     </div>
   )
 }

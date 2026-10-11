@@ -94,6 +94,53 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await page.getByRole('button', { name: 'Réorganiser' }).click()
       await expect(page.getByRole('button', { name: 'Terminé' })).toBeVisible()
       await expectAccessible(page, 'réorganiser')
+      await page.getByRole('button', { name: 'Terminé' }).click()
+
+      // La séance en direct : séries, repos, options d'un exercice, fin, bilan.
+      await page.getByRole('button', { name: 'Commencer la séance' }).click()
+      const firstSet = page
+        .locator('section', { has: page.getByRole('heading', { name: 'Renforcement' }) })
+        .getByRole('button', { name: /, série 1 faite$/ })
+        .first()
+      await expect(firstSet).toBeVisible()
+      await expectAccessible(page, 'séance en cours')
+      await firstSet.click()
+      await expect(page.getByRole('timer', { name: 'Repos restant' })).toBeVisible()
+      await expectAccessible(page, 'repos')
+      await page
+        .getByRole('button', { name: /^Options : / })
+        .first()
+        .click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+      await expectAccessible(page, 'options d’un exercice')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+      await page.getByRole('button', { name: 'Retour' }).click()
+      await expect(page.getByRole('link', { name: /^Reprendre la séance en cours/ })).toBeVisible()
+      await expectAccessible(page, 'barre de séance')
+      await page.getByRole('link', { name: /^Reprendre la séance en cours/ }).click()
+      await page.getByRole('button', { name: 'Passer' }).click()
+      await page.getByRole('button', { name: 'Terminer la séance' }).click()
+      await expect(page.getByRole('dialog', { name: 'Terminer la séance' })).toBeVisible()
+      await expectAccessible(page, 'fin de séance')
+      await page.getByRole('button', { name: 'Enregistrer la séance' }).click()
+      await expect(page.getByText('Séance terminée')).toBeVisible()
+      await expectAccessible(page, 'bilan')
+
+      for (const [path, heading] of [
+        ['training/history', 'Historique'],
+        ['training/records', 'Records'],
+      ] as const) {
+        await page.goto(path)
+        await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible()
+        await expectAccessible(page, path)
+      }
+      await page
+        .getByRole('link')
+        .filter({ hasText: /séance$/ })
+        .first()
+        .click()
+      await expect(page.getByRole('heading', { name: 'Mes records' })).toBeVisible()
+      await expectAccessible(page, 'fiche avec records')
     })
   })
 }
