@@ -23,6 +23,7 @@ describe('fin du premier lancement', () => {
       ...draftFromProfile(defaultProfile()),
       firstName: 'Charles',
       trainingDays: [1, 4],
+      targetSkills: ['muscleUp', 'handstand'],
     }
     await completeOnboarding(
       draft,
@@ -59,6 +60,17 @@ describe('fin du premier lancement', () => {
     expect(exerciseIds?.length).toBeGreaterThan(10)
     // Pas de barres parallèles à la maison : aucun dip aux barres.
     expect(exerciseIds).not.toContain('dip')
+
+    // Une figure visée = un objectif affiché sur l'accueil, avec ses étapes.
+    const goals = await db.goals.toArray()
+    expect(goals.map((g) => g.skillId).sort()).toEqual(['handstand', 'muscleUp'])
+    expect(goals.every((g) => g.pinned && g.kind === 'skill')).toBe(true)
+    const muscleUp = goals.find((g) => g.skillId === 'muscleUp')
+    expect(muscleUp?.title).toBe('Muscle-up')
+    expect(muscleUp?.milestones[0]).toMatchObject({
+      title: 'Tractions',
+      criterion: { kind: 'reps', exerciseId: 'pullup', value: 8 },
+    })
   })
 
   it('ne termine rien si le profil est invalide', async () => {
@@ -73,6 +85,7 @@ describe('fin du premier lancement', () => {
     expect(await db.locations.count()).toBe(0)
     expect(await db.equipment.count()).toBe(0)
     expect(await db.programs.count()).toBe(0)
+    expect(await db.goals.count()).toBe(0)
     expect((await db.settings.get('app'))?.onboardingDone).toBe(false)
   })
 })

@@ -103,6 +103,15 @@ export const appRoutes: RouteObject[] = [
             lazy: async () => ({ Component: (await import('@/features/goals/GoalsPage')).GoalsPage }),
           },
           {
+            path: 'goals/new',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/goals/NewGoalPage')).NewGoalPage }),
+          },
+          {
+            path: 'goals/:id',
+            lazy: async () => ({ Component: (await import('@/features/goals/GoalPage')).GoalPage }),
+          },
+          {
             path: 'library',
             lazy: async () => ({ Component: (await import('@/features/library/LibraryPage')).LibraryPage }),
           },

@@ -21,6 +21,11 @@ export function formatWeight(kg: number, unit: WeightUnit): string {
   return `${formatNumber(rounded)} ${unit}`
 }
 
+/** Poids du corps, au dixième près : « 72,9 kg » (une charge, elle, s'arrondit aux disques). */
+export function formatBodyWeight(kg: number, unit: WeightUnit): string {
+  return `${formatNumber(Math.round(kgToUnit(kg, unit) * 10) / 10, 1)} ${unit}`
+}
+
 /** Nombre au format français, sans zéros inutiles : 12,5 / 3 / 1 250. */
 export function formatNumber(value: number, maxFractionDigits = 2): string {
   return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: maxFractionDigits }).format(value)

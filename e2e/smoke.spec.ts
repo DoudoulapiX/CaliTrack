@@ -261,3 +261,61 @@ test('calendrier : séance du programme passée, course ajoutée en deux touches
   await expect(page.getByText('Repos aujourd’hui')).toBeHidden()
   expect(errors).toEqual([])
 })
+
+test('objectifs : figure visée suivie dès l’accueil, poids noté, tout reste après rechargement', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+
+  // Accueil : 80 kg, le muscle-up visé (par défaut) et 10 tractions au test de niveau.
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  await page.getByLabel('Poids').fill('80')
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByLabel('Tractions').fill('10')
+  await page.getByRole('button', { name: 'Terminer' }).click()
+  await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible()
+
+  // Le muscle-up est déjà un objectif, et le test de niveau a validé sa première étape.
+  await page.goto('goals')
+  const muscleUp = page.getByRole('link', { name: /^Muscle-up \(sur l’accueil\)/ })
+  await expect(muscleUp).toContainText('Étape 2 sur 6')
+  await expect(muscleUp).toContainText(/16\s%/)
+  await muscleUp.click()
+  await expect(page.getByRole('heading', { name: 'Muscle-up', level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: /^Étape 2 : / }).click()
+  await page.getByRole('button', { name: 'Je l’ai réussie' }).click()
+  await expect(page.getByText('Étape cochée')).toBeVisible()
+  await expect(page.getByRole('progressbar', { name: 'Avancement de « Muscle-up »' })).toHaveAttribute(
+    'aria-valuenow',
+    '33',
+  )
+
+  // Un objectif de poids, puis une pesée.
+  await page.getByRole('button', { name: 'Objectifs', exact: true }).click()
+  await page.getByRole('button', { name: 'Nouvel objectif' }).click()
+  await page.getByRole('radio', { name: 'Poids', exact: true }).click()
+  await expect(page.getByLabel('Poids actuel')).toHaveValue('80')
+  await page.getByLabel('Poids visé').fill('75')
+  await page.getByRole('button', { name: 'Créer l’objectif' }).click()
+  await expect(page.getByRole('heading', { name: 'Peser 75 kg', level: 1 })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Peser 75 kg', level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: 'Noter mon poids' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Noter mon poids' })
+  await sheet.getByLabel('Poids').fill('77,5')
+  await sheet.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(page.getByRole('progressbar', { name: 'Avancement de « Peser 75 kg »' })).toHaveAttribute(
+    'aria-valuenow',
+    '50',
+  )
+
+  // Tout reste après rechargement.
+  await page.reload()
+  await expect(page.getByText('77,5 kg · objectif 75 kg')).toBeVisible()
+  await page.goto('goals')
+  await expect(page.getByRole('link', { name: /^Peser 75 kg/ })).toContainText(/50\s%/)
+  await expect(page.getByRole('link', { name: /^Muscle-up/ })).toContainText(/33\s%/)
+  expect(errors).toEqual([])
+})

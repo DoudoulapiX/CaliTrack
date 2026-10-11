@@ -18,6 +18,7 @@ import { ListGroup, ListRow } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
 import { ConfirmSheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { GoalAdvances } from '@/features/goals/GoalAdvances'
 import { useCatalog } from '@/features/library/catalog-context'
 import { StatTiles } from './StatTiles'
 import { useDoneWorkouts } from './useWorkouts'
@@ -64,6 +65,8 @@ function SummaryContent({ workout }: { workout: Workout }) {
           </ListGroup>
         </Section>
       )}
+
+      {all && <GoalAdvances workout={workout} workouts={all} />}
 
       {workout.progression.length > 0 && (
         <Section title="La prochaine fois">

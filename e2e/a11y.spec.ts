@@ -13,6 +13,8 @@ for (const colorScheme of ['dark', 'light'] as const) {
     test.use({ colorScheme })
 
     test('écrans accessibles', async ({ page }) => {
+      // Long parcours (accueil, programme, séance, bilan) : plus de temps quand les tests tournent en parallèle.
+      test.slow()
       const next = () => page.getByRole('button', { name: 'Continuer' }).click()
 
       await page.goto('./')
@@ -186,6 +188,79 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await page.goto('training')
       await expect(page.getByRole('heading', { name: 'Cette semaine' })).toBeVisible()
       await expectAccessible(page, 'entraînement avec le calendrier')
+    })
+
+    test('objectifs accessibles', async ({ page }) => {
+      test.slow()
+      await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+      await page.goto('./')
+      await page.getByRole('button', { name: 'Commencer' }).click()
+      await page.getByLabel('Poids').fill('80')
+      for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+      await page.getByRole('button', { name: 'Terminer' }).click()
+      await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible()
+
+      // La figure visée à l'accueil : la liste, sa fiche, une étape, la modification.
+      await page.goto('goals')
+      await expect(page.getByRole('heading', { name: 'Objectifs', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectifs')
+      await page.getByRole('link', { name: /^Muscle-up/ }).click()
+      await expect(page.getByRole('heading', { name: 'Muscle-up', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectif figure')
+      await page.getByRole('button', { name: /^Étape 1 : / }).click()
+      await expect(page.getByRole('dialog', { name: 'Étape 1 sur 6' })).toBeVisible()
+      await expectAccessible(page, 'étape d’une figure')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+      await page.getByRole('button', { name: 'Modifier l’objectif' }).click()
+      await expect(page.getByRole('dialog', { name: 'Modifier l’objectif' })).toBeVisible()
+      await expectAccessible(page, 'modifier un objectif')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+
+      // Un objectif de chaque genre.
+      await page.goto('goals/new')
+      await expect(page.getByRole('radio', { name: 'Figure', exact: true })).toBeVisible()
+      await expectAccessible(page, 'nouvel objectif : figure')
+      await page.getByRole('radio', { name: 'Exercice', exact: true }).click()
+      await page.getByRole('button', { name: 'Choisir un exercice' }).click()
+      const picker = page.getByRole('dialog', { name: 'Choisir un exercice' })
+      await expect(picker).toBeVisible()
+      await expectAccessible(page, 'choix de l’exercice d’un objectif')
+      await picker.getByRole('searchbox', { name: 'Rechercher un exercice' }).fill('pompes')
+      await picker.getByText('Pompes', { exact: true }).click()
+      await page.getByLabel('Objectif', { exact: true }).fill('20')
+      await expectAccessible(page, 'nouvel objectif : exercice')
+      await page.getByRole('button', { name: 'Créer l’objectif' }).click()
+      await expect(page.getByRole('heading', { name: /^Pompes\s:\s20 rép\.$/, level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectif exercice')
+
+      await page.goto('goals/new?type=bodyweight')
+      await page.getByLabel('Poids visé').fill('75')
+      await expectAccessible(page, 'nouvel objectif : poids')
+      await page.getByRole('button', { name: 'Créer l’objectif' }).click()
+      await expect(page.getByRole('heading', { name: 'Peser 75 kg', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectif poids')
+      await page.getByRole('button', { name: 'Noter mon poids' }).click()
+      await expect(page.getByRole('dialog', { name: 'Noter mon poids' })).toBeVisible()
+      await expectAccessible(page, 'noter mon poids')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+
+      await page.goto('goals/new?type=climbing')
+      await page.getByRole('radio', { name: 'Bleu', exact: true }).click()
+      await expectAccessible(page, 'nouvel objectif : escalade')
+      await page.getByRole('button', { name: 'Créer l’objectif' }).click()
+      await expect(page.getByRole('heading', { name: '1 bloc bleu', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectif escalade')
+
+      await page.goto('goals/new?type=custom')
+      await page.getByLabel('Nom', { exact: true }).fill('Courir 10 km')
+      await expectAccessible(page, 'nouvel objectif libre')
+      await page.getByRole('button', { name: 'Créer l’objectif' }).click()
+      await expect(page.getByRole('heading', { name: 'Courir 10 km', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'objectif libre')
+
+      await page.goto('goals')
+      await expect(page.getByRole('link', { name: /^Courir 10 km/ })).toBeVisible()
+      await expectAccessible(page, 'objectifs de chaque genre')
     })
   })
 }

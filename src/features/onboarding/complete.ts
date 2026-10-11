@@ -3,6 +3,7 @@ import { defaultProgramLocation, generateProgram } from '@/content/programs/gene
 import { db as defaultDb, type CaliTrackDB } from '@/db/db'
 import { defaultProfile } from '@/db/defaults'
 import { newEquipmentItem, newLocation } from '@/db/equipment'
+import { addSkillGoals } from '@/db/goals'
 import { profileFromDraft, type ProfileDraft } from '@/db/profile'
 import { equipmentSchema, locationSchema, programSchema } from '@/db/schema'
 import type { EquipmentItem, EquipmentKind, Exercise, LocationIcon } from '@/db/types'
@@ -17,7 +18,7 @@ export interface PlaceDraft {
 
 /**
  * Enregistre tout ce qui a été saisi au premier lancement, en une fois : profil, lieux, matériel,
- * puis le premier programme, calculé d'après tout cela.
+ * puis le premier programme, calculé d'après tout cela, et un objectif par figure visée.
  * Un même matériel coché dans plusieurs lieux devient un seul objet rangé dans chacun d'eux.
  */
 export async function completeOnboarding(
@@ -28,7 +29,14 @@ export async function completeOnboarding(
 ): Promise<void> {
   await database.transaction(
     'rw',
-    [database.profile, database.settings, database.locations, database.equipment, database.programs],
+    [
+      database.profile,
+      database.settings,
+      database.locations,
+      database.equipment,
+      database.programs,
+      database.goals,
+    ],
     async () => {
       const current = (await database.profile.get('me')) ?? defaultProfile()
       const saved = profileFromDraft(profile, current)
@@ -60,6 +68,7 @@ export async function completeOnboarding(
       })
       await database.programs.filter((p) => p.active).modify({ active: false })
       await database.programs.put(programSchema.parse(program))
+      await addSkillGoals(saved.targetSkills, (id) => exercises.get(id)?.name ?? id, database)
 
       await database.settings.update('app', { onboardingDone: true, updatedAt: nowISO() })
     },

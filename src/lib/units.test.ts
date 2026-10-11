@@ -1,4 +1,4 @@
-import { clamp, formatNumber, formatWeight, kgToUnit, parseNumber, unitToKg } from './units'
+import { clamp, formatBodyWeight, formatNumber, formatWeight, kgToUnit, parseNumber, unitToKg } from './units'
 
 describe('unités', () => {
   it('convertit kg et lb dans les deux sens', () => {
@@ -11,6 +11,9 @@ describe('unités', () => {
     expect(formatWeight(12.5, 'kg')).toBe('12,5 kg')
     expect(formatWeight(2, 'kg')).toBe('2 kg')
     expect(formatWeight(10, 'lb')).toBe('22 lb')
+    expect(formatBodyWeight(72.94, 'kg')).toBe('72,9 kg')
+    expect(formatBodyWeight(75, 'kg')).toBe('75 kg')
+    expect(formatBodyWeight(80, 'lb')).toBe('176,4 lb')
     expect(formatNumber(1250)).toMatch(/^1\s?250$/)
   })
 
