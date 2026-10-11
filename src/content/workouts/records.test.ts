@@ -30,6 +30,7 @@ function workout(
     title: 'Séance',
     programId: null,
     programSessionId: null,
+    plannedFor: null,
     eventId: null,
     exercises: exercises.map((e, i) => ({
       id: `${id}-${String(i)}`,

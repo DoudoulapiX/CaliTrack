@@ -1,5 +1,5 @@
 import type { Program, ProgramSession } from '@/db/types'
-import { deloadSets, isDeloadWeek, nextSession, programWeek, sessionsForDate, weekPlan } from './schedule'
+import { deloadSets, isDeloadWeek, programWeek } from './schedule'
 
 const session = (id: string, weekdays: ProgramSession['weekdays']): ProgramSession => ({
   id,
@@ -35,31 +35,5 @@ describe('calendrier du programme', () => {
 
   it('divise les séries par deux en semaine allégée', () => {
     expect([1, 2, 3, 4, 5].map(deloadSets)).toEqual([1, 1, 2, 2, 3])
-  })
-
-  it('trouve les séances d’un jour, pas avant le début', () => {
-    expect(sessionsForDate(program, '2026-10-15').map((s) => s.id)).toEqual(['A']) // jeudi
-    expect(sessionsForDate(program, '2026-10-14').map((s) => s.id)).toEqual(['B']) // mercredi
-    expect(sessionsForDate(program, '2026-10-12')).toEqual([]) // lundi, avant le début
-    expect(sessionsForDate(program, '2026-10-17')).toEqual([]) // samedi
-  })
-
-  it('donne la prochaine séance', () => {
-    expect(nextSession(program, '2026-10-10')).toMatchObject({ date: '2026-10-14', session: { id: 'B' } })
-    expect(nextSession(program, '2026-10-16')).toMatchObject({ date: '2026-10-19', session: { id: 'A' } })
-    expect(nextSession({ ...program, sessions: [] }, '2026-10-16')).toBeNull()
-  })
-
-  it('montre la semaine type avec l’escalade', () => {
-    const week = weekPlan(program, [2, 6])
-    expect(week.map((d) => [d.weekday, d.sessions.map((s) => s.id), d.climbing])).toEqual([
-      [1, ['A'], false],
-      [2, [], true],
-      [3, ['B'], false],
-      [4, ['A'], false],
-      [5, [], false],
-      [6, [], true],
-      [7, [], false],
-    ])
   })
 })

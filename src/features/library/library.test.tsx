@@ -148,6 +148,7 @@ describe('bibliothèque d’exercices', () => {
       title: 'Séance',
       programId: null,
       programSessionId: null,
+      plannedFor: null,
       eventId: null,
       exercises: [
         {

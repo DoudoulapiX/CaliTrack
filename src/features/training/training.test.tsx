@@ -57,7 +57,13 @@ async function storedSlots(): Promise<{ kind: string; slots: ProgramSlot[] }[]> 
 }
 
 describe('programme d’entraînement', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('prépare un programme d’après le profil, le suit et signale un profil qui a changé', async () => {
+    // Un lundi : le programme commence aujourd'hui, toute sa semaine est à venir.
+    vi.setSystemTime(new Date(2026, 9, 12, 9, 0))
     const { user, router } = await renderApp('/training', {
       setup: () => saveEquipmentItem(newEquipmentItem('pullupBar')),
     })
@@ -81,8 +87,16 @@ describe('programme d’entraînement', () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/training')
     })
-    expect(await screen.findByText('Cette semaine')).toBeInTheDocument()
-    expect(screen.getAllByRole('link', { name: /^(lundi|mercredi|vendredi) .+ : / })).toHaveLength(3)
+    expect(await screen.findByRole('heading', { name: 'Cette semaine' })).toBeInTheDocument()
+    expect(
+      screen
+        .getAllByRole('link', { name: /^(lundi|mercredi|vendredi) \d+ oct\. .*: / })
+        .map((l) => l.ariaLabel),
+    ).toEqual([
+      'lundi 12 oct. (aujourd’hui) : Corps complet A',
+      'mercredi 14 oct. : Corps complet B',
+      'vendredi 16 oct. : Corps complet C',
+    ])
     const programs = await db.programs.toArray()
     expect(programs).toHaveLength(1)
     expect(programs[0]).toMatchObject({ active: true, source: 'generated' })

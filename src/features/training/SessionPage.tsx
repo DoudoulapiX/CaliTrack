@@ -17,10 +17,9 @@ import { formatPrescription, formatRest } from '@/content/programs/format'
 import type { TrainingContext } from '@/content/programs/resolve'
 import { isDeloadWeek } from '@/content/programs/schedule'
 import { schemeFor, type Scheme } from '@/content/programs/schemes'
-import { workoutFromSession } from '@/content/workouts/workout'
 import { updateProgram } from '@/db/programs'
 import type { BlockKind, Exercise, Program, ProgramBlock, ProgramSession } from '@/db/types'
-import { nowISO, today } from '@/lib/dates'
+import { today } from '@/lib/dates'
 import { newId } from '@/lib/ids'
 import { userMessage } from '@/lib/errors'
 import { frenchSpacing } from '@/lib/typography'
@@ -32,6 +31,7 @@ import { ConfirmSheet, Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { ExerciseThumb } from '@/features/library/ExerciseThumb'
 import { useCatalog } from '@/features/library/catalog-context'
+import { programSessionBuilder } from '@/features/workout/build-session'
 import { StartWorkoutButton } from '@/features/workout/StartWorkoutButton'
 import { useActiveWorkout, workoutPath } from '@/features/workout/useWorkouts'
 import { ExercisePicker } from './ExercisePicker'
@@ -215,17 +215,7 @@ function SessionContent({
             block
             size="lg"
             icon={<Play size={18} aria-hidden />}
-            build={() => {
-              const date = today()
-              return workoutFromSession({
-                programId: program.id,
-                session,
-                date,
-                now: nowISO(),
-                deload: isDeloadWeek(program, date),
-                newId,
-              })
-            }}
+            build={programSessionBuilder(program, session)}
           >
             Commencer la séance
           </StartWorkoutButton>

@@ -57,13 +57,17 @@ for (const colorScheme of ['dark', 'light'] as const) {
 
       // Programme préparé à la fin de l'accueil, puis un nouveau à partir de l'aperçu.
       await page.goto('training')
-      await expect(page.getByText('Cette semaine')).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: /^(Cette semaine|La semaine prochaine)$/ }),
+      ).toBeVisible()
       await expectAccessible(page, 'entraînement')
       await page.getByRole('link', { name: /^Refaire mon programme/ }).click()
       await expect(page.getByRole('button', { name: 'Suivre ce programme' })).toBeVisible()
       await expectAccessible(page, 'nouveau programme')
       await page.getByRole('button', { name: 'Suivre ce programme' }).click()
-      await expect(page.getByText('Cette semaine')).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: /^(Cette semaine|La semaine prochaine)$/ }),
+      ).toBeVisible()
       await page.goto('training/programs')
       await expect(page.getByRole('heading', { name: 'Mes programmes', level: 1 })).toBeVisible()
       await expectAccessible(page, 'mes programmes')
@@ -141,6 +145,47 @@ for (const colorScheme of ['dark', 'light'] as const) {
         .click()
       await expect(page.getByRole('heading', { name: 'Mes records' })).toBeVisible()
       await expectAccessible(page, 'fiche avec records')
+    })
+
+    test('calendrier accessible', async ({ page }) => {
+      // Un mercredi : le programme préparé à l'accueil a une séance aujourd'hui.
+      await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+      await page.goto('./')
+      await page.getByRole('button', { name: 'Commencer' }).click()
+      for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+      await page.getByRole('button', { name: 'Terminer' }).click()
+      await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible()
+
+      await page.goto('calendar')
+      await expect(page.getByRole('heading', { name: 'Octobre 2026', level: 2 })).toBeVisible()
+      await expectAccessible(page, 'calendrier')
+      await page.getByRole('button', { name: /^Corps complet/ }).click()
+      await expect(page.getByRole('button', { name: 'Passer cette séance' })).toBeVisible()
+      await expectAccessible(page, 'séance du programme')
+      await page.getByRole('button', { name: 'Passer cette séance' }).click()
+      await expect(page.getByRole('button', { name: /^Corps complet/ })).toContainText('Passée')
+      await expectAccessible(page, 'séance passée')
+
+      await page.getByRole('button', { name: 'Ajouter une séance' }).click()
+      const sheet = page.getByRole('dialog', { name: 'Nouvelle séance' })
+      await expect(sheet).toBeVisible()
+      await expectAccessible(page, 'nouvelle séance')
+      await sheet.getByRole('switch', { name: 'Répéter chaque semaine' }).click()
+      await expect(sheet.getByRole('group', { name: 'Jours de la semaine' })).toBeVisible()
+      await expectAccessible(page, 'séance répétée')
+      await sheet.getByRole('button', { name: 'Ajouter la séance' }).click()
+      await expect(page.getByText('Séance ajoutée')).toBeVisible()
+      await page.getByRole('button', { name: /^Course à pied/ }).click()
+      await expect(page.getByRole('button', { name: 'C’est fait' })).toBeVisible()
+      await expectAccessible(page, 'jour d’une séance répétée')
+      await page.getByRole('button', { name: 'Modifier la répétition' }).click()
+      await expect(page.getByRole('dialog', { name: 'Séance répétée' })).toBeVisible()
+      await expectAccessible(page, 'modifier la répétition')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+
+      await page.goto('training')
+      await expect(page.getByRole('heading', { name: 'Cette semaine' })).toBeVisible()
+      await expectAccessible(page, 'entraînement avec le calendrier')
     })
   })
 }

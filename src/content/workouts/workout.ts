@@ -41,6 +41,8 @@ export function workoutFromSession(args: {
   now: string
   deload: boolean
   newId: () => string
+  /** Le jour prévu de la séance qu'elle remplit, quand on l'a choisi (voir Workout.plannedFor). */
+  plannedFor?: ISODate | null
 }): Workout {
   const { session, newId } = args
   const exercises: WorkoutExercise[] = session.blocks.flatMap((block) =>
@@ -65,6 +67,7 @@ export function workoutFromSession(args: {
     title: session.name,
     programId: args.programId,
     programSessionId: session.id,
+    plannedFor: args.plannedFor ?? null,
     eventId: null,
     exercises,
     rpe: null,
@@ -90,6 +93,7 @@ export function freeWorkout(args: {
     title: args.title?.trim() || FREE_WORKOUT_TITLE,
     programId: null,
     programSessionId: null,
+    plannedFor: null,
     eventId: null,
     exercises: [],
     rpe: null,

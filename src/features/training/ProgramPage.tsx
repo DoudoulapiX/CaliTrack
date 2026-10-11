@@ -19,7 +19,7 @@ import { ConfirmSheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { useCatalog } from '@/features/library/catalog-context'
 import { NotFound } from '@/app/NotFound'
-import { daysLabel, locationLabel, sessionSummary } from './program-view'
+import { daysLabel, locationLabel, sessionPath, sessionSummary } from './program-view'
 import { ProgramSettingsSheet } from './ProgramSettingsSheet'
 import { RationaleList } from './RationaleList'
 import { SessionSheet } from './SessionSheet'
@@ -137,7 +137,7 @@ function ProgramContent({ program }: { program: Program }) {
                 key={session.id}
                 title={session.name}
                 subtitle={`${daysLabel(session.weekdays)} · ${sessionSummary(session, catalog.byId)}`}
-                to={`/training/programs/${program.id}/sessions/${session.id}`}
+                to={sessionPath(program, session)}
               />
             ))}
           </ListGroup>
@@ -209,7 +209,7 @@ function ProgramContent({ program }: { program: Program }) {
             const session = newSession(draft.name, draft.weekdays, newId)
             await updateProgram(program.id, (current) => addSession(current, session))
             setAdding(false)
-            void navigate(`/training/programs/${program.id}/sessions/${session.id}`)
+            void navigate(sessionPath(program, session))
           }, 'Création impossible.')
         }
       />

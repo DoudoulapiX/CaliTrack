@@ -31,6 +31,11 @@ export function sessionSummary(session: ProgramSession, exercises: ReadonlyMap<s
   return `${count} · environ ${sessionMinutes(session, exercises)} min`
 }
 
+/** Adresse de l'écran d'une séance du programme. */
+export function sessionPath(program: Pick<Program, 'id'>, session: Pick<ProgramSession, 'id'>): string {
+  return `/training/programs/${program.id}/sessions/${session.id}`
+}
+
 /** Matériel pris en compte par le programme. */
 export function locationLabel(program: Pick<Program, 'locationId'>, locations: readonly Location[]): string {
   if (program.locationId === null) return 'Tout mon matériel'

@@ -320,6 +320,7 @@ export const workoutSchema = z.object({
   title: z.string(),
   programId: z.string().nullable(),
   programSessionId: z.string().nullable(),
+  plannedFor: isoDate.nullable(),
   eventId: z.string().nullable(),
   exercises: z.array(workoutExercise),
   rpe: z.number().min(0).max(10).nullable(),

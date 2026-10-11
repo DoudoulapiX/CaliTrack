@@ -120,9 +120,10 @@ test('programme : création, réglage d’un exercice, et tout reste après rech
   // L'accueil a préparé le programme : la semaine est déjà là.
   const nav = page.getByRole('navigation', { name: 'Navigation principale' })
   await nav.getByRole('link', { name: 'Entraînement' }).click()
-  await expect(page.getByText('Cette semaine')).toBeVisible()
+  // La semaine en cours, ou la suivante quand celle-ci n'a plus de séance à faire.
+  await expect(page.getByRole('heading', { name: /^(Cette semaine|La semaine prochaine)$/ })).toBeVisible()
   await page
-    .getByRole('link', { name: /^lundi .+ : / })
+    .getByRole('link', { name: /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) .+ : / })
     .first()
     .click()
 
@@ -206,5 +207,57 @@ test('séance libre : série cochée, repos qui défile, rechargement, puis bila
   await expect(bar).toBeHidden()
   await page.getByRole('link', { name: 'Historique' }).click()
   await expect(page.getByRole('link', { name: /^Séance libre/ })).toContainText('1 série · Correct')
+  expect(errors).toEqual([])
+})
+
+test('calendrier : séance du programme passée, course ajoutée en deux touches, rechargement', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  // Un mercredi : le programme préparé à l'accueil (lundi, mercredi, vendredi) commence aujourd'hui.
+  await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByRole('button', { name: 'Terminer' }).click()
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' })
+  await nav.getByRole('link', { name: 'Calendrier' }).click()
+  await expect(page.getByRole('heading', { name: 'Octobre 2026', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Mercredi 21 octobre · Aujourd’hui' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Vendredi 23 octobre, Corps complet/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Lundi 19 octobre$/ })).toBeVisible() // avant le début
+
+  // La séance du jour : on la passe.
+  const session = page.getByRole('button', { name: /^Corps complet/ })
+  await session.click()
+  const sheet = page.getByRole('dialog')
+  await expect(sheet.getByRole('button', { name: 'Commencer la séance' })).toBeVisible()
+  await sheet.getByRole('button', { name: 'Passer cette séance' }).click()
+  await expect(page.getByText('Séance passée')).toBeVisible()
+  await expect(session).toContainText('Passée')
+
+  // Une course faite aujourd'hui : le + puis « Ajouter la séance ».
+  await page.getByRole('button', { name: 'Ajouter une séance' }).click()
+  await page
+    .getByRole('dialog', { name: 'Nouvelle séance' })
+    .getByRole('button', { name: 'Ajouter la séance' })
+    .click()
+  await expect(page.getByText('Séance ajoutée')).toBeVisible()
+  const run = page.getByRole('button', { name: /^Course à pied/ })
+  await expect(run).toContainText('Faite')
+
+  // Tout reste après rechargement ; l'onglet Entraînement le montre aussi.
+  await page.reload()
+  await expect(run).toContainText('Faite')
+  await expect(session).toContainText('Passée')
+  await page.getByRole('button', { name: 'Mois suivant' }).click()
+  await expect(page.getByRole('heading', { name: 'Novembre 2026', level: 2 })).toBeVisible()
+  await nav.getByRole('link', { name: 'Entraînement' }).click()
+  await expect(page.getByRole('heading', { name: 'Cette semaine' })).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: /^mercredi 21 oct\. \(aujourd’hui\) : .+ \(passée\)$/ }),
+  ).toBeVisible()
+  await expect(page.getByText('Repos aujourd’hui')).toBeHidden()
   expect(errors).toEqual([])
 })

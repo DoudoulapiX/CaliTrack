@@ -366,6 +366,11 @@ export interface Workout {
   title: string
   programId: string | null
   programSessionId: string | null
+  /**
+   * Jour où était prévue la séance du programme qu'elle remplit, quand on l'a choisie (rattrapée ou
+   * faite en avance) ; null : elle remplit la séance prévue la plus proche.
+   */
+  plannedFor: ISODate | null
   eventId: string | null
   exercises: WorkoutExercise[]
   rpe: number | null
