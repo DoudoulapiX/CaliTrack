@@ -4,9 +4,9 @@ import { describeSeries, measuresLine } from './calendar-view'
 describe('vue du calendrier', () => {
   it('décrit durée, distance et calories sans couper un nombre de son unité', () => {
     expect(measuresLine({ time: '09:30', durationMin: 42, distanceKm: 7.5, energyKcal: 480 })).toBe(
-      '09:30 · 42 min · 7,5 km · 480 kcal',
+      '09:30 · 42\u00a0min · 7,5\u00a0km · 480\u00a0kcal',
     )
-    expect(measuresLine({ time: null, durationMin: 90 })).toBe('90 min')
+    expect(measuresLine({ time: null, durationMin: 90 })).toBe('90\u00a0min')
     expect(measuresLine({ time: null, durationMin: null, distanceKm: null, energyKcal: null })).toBe('')
   })
 

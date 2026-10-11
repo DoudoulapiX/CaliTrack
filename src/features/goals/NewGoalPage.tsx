@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useSettings } from '@/app/data-context'
 import { useGoBack } from '@/app/useGoBack'
+import { fontOf } from '@/content/climbing/labels'
 import {
   bodyweightGoal,
   bodyweightGoalError,
@@ -42,6 +43,7 @@ import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { GradeSwatch } from '@/features/climbing/GradeSwatch'
 import { useAvailableKinds } from '@/features/equipment/useAvailableKinds'
 import { ExerciseThumb } from '@/features/library/ExerciseThumb'
 import { useCatalog } from '@/features/library/catalog-context'
@@ -453,19 +455,13 @@ function NewGoalForm({
               options={scale.grades.map((g) => ({
                 value: g.key,
                 label: g.label,
-                icon: (
-                  <span
-                    aria-hidden
-                    className="size-3 rounded-full ring-1 ring-black/10"
-                    style={{ backgroundColor: g.color }}
-                  />
-                ),
+                icon: <GradeSwatch color={g.color} size="xs" />,
               }))}
               onChange={changed(setGradeKey)}
             />
             {grade && (
               <p className="text-[13px] text-ink-3">
-                {grade.font !== grade.label ? `${grade.font} en Fontainebleau · ` : ''}
+                {fontOf(grade) ? `${fontOf(grade) ?? ''} en Fontainebleau · ` : ''}
                 {climbsDone > 0
                   ? `déjà ${String(climbsDone)} réussi${climbsDone > 1 ? 's' : ''} à ce niveau ou plus dur`
                   : 'les blocs plus durs comptent aussi'}

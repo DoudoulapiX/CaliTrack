@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { useGoBack } from '@/app/useGoBack'
+import { fontOf } from '@/content/climbing/labels'
 import { formatGoalValue } from '@/content/goals/create'
 import { withAchieved, withManualProgress } from '@/content/goals/edit'
 import {
@@ -38,6 +39,7 @@ import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { ConfirmSheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { GradeSwatch } from '@/features/climbing/GradeSwatch'
 import { ExerciseThumb } from '@/features/library/ExerciseThumb'
 import { useCatalog } from '@/features/library/catalog-context'
 import { GoalEditSheet } from './GoalEditSheet'
@@ -260,18 +262,15 @@ function ClimbingSection({ progress }: { progress: ClimbingProgress }) {
       </Section>
     )
   }
+  const font = fontOf(grade)
   return (
     <Section>
       <Card className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className="size-11 shrink-0 rounded-full ring-1 ring-black/10"
-          style={{ backgroundColor: grade.color }}
-        />
+        <GradeSwatch color={grade.color} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="text-[16px] font-semibold text-ink">{grade.label} ou plus dur</p>
           <p className="text-[13px] text-ink-3">
-            {grade.font !== grade.label ? `${scale.name} · ${grade.font} en Fontainebleau` : scale.name}
+            {font ? `${scale.name} · ${font} en Fontainebleau` : scale.name}
           </p>
         </div>
         <p className="text-[17px] font-bold text-ink tabular">

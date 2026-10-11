@@ -1,6 +1,8 @@
+import { compareSessions } from '@/content/climbing/session'
 import type {
   AppSettings,
   CalendarEvent,
+  ClimbingSession,
   EventKind,
   EventSeries,
   Profile,
@@ -22,6 +24,7 @@ import {
  * L'agenda d'une période : ce que prévoient le programme, les jours d'escalade du profil et les
  * séances perso (ponctuelles ou répétées), avec ce qui a été fait. Rien n'est recopié en base :
  * les séances prévues se calculent à la volée, seuls les écarts (faite, annulée) sont enregistrés.
+ * Une séance d'escalade notée remplit l'escalade prévue le même jour.
  */
 
 /** Écart maximal entre une séance faite et la séance du programme qu'elle remplit (en jours). */
@@ -54,12 +57,22 @@ export interface EventItem extends ItemBase {
   event: CalendarEvent
   /** La série dont ce jour fait partie, s'il y en a une. */
   series: EventSeries | null
+  /** Escalade : la séance notée ce jour-là qui la remplit. */
+  climb: ClimbingSession | null
 }
 
 /** Un jour d'une série répétée, tel que prévu (rien d'enregistré pour ce jour-là). */
 export interface OccurrenceItem extends ItemBase {
   type: 'occurrence'
   series: EventSeries
+  /** Escalade : la séance notée ce jour-là qui la remplit. */
+  climb: ClimbingSession | null
+}
+
+/** Une séance d'escalade notée un jour où rien de tel n'était prévu. */
+export interface ClimbItem extends ItemBase {
+  type: 'climb'
+  climb: ClimbingSession
 }
 
 /** Une séance faite ou en cours qui ne remplit aucune séance du programme de ce jour-là. */
@@ -70,7 +83,7 @@ export interface WorkoutItem extends ItemBase {
   countsFor: ISODate | null
 }
 
-export type AgendaItem = ProgramItem | EventItem | OccurrenceItem | WorkoutItem
+export type AgendaItem = ProgramItem | EventItem | OccurrenceItem | WorkoutItem | ClimbItem
 
 export type Agenda = Map<ISODate, AgendaItem[]>
 
@@ -82,6 +95,8 @@ export interface AgendaSources {
   events: readonly CalendarEvent[]
   /** Séances faites ou en cours, MATCH_DAYS * 2 jours avant et après la période comprise. */
   workouts: readonly Workout[]
+  /** Séances d'escalade de la période. */
+  climbs: readonly ClimbingSession[]
 }
 
 /** Marge à charger autour d'une période pour relier les séances faites au programme. */
@@ -242,7 +257,13 @@ function eventStatus(event: CalendarEvent, today: ISODate): AgendaStatus {
   return event.status === 'planned' ? plannedStatus(event.date, today) : event.status
 }
 
-const TYPE_ORDER: Record<AgendaItem['type'], number> = { program: 0, workout: 1, occurrence: 2, event: 2 }
+const TYPE_ORDER: Record<AgendaItem['type'], number> = {
+  program: 0,
+  workout: 1,
+  climb: 1,
+  occurrence: 2,
+  event: 2,
+}
 
 /** Heure prévue d'un élément (les séances sans heure passent avant, comme « toute la journée »). */
 export function itemTime(item: AgendaItem): string | null {
@@ -333,6 +354,7 @@ export function buildAgenda(from: ISODate, to: ISODate, sources: AgendaSources):
           status: eventStatus(event, today),
           event,
           series,
+          climb: null,
         })
       } else {
         add({
@@ -341,6 +363,7 @@ export function buildAgenda(from: ISODate, to: ISODate, sources: AgendaSources):
           date,
           status: plannedStatus(date, today),
           series,
+          climb: null,
         })
       }
     }
@@ -360,11 +383,42 @@ export function buildAgenda(from: ISODate, to: ISODate, sources: AgendaSources):
       status: eventStatus(event, today),
       event,
       series: null,
+      climb: null,
     })
   }
 
   for (const items of agenda.values()) items.sort(compareItems)
+  addClimbs(agenda, sources.climbs)
   return agenda
+}
+
+/** L'escalade prévue un jour (pas celle annulée), qu'une séance notée ce jour-là peut remplir. */
+function isClimbingPlan(item: AgendaItem): item is EventItem | OccurrenceItem {
+  return (
+    (item.type === 'event' || item.type === 'occurrence') &&
+    itemKind(item) === 'climbing' &&
+    item.status !== 'skipped'
+  )
+}
+
+/**
+ * Chaque séance d'escalade remplit l'escalade prévue le même jour, dans l'ordre de la journée ; une
+ * séance de plus (ou un jour sans escalade prévue) s'ajoute à la journée.
+ */
+function addClimbs(agenda: Agenda, climbs: readonly ClimbingSession[]) {
+  for (const climb of [...climbs].sort(compareSessions)) {
+    const items = agenda.get(climb.date)
+    if (!items) continue
+    const status: AgendaStatus = climb.status === 'active' ? 'active' : 'done'
+    const plan = items.filter(isClimbingPlan).find((item) => item.climb === null)
+    if (plan) {
+      plan.climb = climb
+      plan.status = status
+    } else {
+      items.push({ type: 'climb', key: `escalade-${climb.id}`, date: climb.date, status, climb })
+      items.sort(compareItems)
+    }
+  }
 }
 
 /** Genre d'un élément, pour sa couleur et son icône. */
@@ -373,6 +427,8 @@ export function itemKind(item: AgendaItem): EventKind {
     case 'program':
     case 'workout':
       return 'program'
+    case 'climb':
+      return 'climbing'
     case 'event':
       return item.event.kind
     case 'occurrence':
@@ -387,6 +443,8 @@ export function itemTitle(item: AgendaItem): string {
       return item.session.name
     case 'workout':
       return item.workout.title
+    case 'climb':
+      return 'Escalade'
     case 'event':
       return item.event.title
     case 'occurrence':

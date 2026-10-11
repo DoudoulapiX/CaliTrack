@@ -8,7 +8,7 @@ import { addDaysISO, today, type ISODate } from '@/lib/dates'
 
 /**
  * L'agenda d'une période (premier et dernier jour compris) : programme, jours d'escalade, séances
- * perso et séances faites. undefined pendant le chargement.
+ * perso, séances faites et séances d'escalade. undefined pendant le chargement.
  */
 export function useAgenda(
   program: Program | null | undefined,
@@ -25,7 +25,8 @@ export function useAgenda(
       .where('date')
       .between(addDaysISO(from, -AGENDA_MARGIN_DAYS), addDaysISO(to, AGENDA_MARGIN_DAYS), true, true)
       .toArray()
-    return { events, series, workouts }
+    const climbs = await db.climbingSessions.where('date').between(from, to, true, true).toArray()
+    return { events, series, workouts, climbs }
   }, [from, to])
 
   return useMemo(() => {
@@ -37,6 +38,7 @@ export function useAgenda(
       series: climbing ? [...data.series, climbing] : data.series,
       events: data.events,
       workouts: data.workouts,
+      climbs: data.climbs,
     })
   }, [program, data, profile, settings, from, to, day])
 }

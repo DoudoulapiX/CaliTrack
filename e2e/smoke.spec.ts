@@ -319,3 +319,74 @@ test('objectifs : figure visée suivie dès l’accueil, poids noté, tout reste
   await expect(page.getByRole('link', { name: /^Muscle-up/ })).toContainText(/33\s%/)
   expect(errors).toEqual([])
 })
+
+test('escalade : blocs notés par couleur, séance gardée au rechargement, bilan, statistiques et niveaux', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  // Un samedi soir.
+  await page.clock.setFixedTime(new Date('2026-10-24T18:00:00+02:00'))
+
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByRole('button', { name: 'Terminer' }).click()
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' })
+  await nav.getByRole('link', { name: 'Escalade', exact: true }).click()
+  await page.getByRole('button', { name: 'Commencer une séance' }).click()
+  await expect(page.getByRole('heading', { name: 'Vertical’Art', level: 1 })).toBeVisible()
+  await expect(nav).toBeHidden()
+
+  // Un bleu du premier coup, puis un rouge au deuxième essai.
+  await page.getByRole('button', { name: /^Bleu, .+\sajouter un bloc/ }).click()
+  await page
+    .getByRole('dialog', { name: 'Bloc bleu' })
+    .getByRole('button', { name: 'Ajouter le bloc' })
+    .click()
+  await expect(page.getByRole('heading', { name: 'Blocs notés (1)' })).toBeVisible()
+  await page.getByRole('button', { name: /^Rouge, .+\sajouter un bloc/ }).click()
+  const red = page.getByRole('dialog', { name: 'Bloc rouge' })
+  await red.getByRole('button', { name: 'Essais : plus' }).click()
+  await expect(red.getByText('Réussi au 2e essai.')).toBeVisible()
+  await red.getByRole('button', { name: 'Ajouter le bloc' }).click()
+  await expect(page.getByRole('heading', { name: 'Blocs notés (2)' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Bleu, .+\(1 réussi\)$/ })).toBeVisible()
+
+  // Rechargée, la séance est toujours en cours ; sa barre la rouvre depuis les onglets.
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Blocs notés (2)' })).toBeVisible()
+  await page.getByRole('button', { name: 'Escalade', exact: true }).click()
+  await expect(page.getByText('Séance en cours')).toBeVisible()
+  const bar = page.getByRole('link', { name: /^Reprendre la séance d’escalade en cours/ })
+  await bar.click()
+  await page.getByRole('button', { name: 'Terminer la séance' }).click()
+  const finish = page.getByRole('dialog', { name: 'Terminer la séance' })
+  await finish.getByLabel('Durée', { exact: true }).fill('90')
+  await finish.getByRole('radio', { name: 'Dur', exact: true }).click()
+  await finish.getByRole('button', { name: 'Enregistrer la séance' }).click()
+  await expect(page.getByText('Séance terminée')).toBeVisible()
+  await page.getByRole('button', { name: 'Terminé' }).click()
+  await expect(page.getByRole('heading', { name: 'Dernières séances' })).toBeVisible()
+  await expect(bar).toBeHidden()
+
+  // Tout reste après rechargement : l'onglet, puis les statistiques.
+  await page.reload()
+  await expect(page.getByRole('link', { name: /^Samedi 24 octobre/ })).toContainText(
+    'Vertical’Art · 1 h 30 · 2 blocs réussis · Dur',
+  )
+  await page.getByRole('link', { name: /^Statistiques/ }).click()
+  await expect(page.getByRole('list', { name: 'Blocs réussis par séance' })).toContainText(
+    /Samedi 24 octobre\s:\s2 réussis \(1 bloc bleu et 1 bloc rouge\)/,
+  )
+
+  // Un niveau de plus pour la salle, gardé lui aussi.
+  await page.goto('climbing/grades')
+  await page.getByRole('button', { name: 'Ajouter un niveau' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Nouveau niveau' })
+  await sheet.getByLabel('Nom', { exact: true }).fill('Blanc')
+  await sheet.getByRole('button', { name: 'Ajouter le niveau' }).click()
+  await expect(page.getByText('Niveau ajouté')).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('button', { name: /^Blanc/ })).toBeVisible()
+  expect(errors).toEqual([])
+})

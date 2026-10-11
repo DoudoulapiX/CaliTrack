@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, Play } from 'lucide-react'
 import { CLIMBING_DAYS_SERIES_ID, type OccurrenceItem } from '@/content/calendar/agenda'
 import { setOccurrenceStatus } from '@/db/calendar'
 import { capitalize, formatDay, type ISODate } from '@/lib/dates'
@@ -7,6 +7,7 @@ import { userMessage } from '@/lib/errors'
 import { Button, ButtonLink } from '@/ui/Button'
 import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { useStartClimb } from '@/features/climbing/useStartClimb'
 import { KindIcon } from './AgendaRow'
 import { describeSeries, measuresLine } from './calendar-view'
 
@@ -18,15 +19,27 @@ export interface OccurrenceSheetProps {
   onDetails: () => void
   /** Ouvre la séance répétée dans le formulaire. */
   onEditSeries: () => void
+  /** Escalade : noter les blocs d'une séance déjà faite ce jour-là. */
+  onLogClimb: () => void
 }
 
 /** Un jour d'une séance répétée : c'est fait, pas cette fois, ou le détail de ce jour-là. */
-export function OccurrenceSheet({ item, today, onClose, onDetails, onEditSeries }: OccurrenceSheetProps) {
+export function OccurrenceSheet({
+  item,
+  today,
+  onClose,
+  onDetails,
+  onEditSeries,
+  onLogClimb,
+}: OccurrenceSheetProps) {
   const toast = useToast()
+  const climbing = useStartClimb()
   const [busy, setBusy] = useState(false)
   const { series, date } = item
   const fromProfile = series.id === CLIMBING_DAYS_SERIES_ID
   const past = date <= today
+  // Une séance d'escalade se note bloc par bloc : en direct aujourd'hui, après coup sinon.
+  const climb = series.kind === 'climbing'
 
   const mark = async (status: 'done' | 'skipped') => {
     setBusy(true)
@@ -47,8 +60,31 @@ export function OccurrenceSheet({ item, today, onClose, onDetails, onEditSeries 
       title={series.title}
       footer={
         <div className="flex flex-col gap-2">
+          {climb && date === today && (
+            <Button
+              block
+              size="lg"
+              disabled={busy || climbing.busy}
+              icon={<Play size={18} aria-hidden />}
+              onClick={climbing.start}
+            >
+              Commencer la séance
+            </Button>
+          )}
+          {climb && past && (
+            <Button
+              variant={date === today ? 'secondary' : 'primary'}
+              block
+              size="lg"
+              disabled={busy}
+              onClick={onLogClimb}
+            >
+              Noter mes blocs après coup
+            </Button>
+          )}
           {past && (
             <Button
+              variant={climb ? 'secondary' : 'primary'}
               block
               size="lg"
               disabled={busy}
@@ -58,9 +94,11 @@ export function OccurrenceSheet({ item, today, onClose, onDetails, onEditSeries 
               C’est fait
             </Button>
           )}
-          <Button variant="secondary" block size="lg" disabled={busy} onClick={onDetails}>
-            {past ? 'Noter avec les détails' : 'Modifier ce jour-là'}
-          </Button>
+          {!(climb && past) && (
+            <Button variant="secondary" block size="lg" disabled={busy} onClick={onDetails}>
+              {past ? 'Noter avec les détails' : 'Modifier ce jour-là'}
+            </Button>
+          )}
           <Button variant="secondary" block size="lg" disabled={busy} onClick={() => void mark('skipped')}>
             Pas cette fois
           </Button>

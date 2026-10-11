@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import type { AgendaItem, OccurrenceItem, ProgramItem } from '@/content/calendar/agenda'
 import { occurrenceEvent } from '@/content/calendar/event-form'
-import type { ProgramSession } from '@/db/types'
+import type { ClimbingSession, ProgramSession } from '@/db/types'
 import {
   capitalize,
   formatDay,
@@ -20,6 +20,8 @@ import { newId } from '@/lib/ids'
 import { Button, IconButton } from '@/ui/Button'
 import { ListGroup } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
+import { climbPath } from '@/features/climbing/climb-view'
+import { PastClimbSheet } from '@/features/climbing/PastClimbSheet'
 import { useCatalog } from '@/features/library/catalog-context'
 import { sessionSummary } from '@/features/training/program-view'
 import { useActiveProgram } from '@/features/training/useTraining'
@@ -38,7 +40,8 @@ const DAY_PARAM = 'jour'
 type OpenSheet =
   | { type: 'program'; item: ProgramItem }
   | { type: 'occurrence'; item: OccurrenceItem }
-  | { type: 'edit'; target: EventEditTarget }
+  | { type: 'edit'; target: EventEditTarget; climb?: ClimbingSession | null }
+  | { type: 'pastClimb'; date: ISODate }
 
 /** Onglet Calendrier : le mois, et le détail du jour choisi (programme, séances perso, séances faites). */
 export function CalendarPage() {
@@ -80,7 +83,11 @@ export function CalendarPage() {
             setSheet({ type: 'program', item })
           },
         }
+      case 'climb':
+        return { to: climbPath(item.climb) }
       case 'occurrence':
+        // Un jour d'escalade prévu et noté dans le module Escalade : on ouvre la séance notée.
+        if (item.climb) return { to: climbPath(item.climb) }
         return {
           onSelect: () => {
             setSheet({ type: 'occurrence', item })
@@ -92,6 +99,7 @@ export function CalendarPage() {
             setSheet({
               type: 'edit',
               target: { mode: 'event', event: item.event, series: item.series, saved: true },
+              climb: item.climb,
             })
           },
         }
@@ -198,11 +206,16 @@ export function CalendarPage() {
           onEditSeries={() => {
             setSheet({ type: 'edit', target: { mode: 'series', series: sheet.item.series } })
           }}
+          onLogClimb={() => {
+            setSheet({ type: 'pastClimb', date: sheet.item.date })
+          }}
         />
       )}
+      {sheet?.type === 'pastClimb' && <PastClimbSheet date={sheet.date} onClose={close} />}
       {sheet?.type === 'edit' && (
         <EventSheet
           target={sheet.target}
+          climb={sheet.climb ?? null}
           today={day}
           onClose={close}
           onSaved={(date) => {

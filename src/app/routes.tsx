@@ -99,6 +99,37 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'climbing/session/:id',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/climbing/ClimbPage')).ClimbSessionPage,
+            }),
+          },
+          {
+            path: 'climbing/history',
+            lazy: async () => ({
+              Component: (await import('@/features/climbing/ClimbHistoryPage')).ClimbHistoryPage,
+            }),
+          },
+          {
+            path: 'climbing/history/:id',
+            lazy: async () => ({
+              Component: (await import('@/features/climbing/ClimbPage')).ClimbHistorySessionPage,
+            }),
+          },
+          {
+            path: 'climbing/stats',
+            lazy: async () => ({
+              Component: (await import('@/features/climbing/ClimbStatsPage')).ClimbStatsPage,
+            }),
+          },
+          {
+            path: 'climbing/grades',
+            lazy: async () => ({
+              Component: (await import('@/features/climbing/GradesPage')).GradesPage,
+            }),
+          },
+          {
             path: 'goals',
             lazy: async () => ({ Component: (await import('@/features/goals/GoalsPage')).GoalsPage }),
           },

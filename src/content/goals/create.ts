@@ -1,3 +1,4 @@
+import { bouldersOf } from '@/content/climbing/labels'
 import { PROFILE_LIMITS } from '@/content/profile'
 import type { Skill } from '@/content/skills'
 import type { Goal, GoalKind, Grade } from '@/db/types'
@@ -132,28 +133,9 @@ export function bodyweightGoal(
   }
 }
 
-/** Couleurs de prises, au pluriel (« orange » et « marron » ne s'accordent pas). */
-const COLOR_PLURAL: Partial<Record<string, string>> = {
-  orange: 'orange',
-  vert: 'verts',
-  bleu: 'bleus',
-  rouge: 'rouges',
-  noir: 'noirs',
-  violet: 'violets',
-  jaune: 'jaunes',
-  blanc: 'blancs',
-  rose: 'roses',
-  gris: 'gris',
-  marron: 'marron',
-}
-
 /** « 1 bloc noir », « 5 blocs bleus », « 3 blocs en 6A ». */
 export function climbingGoalTitle(count: number, grade: Pick<Grade, 'label'>): string {
-  const noun = count > 1 ? 'blocs' : 'bloc'
-  const color = grade.label.trim().toLowerCase()
-  const plural = COLOR_PLURAL[color]
-  if (plural === undefined) return `${String(count)} ${noun} en ${grade.label}`
-  return `${String(count)} ${noun} ${count > 1 ? plural : color}`
+  return bouldersOf(count, grade)
 }
 
 /** L'escalade : réussir `count` blocs du niveau choisi ou plus durs. */

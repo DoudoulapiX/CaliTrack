@@ -1,3 +1,4 @@
+import { compareSessions, isSend } from '@/content/climbing/session'
 import { gradeIndex } from '@/content/grades'
 import { LEVEL_TEST_ITEMS } from '@/content/level-test'
 import type {
@@ -5,6 +6,7 @@ import type {
   BodyMetric,
   ClimbingSession,
   Goal,
+  GoalKind,
   GoalMilestone,
   Grade,
   GradeScale,
@@ -378,15 +380,12 @@ function climbingProgress(goal: Goal, ctx: GoalContext): ClimbingProgress {
   if (!scale || !grade || target === null || target <= 0) {
     return { kind: 'climbing', count: 0, target, scale, grade, ratio: 0, achieved: false, achievedOn: null }
   }
-  const sessions = ctx.climbs
-    .filter((session) => session.scaleId === scale.id)
-    .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt))
+  const sessions = ctx.climbs.filter((session) => session.scaleId === scale.id).sort(compareSessions)
   let count = 0
   let achievedOn: ISODate | null = null
   for (const session of sessions) {
     for (const boulder of session.boulders) {
-      const sent = boulder.result === 'flash' || boulder.result === 'sent'
-      if (!sent || gradeIndex(scale, boulder.gradeKey) < min) continue
+      if (!isSend(boulder.result) || gradeIndex(scale, boulder.gradeKey) < min) continue
       count++
       if (count === target) achievedOn = session.date
     }
@@ -447,6 +446,28 @@ export interface GoalAdvance {
   newSteps: StepProgress[]
 }
 
+/** Objectifs de ces genres dont l'avancement a bougé entre deux états des données. */
+function advancesBetween(
+  goals: readonly Goal[],
+  kinds: readonly GoalKind[],
+  before: GoalContext,
+  after: GoalContext,
+): GoalAdvance[] {
+  const advances: GoalAdvance[] = []
+  for (const goal of goals) {
+    if (goal.archived || !kinds.includes(goal.kind)) continue
+    const was = goalProgress(goal, before)
+    const now = goalProgress(goal, after)
+    if (now.ratio <= was.ratio && now.achieved === was.achieved) continue
+    const newSteps =
+      now.kind === 'skill' && was.kind === 'skill'
+        ? now.steps.filter((step, i) => step.status === 'done' && was.steps[i]?.status !== 'done')
+        : []
+    advances.push({ goal, before: was, after: now, newSteps })
+  }
+  return advances
+}
+
 /**
  * Objectifs (figures et exercices) qu'une séance a fait avancer : on compare l'avancement juste
  * avant elle et juste après. Les séances faites plus tard ne comptent pas, ni un test de niveau
@@ -468,19 +489,27 @@ export function goalsAdvancedBy(
     climbs: [],
     scales: new Map(),
   })
-  const before = contextOf(earlier)
-  const after = contextOf([...earlier, workout])
-  const advances: GoalAdvance[] = []
-  for (const goal of goals) {
-    if (goal.archived || (goal.kind !== 'skill' && goal.kind !== 'exercise')) continue
-    const was = goalProgress(goal, before)
-    const now = goalProgress(goal, after)
-    if (now.ratio <= was.ratio && now.achieved === was.achieved) continue
-    const newSteps =
-      now.kind === 'skill' && was.kind === 'skill'
-        ? now.steps.filter((step, i) => step.status === 'done' && was.steps[i]?.status !== 'done')
-        : []
-    advances.push({ goal, before: was, after: now, newSteps })
-  }
-  return advances
+  return advancesBetween(goals, ['skill', 'exercise'], contextOf(earlier), contextOf([...earlier, workout]))
+}
+
+/**
+ * Objectifs d'escalade qu'une séance a fait avancer (blocs réussis au niveau visé ou plus dur),
+ * comparés aux séances d'avant elle.
+ */
+export function climbingGoalsAdvancedBy(
+  session: ClimbingSession,
+  goals: readonly Goal[],
+  climbs: readonly ClimbingSession[],
+  scales: readonly GradeScale[],
+): GoalAdvance[] {
+  const earlier = climbs.filter((c) => c.id !== session.id && compareSessions(c, session) < 0)
+  const byId = new Map(scales.map((scale) => [scale.id, scale]))
+  const contextOf = (list: readonly ClimbingSession[]): GoalContext => ({
+    performances: new Map(),
+    weights: [],
+    profileWeightKg: null,
+    climbs: list,
+    scales: byId,
+  })
+  return advancesBetween(goals, ['climbing'], contextOf(earlier), contextOf([...earlier, session]))
 }

@@ -10,11 +10,12 @@ import type {
   Workout,
   WorkoutSet,
 } from '@/db/types'
-import { sequentialIds } from '@/test/fixtures'
+import { climbSession, sequentialIds } from '@/test/fixtures'
 import { bodyweightGoal, climbingGoal, customGoal, exerciseGoal, skillGoal } from './create'
 import {
   bestPerformance,
   buildGoalContext,
+  climbingGoalsAdvancedBy,
   buildPerformanceIndex,
   firstReached,
   goalProgress,
@@ -304,11 +305,14 @@ describe('objectif « escalade »', () => {
     ({
       id,
       date,
+      status: 'done',
+      startedAt: `${date}T17:00:00.000Z`,
+      endedAt: `${date}T19:00:00.000Z`,
       gym: 'Vertical’Art',
       scaleId,
       durationMin: null,
+      rpe: null,
       notes: '',
-      eventId: null,
       boulders: boulders.map(([gradeKey, result], i) => ({
         id: `${id}-${String(i)}`,
         gradeKey,
@@ -356,6 +360,31 @@ describe('objectif « escalade »', () => {
   it('reste à zéro si le niveau n’existe plus', () => {
     const lost = { ...goal, gradeKey: 'or' }
     expect(goalProgress(lost, context())).toMatchObject({ ratio: 0, grade: null, achieved: false })
+  })
+
+  it('dit ce qu’une séance a fait avancer, sans compter les séances d’après', () => {
+    const before = climbSession('a', '2026-10-03', [['bleu', 'sent']])
+    const today = climbSession('b', '2026-10-10', [
+      ['rouge', 'flash'],
+      ['vert', 'sent'],
+      ['bleu', 'failed'],
+    ])
+    const later = climbSession('c', '2026-10-17', [['noir', 'sent']])
+    const archived = { ...goal, id: 'archivé', archived: true }
+    const all = [later, today, before]
+    const scales = defaultGradeScales()
+
+    const [advance, ...others] = climbingGoalsAdvancedBy(today, [goal, archived], all, scales)
+    expect(others).toEqual([])
+    expect(advance?.goal.id).toBe(goal.id)
+    expect(advance?.before).toMatchObject({ count: 1, achieved: false })
+    expect(advance?.after).toMatchObject({ count: 2, achieved: false })
+    // Rien de réussi au niveau visé : rien n'avance.
+    const easy = climbSession('d', '2026-10-11', [['vert', 'flash']])
+    expect(climbingGoalsAdvancedBy(easy, [goal], [...all, easy], scales)).toEqual([])
+    // La séance qui atteint l'objectif le dit.
+    const done = climbingGoalsAdvancedBy(later, [goal], all, scales)
+    expect(done[0]?.after).toMatchObject({ count: 3, achieved: true, achievedOn: '2026-10-17' })
   })
 })
 

@@ -386,10 +386,12 @@ export interface Workout {
 /* ------------------------------------------------------------------ */
 
 export interface Grade {
+  /** Identifiant stable : les blocs y font référence, même si le niveau est renommé. */
   key: string
   label: string
+  /** Couleur des prises, « #rrggbb ». */
   color: string
-  textColor: string
+  /** Équivalence Fontainebleau (« 6A – 6B ») ; vide si inconnue. */
   font: string
 }
 
@@ -400,6 +402,7 @@ export interface GradeScale {
   builtIn: boolean
 }
 
+/** Réussi au premier essai (flash), réussi après plusieurs, pas réussi mais à retenter (projet), pas réussi. */
 export type BoulderResult = 'flash' | 'sent' | 'project' | 'failed'
 
 export type ClimbStyle =
@@ -422,6 +425,7 @@ export interface BoulderAttempt {
   id: string
   gradeKey: string
   result: BoulderResult
+  /** Essais sur ce bloc pendant la séance (1 pour un flash). */
   attempts: number
   styles: ClimbStyle[]
   note: string
@@ -431,11 +435,18 @@ export interface BoulderAttempt {
 export interface ClimbingSession {
   id: string
   date: ISODate
+  /** En cours (notée bloc après bloc) ou terminée. */
+  status: 'active' | 'done'
+  startedAt: string
+  /** null tant que la séance est en cours. */
+  endedAt: string | null
   gym: string
   scaleId: string
+  /** Durée retenue (null : inconnue). */
   durationMin: number | null
+  rpe: number | null
   notes: string
-  eventId: string | null
+  /** Dans l'ordre où ils ont été notés. */
   boulders: BoulderAttempt[]
   createdAt: string
   updatedAt: string

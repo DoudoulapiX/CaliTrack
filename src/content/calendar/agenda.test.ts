@@ -1,5 +1,5 @@
 import type { CalendarEvent, EventSeries, Program, ProgramSession, Workout } from '@/db/types'
-import { profile } from '@/test/fixtures'
+import { climbSession, profile } from '@/test/fixtures'
 import {
   buildAgenda,
   climbingDaysSeries,
@@ -105,7 +105,15 @@ function series(id: string, patch: Partial<EventSeries> = {}): EventSeries {
 }
 
 function sources(patch: Partial<AgendaSources>): AgendaSources {
-  return { today: '2026-10-28', program: null, series: [], events: [], workouts: [], ...patch }
+  return {
+    today: '2026-10-28',
+    program: null,
+    series: [],
+    events: [],
+    workouts: [],
+    climbs: [],
+    ...patch,
+  }
 }
 
 /** Le contenu d'une journée, en clair : « type:titre:statut[:détail] ». */
@@ -345,5 +353,59 @@ describe('agenda', () => {
     expect(dayLines(agenda, '2026-10-20')).toEqual(['workout:Séance libre:done'])
     const first = agenda.get('2026-10-19')?.[0]
     expect(first && itemKind(first)).toBe('program')
+  })
+})
+
+describe('escalade notée', () => {
+  it('remplit l’escalade prévue le même jour, sinon s’ajoute à la journée', () => {
+    const climbing = climbingDaysSeries(profile({ climbingDays: [2, 6] }), { hiddenModules: [] })
+    const agenda = buildAgenda(
+      '2026-10-12',
+      '2026-10-25',
+      sources({
+        today: '2026-10-21',
+        series: climbing ? [climbing] : [],
+        events: [
+          event('e1', '2026-10-17', {
+            seriesId: CLIMBING_DAYS_SERIES_ID,
+            kind: 'climbing',
+            title: 'Escalade',
+            status: 'skipped',
+          }),
+          event('e2', '2026-10-15', { kind: 'climbing', title: 'Bloc avec Léa' }),
+        ],
+        climbs: [
+          climbSession('c2', '2026-10-13', [], { startedAt: '2026-10-13T19:00:00.000Z' }),
+          climbSession('c1', '2026-10-13'),
+          climbSession('c3', '2026-10-15'),
+          climbSession('c4', '2026-10-17'),
+          climbSession('c5', '2026-10-21', [], { status: 'active', endedAt: null }),
+          climbSession('c6', '2026-10-30'),
+        ],
+      }),
+    )
+    const climbs = (date: string) =>
+      (agenda.get(date) ?? []).map(
+        (item) =>
+          (item.type === 'climb' || item.type === 'event' || item.type === 'occurrence'
+            ? item.climb?.id
+            : undefined) ?? '-',
+      )
+
+    // La première séance du jour remplit le jour prévu, la deuxième s'ajoute.
+    expect(dayLines(agenda, '2026-10-13')).toEqual(['climb:Escalade:done', 'occurrence:Escalade:done'])
+    expect(climbs('2026-10-13')).toEqual(['c2', 'c1'])
+    expect(dayLines(agenda, '2026-10-15')).toEqual(['event:Bloc avec Léa:done'])
+    expect(climbs('2026-10-15')).toEqual(['c3'])
+    // Un jour annulé ne se remplit pas : la séance faite quand même s'ajoute.
+    expect(dayLines(agenda, '2026-10-17')).toEqual(['climb:Escalade:done', 'event:Escalade:skipped'])
+    expect(climbs('2026-10-17')).toEqual(['c4', '-'])
+    expect(dayLines(agenda, '2026-10-20')).toEqual(['occurrence:Escalade:missed'])
+    expect(climbs('2026-10-20')).toEqual(['-'])
+    expect(dayLines(agenda, '2026-10-21')).toEqual(['climb:Escalade:active'])
+    expect(dayLines(agenda, '2026-10-24')).toEqual(['occurrence:Escalade:planned'])
+
+    const extra = agenda.get('2026-10-21')?.[0]
+    expect(extra && itemKind(extra)).toBe('climbing')
   })
 })

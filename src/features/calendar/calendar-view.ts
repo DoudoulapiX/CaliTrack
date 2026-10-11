@@ -4,6 +4,7 @@ import type { EventKind, EventSeries, ProgramSession } from '@/db/types'
 import { capitalize, formatDay, WEEKDAY_LONG, type ISODate } from '@/lib/dates'
 import { joinFrench } from '@/lib/typography'
 import { formatNumber } from '@/lib/units'
+import { climbSubtitle } from '@/features/climbing/climb-view'
 import { workoutSubtitle } from '@/features/workout/workout-view'
 
 /** Couleurs de chaque genre (classes écrites en entier pour que Tailwind les garde). */
@@ -76,12 +77,16 @@ export function itemSubtitle(item: AgendaItem, summary: (session: ProgramSession
       const line = workoutSubtitle(item.workout)
       return item.countsFor ? `Pour la séance du ${shortDay(item.countsFor)} · ${line}` : line
     }
+    case 'climb':
+      return climbSubtitle(item.climb)
     case 'event': {
+      if (item.climb) return climbSubtitle(item.climb)
       const e = item.event
       const line = measuresLine(e)
       return line === '' ? KIND_LABEL[e.kind] : line
     }
     case 'occurrence': {
+      if (item.climb) return climbSubtitle(item.climb)
       const line = measuresLine(item.series)
       return line === '' ? KIND_LABEL[item.series.kind] : line
     }

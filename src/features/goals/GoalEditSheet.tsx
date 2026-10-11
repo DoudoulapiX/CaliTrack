@@ -23,6 +23,7 @@ import { ChoiceChips, Stepper } from '@/ui/Controls'
 import { NumberField, TextField } from '@/ui/Field'
 import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
+import { GradeSwatch } from '@/features/climbing/GradeSwatch'
 import { useCatalog } from '@/features/library/catalog-context'
 import { stepName, weightInUnit } from './goal-view'
 
@@ -254,13 +255,7 @@ export function GoalEditSheet({ goal, onClose }: { goal: Goal; onClose: () => vo
                 options={scale.grades.map((g) => ({
                   value: g.key,
                   label: g.label,
-                  icon: (
-                    <span
-                      aria-hidden
-                      className="size-3 rounded-full ring-1 ring-black/10"
-                      style={{ backgroundColor: g.color }}
-                    />
-                  ),
+                  icon: <GradeSwatch color={g.color} size="xs" />,
                 }))}
                 onChange={changed(setGradeKey)}
               />

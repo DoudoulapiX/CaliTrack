@@ -330,18 +330,23 @@ export const workoutSchema = z.object({
   progression: z.array(progressionChange),
 })
 
+/** Un texte qui n'est pas fait que d'espaces. */
+const named = z.string().regex(/\S/, 'Nom vide')
+
 const grade = z.object({
   key: z.string().min(1),
-  label: z.string(),
-  color: z.string(),
-  textColor: z.string(),
+  label: named,
+  color: z.string().regex(/^#[0-9a-f]{6}$/i),
   font: z.string(),
 })
 
 export const gradeScaleSchema = z.object({
   id: z.string().min(1),
-  name: z.string(),
-  grades: z.array(grade),
+  name: named,
+  grades: z
+    .array(grade)
+    .min(1)
+    .refine((grades) => new Set(grades.map((g) => g.key)).size === grades.length, 'Niveau en double'),
   builtIn: z.boolean(),
 })
 
@@ -349,7 +354,7 @@ const boulder = z.object({
   id: z.string().min(1),
   gradeKey: z.string(),
   result: z.enum(['flash', 'sent', 'project', 'failed']),
-  attempts: z.number().int().min(0),
+  attempts: z.number().int().min(1),
   styles: z.array(
     z.enum([
       'slab',
@@ -372,18 +377,26 @@ const boulder = z.object({
   createdAt: timestamp,
 })
 
-export const climbingSessionSchema = z.object({
-  id: z.string().min(1),
-  date: isoDate,
-  gym: z.string(),
-  scaleId: z.string(),
-  durationMin: z.number().min(0).nullable(),
-  notes: z.string(),
-  eventId: z.string().nullable(),
-  boulders: z.array(boulder),
-  createdAt: timestamp,
-  updatedAt: timestamp,
-})
+export const climbingSessionSchema = z
+  .object({
+    id: z.string().min(1),
+    date: isoDate,
+    status: z.enum(['active', 'done']),
+    startedAt: timestamp,
+    endedAt: timestamp.nullable(),
+    gym: z.string(),
+    scaleId: z.string().min(1),
+    durationMin: z.number().int().min(0).max(1440).nullable(),
+    rpe: z.number().min(0).max(10).nullable(),
+    notes: z.string(),
+    boulders: z.array(boulder),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  })
+  .refine((s) => (s.status === 'active') === (s.endedAt === null), {
+    message: 'Une séance en cours n’a pas de fin, une séance terminée en a une.',
+    path: ['endedAt'],
+  })
 
 const criterion = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('reps'), exerciseId: z.string(), value: z.number() }),

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Mountain } from 'lucide-react'
 import { firstOccurrence } from '@/content/calendar/agenda'
 import {
   CARDIO_ACTIVITIES,
@@ -15,17 +16,18 @@ import {
   type EventDraft,
 } from '@/content/calendar/event-form'
 import { deleteEvent, deleteSeries, saveEvent, saveSeries } from '@/db/calendar'
-import type { CalendarEvent, EventSeries, EventStatus } from '@/db/types'
+import type { CalendarEvent, ClimbingSession, EventSeries, EventStatus } from '@/db/types'
 import { nowISO, type ISODate } from '@/lib/dates'
 import { userMessage } from '@/lib/errors'
 import { newId } from '@/lib/ids'
 import { frenchSpacing } from '@/lib/typography'
-import { Button } from '@/ui/Button'
+import { Button, ButtonLink } from '@/ui/Button'
 import { ChoiceChips, Segmented, Toggle } from '@/ui/Controls'
 import { NumberField, SelectField, TextAreaField, TextField } from '@/ui/Field'
 import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { WeekdayPicker } from '@/ui/WeekdayPicker'
+import { climbPath, climbSubtitle } from '@/features/climbing/climb-view'
 import { KIND_ICON } from './kind-icons'
 
 /** Ce que modifie le formulaire. */
@@ -91,13 +93,15 @@ export interface EventSheetProps {
   onClose: () => void
   /** Après l'enregistrement : le jour à montrer (null : rester sur le jour affiché). */
   onSaved: (date: ISODate | null) => void
+  /** La séance notée dans le module Escalade pour cette séance prévue, s'il y en a une. */
+  climb?: ClimbingSession | null
 }
 
 /**
  * Ajout ou modification d'une séance perso (cardio, escalade, autre, repos), ponctuelle ou répétée
  * chaque semaine. Montée à l'ouverture.
  */
-export function EventSheet({ target, today, onClose, onSaved }: EventSheetProps) {
+export function EventSheet({ target, today, onClose, onSaved, climb = null }: EventSheetProps) {
   const toast = useToast()
   const [draft, setDraft] = useState<EventDraft>(() => initialDraft(target, today))
   const [error, setError] = useState<string | null>(null)
@@ -225,6 +229,21 @@ export function EventSheet({ target, today, onClose, onSaved }: EventSheetProps)
           void save()
         }}
       >
+        {climb && (
+          <div className="flex flex-col items-start gap-1 rounded-2xl bg-info/10 p-3">
+            <p className="text-[15px] font-medium text-ink">Séance d’escalade notée</p>
+            <p className="text-[13px] text-ink-3">{climbSubtitle(climb)}</p>
+            <ButtonLink
+              to={climbPath(climb)}
+              variant="secondary"
+              size="sm"
+              icon={<Mountain size={16} aria-hidden />}
+              className="mt-1"
+            >
+              Voir la séance d’escalade
+            </ButtonLink>
+          </div>
+        )}
         <LabeledChoice label="Type">
           <ChoiceChips
             label="Type de séance"

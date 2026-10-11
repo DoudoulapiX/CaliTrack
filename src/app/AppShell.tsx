@@ -1,5 +1,7 @@
 import { Suspense, type CSSProperties } from 'react'
 import { Navigate, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router'
+import { ActiveClimbBar } from '@/features/climbing/ActiveClimbBar'
+import { useActiveClimb } from '@/features/climbing/useClimbing'
 import { CatalogProvider } from '@/features/library/CatalogProvider'
 import { ActiveWorkoutBar } from '@/features/workout/ActiveWorkoutBar'
 import { useActiveWorkout } from '@/features/workout/useWorkouts'
@@ -24,8 +26,14 @@ export function AppShell() {
   const location = useLocation()
   const matches = useMatches()
   const active = useActiveWorkout()
+  const climb = useActiveClimb()
   const hideTabBar = matches.some((m) => isRouteHandle(m.handle) && m.handle.hideTabBar === true)
-  const workoutBar = !hideTabBar && active ? active : null
+  // Une seule barre au-dessus des onglets : la séance de muscu d'abord, sinon l'escalade.
+  const accessory = hideTabBar ? null : active ? (
+    <ActiveWorkoutBar workout={active} />
+  ) : climb ? (
+    <ActiveClimbBar session={climb} />
+  ) : null
 
   // L'accueil s'ouvre et se ferme ici, d'après le réglage enregistré : une fois l'accueil terminé,
   // on n'en sort qu'après la mise à jour des réglages (sinon on y serait renvoyé aussitôt).
@@ -34,13 +42,13 @@ export function AppShell() {
   if (settings.onboardingDone && onOnboarding) return <Navigate to="/" replace />
 
   return (
-    <div className="contents" style={workoutBar ? WORKOUT_BAR : undefined}>
+    <div className="contents" style={accessory ? WORKOUT_BAR : undefined}>
       <Suspense fallback={<PageSpinner />}>
         <CatalogProvider>
           <Outlet />
         </CatalogProvider>
       </Suspense>
-      {!hideTabBar && <TabBar accessory={workoutBar && <ActiveWorkoutBar workout={workoutBar} />} />}
+      {!hideTabBar && <TabBar accessory={accessory} />}
       <ScrollRestoration />
     </div>
   )

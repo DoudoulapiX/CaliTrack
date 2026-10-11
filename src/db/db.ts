@@ -50,7 +50,7 @@ export const SCHEMA_V1 = {
   events: 'id, date, kind, seriesId, status, workoutId, climbingSessionId',
   eventSeries: 'id',
   workouts: 'id, date, status, programId, eventId',
-  climbingSessions: 'id, date, eventId',
+  climbingSessions: 'id, date, status',
   gradeScales: 'id',
   goals: 'id, kind',
   bodyMetrics: 'id, date',

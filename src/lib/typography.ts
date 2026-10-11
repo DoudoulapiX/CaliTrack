@@ -1,4 +1,5 @@
-const NBSP = '\u00a0'
+/** Espace insécable (entre un nombre et son unité, avant « : ; ! ? % »). */
+export const NBSP = '\u00a0'
 
 /** Espaces insécables de la typographie française : avant « : ; ! ? % » et après « (évite un signe seul en début de ligne). */
 export function frenchSpacing(text: string): string {

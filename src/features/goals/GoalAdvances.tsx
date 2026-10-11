@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import { ChevronRight } from 'lucide-react'
 import { useProfile } from '@/app/data-context'
-import { goalsAdvancedBy, type GoalAdvance } from '@/content/goals/progress'
-import type { Workout } from '@/db/types'
+import { climbingGoalsAdvancedBy, goalsAdvancedBy, type GoalAdvance } from '@/content/goals/progress'
+import type { ClimbingSession, GradeScale, Workout } from '@/db/types'
 import { frenchSpacing, joinFrench } from '@/lib/typography'
 import { ListGroup } from '@/ui/List'
 import { Section } from '@/ui/Page'
@@ -23,15 +23,9 @@ function advanceLine({ before, after, newSteps }: GoalAdvance, options: LineOpti
   return progressLine(after, options)
 }
 
-/** Objectifs qu'une séance a fait avancer, avec l'avancement avant et après (bilan de séance). */
-export function GoalAdvances({ workout, workouts }: { workout: Workout; workouts: readonly Workout[] }) {
-  const goals = useGoals()
-  const { levelTest } = useProfile()
+/** Objectifs qui ont avancé, avec l'avancement avant et après (bilan de séance). */
+export function GoalAdvanceList({ advances }: { advances: readonly GoalAdvance[] }) {
   const options = useLineOptions()
-  const advances = useMemo(
-    () => (goals ? goalsAdvancedBy(workout, goals, workouts, levelTest) : []),
-    [workout, goals, workouts, levelTest],
-  )
   if (advances.length === 0) return null
 
   return (
@@ -68,4 +62,33 @@ export function GoalAdvances({ workout, workouts }: { workout: Workout; workouts
       </ListGroup>
     </Section>
   )
+}
+
+/** Objectifs qu'une séance d'entraînement a fait avancer. */
+export function GoalAdvances({ workout, workouts }: { workout: Workout; workouts: readonly Workout[] }) {
+  const goals = useGoals()
+  const { levelTest } = useProfile()
+  const advances = useMemo(
+    () => (goals ? goalsAdvancedBy(workout, goals, workouts, levelTest) : []),
+    [workout, goals, workouts, levelTest],
+  )
+  return <GoalAdvanceList advances={advances} />
+}
+
+/** Objectifs d'escalade qu'une séance d'escalade a fait avancer. */
+export function ClimbingGoalAdvances({
+  session,
+  climbs,
+  scales,
+}: {
+  session: ClimbingSession
+  climbs: readonly ClimbingSession[]
+  scales: readonly GradeScale[]
+}) {
+  const goals = useGoals()
+  const advances = useMemo(
+    () => (goals ? climbingGoalsAdvancedBy(session, goals, climbs, scales) : []),
+    [session, goals, climbs, scales],
+  )
+  return <GoalAdvanceList advances={advances} />
 }

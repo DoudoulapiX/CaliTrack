@@ -26,6 +26,23 @@ export function rgbToHex([r, g, b]: RGB): string {
     .join('')}`
 }
 
+/** Couleur TSL (teinte en degrés, saturation et luminosité de 0 à 100) vers « #rrggbb ». */
+export function hslToHex(hue: number, saturation: number, lightness: number): string {
+  const h = (((hue % 360) + 360) % 360) / 360
+  const s = saturation / 100
+  const l = lightness / 100
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+  const p = 2 * l - q
+  const channelOf = (t0: number) => {
+    const t = t0 < 0 ? t0 + 1 : t0 > 1 ? t0 - 1 : t0
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+  return rgbToHex([channelOf(h + 1 / 3) * 255, channelOf(h) * 255, channelOf(h - 1 / 3) * 255])
+}
+
 /** Mélange de deux couleurs : t = 0 → a, t = 1 → b. */
 export function mix(a: string, b: string, t: number): string {
   const ca = hexToRgb(a)
@@ -53,9 +70,15 @@ export function contrast(a: string, b: string): number {
 export const INK_DARK = '#0b0b0f'
 export const INK_LIGHT = '#ffffff'
 
-/** Couleur du texte posé sur un fond plein de cette couleur. */
+/**
+ * Couleur du texte posé sur un fond plein de cette couleur : blanc ou encre sombre, et noir pur pour
+ * les quelques tons moyens où aucune des deux n'atteint le contraste de 4,5 exigé pour un texte.
+ */
 export function readableOn(background: string): string {
-  return contrast(background, INK_LIGHT) >= contrast(background, INK_DARK) ? INK_LIGHT : INK_DARK
+  const light = contrast(background, INK_LIGHT)
+  const dark = contrast(background, INK_DARK)
+  if (light >= 4.5 || dark >= 4.5) return light >= dark ? INK_LIGHT : INK_DARK
+  return light >= contrast(background, '#000000') ? INK_LIGHT : '#000000'
 }
 
 /**

@@ -92,7 +92,7 @@ describe('création d’un objectif', () => {
       targetValue: 75,
     })
 
-    const grade = { key: 'bleu', label: 'Bleu', color: '#2563eb', textColor: '#fff', font: '6A – 6B' }
+    const grade = { key: 'bleu', label: 'Bleu', color: '#2563eb', font: '6A – 6B' }
     const climb = climbingGoal({ scaleId: 'vertical-art', grade, count: 5 }, BASICS, NOW, ids)
     expect(climb).toMatchObject({
       kind: 'climbing',
@@ -185,7 +185,7 @@ describe('titre proposé', () => {
     const climb = climbingGoal(
       {
         scaleId: 'vertical-art',
-        grade: { key: 'bleu', label: 'Bleu', color: '', textColor: '', font: '' },
+        grade: { key: 'bleu', label: 'Bleu', color: '', font: '' },
         count: 1,
       },
       BASICS,
