@@ -124,14 +124,19 @@ export function TodayWorkoutCard({ program }: { program: Program | null }) {
           )}
         </div>
       </div>
-      <div className="mt-4 flex gap-2">
+      {/* Côte à côte s'ils tiennent sur une ligne, sinon l'un sous l'autre. */}
+      <div className="mt-4 flex flex-wrap gap-2">
         {lastDone && (
-          <ButtonLink to={historyPath(lastDone.id)} variant="secondary" className="flex-1">
+          <ButtonLink to={historyPath(lastDone.id)} variant="secondary" className="grow whitespace-nowrap">
             Voir le bilan
           </ButtonLink>
         )}
         {next && (
-          <StartWorkoutButton build={buildSession(program, next.session)} variant="soft" className="flex-1">
+          <StartWorkoutButton
+            build={buildSession(program, next.session)}
+            variant="soft"
+            className="grow whitespace-nowrap"
+          >
             La faire maintenant
           </StartWorkoutButton>
         )}

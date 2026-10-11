@@ -40,8 +40,7 @@ export function AppShell() {
           <Outlet />
         </CatalogProvider>
       </Suspense>
-      {workoutBar && <ActiveWorkoutBar workout={workoutBar} />}
-      {!hideTabBar && <TabBar />}
+      {!hideTabBar && <TabBar accessory={workoutBar && <ActiveWorkoutBar workout={workoutBar} />} />}
       <ScrollRestoration />
     </div>
   )

@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { cn } from '@/lib/cn'
 import { useSettings } from './data-context'
 import { visibleTabs } from './tabs'
 
-export function TabBar() {
+/** `accessory` : posé au-dessus des onglets, dans la même barre (la séance en cours, par exemple). */
+export function TabBar({ accessory }: { accessory?: ReactNode }) {
   const settings = useSettings()
   const tabs = visibleTabs(settings)
   return (
@@ -11,6 +13,7 @@ export function TabBar() {
       aria-label="Navigation principale"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/95 pb-safe backdrop-blur-xl"
     >
+      {accessory}
       <ul className="mx-auto flex h-[var(--tabbar-height)] max-w-xl items-stretch">
         {tabs.map((tab) => {
           const Icon = tab.icon

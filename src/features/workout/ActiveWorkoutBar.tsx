@@ -20,17 +20,17 @@ function Clock({ workout }: { workout: Workout }) {
   )
 }
 
-/** Barre « séance en cours » au-dessus des onglets : on peut naviguer, puis revenir à la séance. */
+/**
+ * Barre « séance en cours », posée au-dessus des onglets (dans la même barre) : on peut naviguer,
+ * puis revenir à la séance.
+ */
 export function ActiveWorkoutBar({ workout }: { workout: Workout }) {
   return (
-    <aside
-      aria-label="Séance en cours"
-      className="fixed inset-x-2 bottom-[calc(var(--tabbar-height)+var(--safe-bottom)+6px)] z-40 mx-auto h-[calc(var(--workout-bar-height)-12px)] max-w-xl"
-    >
+    <div className="mx-auto h-[var(--workout-bar-height)] max-w-xl px-2 pt-2">
       <Link
         to={workoutPath(workout.id)}
         aria-label={`Reprendre la séance en cours : ${workout.title}`}
-        className="flex h-full items-center gap-3 rounded-2xl bg-accent px-3 text-accent-ink shadow-lg active:opacity-90"
+        className="flex h-full items-center gap-3 rounded-2xl bg-accent px-3 text-accent-ink active:opacity-90"
       >
         <Dumbbell size={20} className="shrink-0" aria-hidden />
         <span className="min-w-0 flex-1">
@@ -42,6 +42,6 @@ export function ActiveWorkoutBar({ workout }: { workout: Workout }) {
         <Clock workout={workout} />
         <ChevronRight size={18} className="shrink-0" aria-hidden />
       </Link>
-    </aside>
+    </div>
   )
 }
