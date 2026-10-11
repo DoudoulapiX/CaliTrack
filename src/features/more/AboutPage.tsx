@@ -114,7 +114,7 @@ export function AboutPage() {
       <Section title="Tes données">
         <Paragraph>
           {frenchSpacing(
-            'Tout reste sur ton iPhone, dans l’appli : pas de compte, pas de serveur. Enregistre une sauvegarde dans Fichiers de temps en temps pour ne rien perdre.',
+            'Tout reste sur ton iPhone, dans l’appli : pas de compte, pas de serveur. Rien ne part ailleurs, sauf quand tu t’en sers : la photo d’un repas (vers Anthropic, avec ta clé), un code-barres (cherché sur Open Food Facts) et la lecture de ta bague (demandée à Oura par ton relais). Enregistre une sauvegarde dans Fichiers de temps en temps pour ne rien perdre.',
           )}
         </Paragraph>
         <ListGroup className="mt-3">
@@ -157,6 +157,21 @@ export function AboutPage() {
           <Credit
             title="Couleurs Vertical’Art"
             text="Équivalences Fontainebleau d’après la table publique de Kaskad Coaching, à titre indicatif."
+          />
+          <Credit
+            title="Valeurs nutritionnelles"
+            text="Table Ciqual 2025 de l’Anses, licence ouverte Etalab 2.0, avec les portions de l’étude INCA3."
+            href="https://ciqual.anses.fr"
+          />
+          <Credit
+            title="Produits scannés"
+            text="Open Food Facts, base ouverte sous licence ODbL."
+            href="https://world.openfoodfacts.org"
+          />
+          <Credit
+            title="Lecture des codes-barres"
+            text="zxing-wasm, licence MIT."
+            href="https://github.com/Sec-ant/zxing-wasm"
           />
           <Credit title="Icônes" text="Lucide, licence ISC." href="https://lucide.dev" />
         </ul>
