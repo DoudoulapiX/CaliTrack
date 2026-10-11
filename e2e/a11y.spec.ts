@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { CLAUDE_KEY, fakeClaude, onboard, solidPng } from './nutrition-helpers'
+import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
 
 /**
  * Attend la fin des transitions et animations en cours (pas de celles qui tournent sans fin). Une pastille
@@ -456,6 +458,105 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await expect(page.getByRole('dialog', { name: /^Tout effacer/ })).toBeVisible()
       await expectAccessible(page, 'tout effacer')
       await page.getByRole('button', { name: 'Annuler' }).click()
+    })
+
+    test('nutrition, IA et Oura accessibles', async ({ page }) => {
+      test.slow()
+      // Un mercredi midi.
+      await page.clock.setFixedTime(new Date('2026-10-21T12:30:00+02:00'))
+      // Sans caméra : l'écran du scan propose de taper le code, dans tous les navigateurs.
+      await page.addInitScript(() => {
+        Object.defineProperty(Navigator.prototype, 'mediaDevices', {
+          configurable: true,
+          get: () => undefined,
+        })
+      })
+      await fakeClaude(page)
+      await fakeOura(page)
+      await onboard(page)
+
+      // Le journal, l'ajout d'un aliment et sa quantité.
+      await page.goto('nutrition')
+      await expect(page.getByRole('heading', { name: 'Nutrition', level: 1 })).toBeVisible()
+      await expectAccessible(page, 'nutrition')
+      await page.getByRole('link', { name: 'Ajouter au déjeuner' }).click()
+      await expect(page.getByRole('link', { name: 'Scanner un produit' })).toBeVisible()
+      await expectAccessible(page, 'ajouter un aliment')
+      await page.getByRole('button', { name: 'Saisie rapide' }).click()
+      await expect(page.getByRole('dialog', { name: 'Saisie rapide' })).toBeVisible()
+      await expectAccessible(page, 'saisie rapide')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+      await page.getByRole('searchbox', { name: 'Chercher un aliment' }).fill('riz blanc cuit')
+      await page.getByRole('button', { name: /^Riz blanc, cuit, sans sel/ }).click()
+      const rice = page.getByRole('dialog', { name: /^Riz blanc, cuit, sans sel/ })
+      await expect(rice.getByLabel('Quantité', { exact: true })).toHaveValue('110')
+      await expectAccessible(page, 'quantité')
+      await rice.getByRole('button', { name: 'Ajouter au déjeuner' }).click()
+      await expect(rice).toBeHidden()
+      await expectAccessible(page, 'recherche')
+
+      await page.goto('nutrition')
+      await page.getByRole('list', { name: 'Déjeuner' }).getByRole('button').first().click()
+      await expect(page.getByRole('dialog', { name: /^Riz blanc, cuit, sans sel/ })).toBeVisible()
+      await expectAccessible(page, 'aliment noté')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+
+      for (const [path, heading] of [
+        ['nutrition/scan', 'Scanner un produit'],
+        ['nutrition/targets', 'Objectifs caloriques'],
+        ['nutrition/foods', 'Mes aliments'],
+        ['nutrition/foods/new', 'Nouvel aliment'],
+        ['nutrition/photo', 'Photo du repas'],
+        ['more/ai', 'Intelligence artificielle'],
+      ] as const) {
+        await page.goto(path)
+        await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible()
+        await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+        await expectAccessible(page, path)
+      }
+
+      // La photo d'un repas, analysée par Claude (simulé), puis la correction d'un aliment.
+      await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+      await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
+      await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+      await expectAccessible(page, 'clé enregistrée')
+      await page.goto('nutrition/photo?meal=lunch')
+      await page.getByLabel('Prendre ou choisir une photo').setInputFiles({
+        name: 'IMG_0002.png',
+        mimeType: 'image/png',
+        buffer: solidPng(400, 300, [200, 140, 60]),
+      })
+      await expect(page.getByRole('button', { name: 'Analyser la photo' })).toBeVisible()
+      await expectAccessible(page, 'photo choisie')
+      await page.getByRole('button', { name: 'Analyser la photo' }).click()
+      const found = page.getByRole('list', { name: 'Aliments reconnus' })
+      await expect(found.getByRole('button')).toHaveCount(2)
+      await expectAccessible(page, 'aliments reconnus')
+      await found.getByRole('button').first().click()
+      await expect(page.getByRole('dialog', { name: 'Corriger l’aliment' })).toBeVisible()
+      await expectAccessible(page, 'corriger l’aliment')
+      await page.getByRole('button', { name: 'Fermer' }).click()
+
+      // Oura : les réglages, le retour ouvert hors de l'appli, puis la bague connectée.
+      await configureOura(page)
+      await expectAccessible(page, 'oura prête')
+      await page.goto(
+        `oura/callback#access_token=${OURA_TOKEN}&token_type=bearer&expires_in=2592000&state=ailleurs`,
+      )
+      await expect(page.getByRole('heading', { name: 'Dernière étape', level: 2 })).toBeVisible()
+      await expectAccessible(page, 'oura dernière étape')
+      const link = await page.getByLabel('Lien de retour').inputValue()
+      await page.goto('more/oura')
+      await page.getByLabel('Lien de retour').fill(link)
+      await page.getByRole('button', { name: 'Valider le lien' }).click()
+      await expect(page.getByText('Synchronisée aujourd’hui à 12:30')).toBeVisible()
+      await expectAccessible(page, 'oura connectée')
+      await page.goto('./')
+      await expect(page.getByText('Cette nuit')).toBeVisible()
+      await expectAccessible(page, 'aujourd’hui avec Oura')
+      await page.goto('oura/callback#error=access_denied')
+      await expect(page.getByRole('heading', { name: 'Accès refusé', level: 2 })).toBeVisible()
+      await expectAccessible(page, 'oura refusée')
     })
   })
 }

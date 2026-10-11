@@ -227,6 +227,19 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'more/oura',
+            lazy: async () => ({
+              Component: (await import('@/features/oura/OuraSettingsPage')).OuraSettingsPage,
+            }),
+          },
+          {
+            path: 'oura/callback',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/oura/OuraCallbackPage')).OuraCallbackPage,
+            }),
+          },
+          {
             path: 'more/backup',
             lazy: async () => ({ Component: (await import('@/features/backup/BackupPage')).BackupPage }),
           },

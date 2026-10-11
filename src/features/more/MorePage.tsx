@@ -1,4 +1,4 @@
-import { Backpack, HardDriveDownload, Info, Settings2, Sparkles, UserRound } from 'lucide-react'
+import { Backpack, HardDriveDownload, HeartPulse, Info, Settings2, Sparkles, UserRound } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { ALL_TAB_KEYS, TAB_DEFS, visibleTabs } from '@/app/tabs'
 import { ListGroup, ListRow } from '@/ui/List'
@@ -57,6 +57,12 @@ export function MorePage() {
             subtitle="Clé Claude, modèle, coût"
             to="/more/ai"
             leading={<Sparkles size={22} aria-hidden />}
+          />
+          <ListRow
+            title="Bague Oura"
+            subtitle="Sommeil et récupération"
+            to="/more/oura"
+            leading={<HeartPulse size={22} aria-hidden />}
           />
           <ListRow
             title="Sauvegarde"

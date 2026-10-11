@@ -4,6 +4,7 @@ import { ActiveClimbBar } from '@/features/climbing/ActiveClimbBar'
 import { useActiveClimb } from '@/features/climbing/useClimbing'
 import { CatalogProvider } from '@/features/library/CatalogProvider'
 import { ActiveWorkoutBar } from '@/features/workout/ActiveWorkoutBar'
+import { OURA_CALLBACK_PATH } from '@/content/oura/oura'
 import { useActiveWorkout } from '@/features/workout/useWorkouts'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { useSettings } from './data-context'
@@ -38,7 +39,10 @@ export function AppShell() {
   // L'accueil s'ouvre et se ferme ici, d'après le réglage enregistré : une fois l'accueil terminé,
   // on n'en sort qu'après la mise à jour des réglages (sinon on y serait renvoyé aussitôt).
   const onOnboarding = location.pathname === '/onboarding'
-  if (!settings.onboardingDone && !onOnboarding) return <Navigate to="/onboarding" replace />
+  // Le retour d'Oura s'affiche toujours : il peut s'ouvrir dans Safari, hors de l'appli installée.
+  const onOuraCallback = location.pathname === OURA_CALLBACK_PATH
+  if (!settings.onboardingDone && !onOnboarding && !onOuraCallback)
+    return <Navigate to="/onboarding" replace />
   if (settings.onboardingDone && onOnboarding) return <Navigate to="/" replace />
 
   return (

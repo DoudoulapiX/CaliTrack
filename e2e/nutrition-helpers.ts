@@ -1,5 +1,5 @@
 import { crc32, deflateSync } from 'node:zlib'
-import { expect, type Page } from '@playwright/test'
+import { expect, type Page, type Route } from '@playwright/test'
 
 /** Réponse d'Open Food Facts pour une pâte à tartiner (extrait). */
 export const NUTELLA_PRODUCT = {
@@ -11,6 +11,53 @@ export const NUTELLA_PRODUCT = {
     serving_quantity: '15',
     nutriments: { 'energy-kcal_100g': 539, proteins_100g: 6.3, carbohydrates_100g: 57.5, fat_100g: 30.9 },
   },
+}
+
+/** Une clé Claude d'essai (l'API est simulée). */
+export const CLAUDE_KEY = 'sk-ant-api03-e2e-0123456789abcdefghij'
+
+/** L'estimation enregistrée de Claude pour une assiette (poulet, riz). */
+export const PLATE_ESTIMATE = {
+  isMeal: true,
+  problem: '',
+  items: [
+    { name: 'Blanc de poulet grillé', grams: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 },
+    { name: 'Riz blanc cuit', grams: 180, kcal: 234, protein: 4.9, carbs: 51.8, fat: 0.5 },
+  ],
+}
+
+const CLAUDE_CORS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-headers': '*',
+  'access-control-allow-methods': 'GET, POST, OPTIONS',
+}
+
+/** L'API Claude simulée : la clé est acceptée, l'assiette reconnue. Note chaque demande. */
+export async function fakeClaude(page: Page) {
+  const sent: { url: string; key: string | null; body: unknown }[] = []
+  await page.route('https://api.anthropic.com/**', async (route: Route) => {
+    const request = route.request()
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CLAUDE_CORS })
+    sent.push({
+      url: request.url(),
+      key: request.headers()['x-api-key'] ?? null,
+      body: request.postDataJSON(),
+    })
+    const body = request.url().includes('/v1/models')
+      ? { data: [], has_more: false, first_id: null, last_id: null }
+      : {
+          id: 'msg_e2e',
+          type: 'message',
+          role: 'assistant',
+          model: 'claude-opus-5-5',
+          content: [{ type: 'text', text: JSON.stringify(PLATE_ESTIMATE) }],
+          stop_reason: 'end_turn',
+          stop_sequence: null,
+          usage: { input_tokens: 1900, output_tokens: 400 },
+        }
+    return route.fulfill({ json: body, headers: CLAUDE_CORS })
+  })
+  return sent
 }
 
 /** Les erreurs de la page (exceptions et console), qui doivent rester vides. */

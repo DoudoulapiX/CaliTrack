@@ -416,12 +416,13 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   const nav = page.getByRole('navigation', { name: 'Navigation principale' })
   await expect(nav).toBeVisible()
 
-  // L'écran Aujourd'hui et ses sept cartes, dans l'ordre par défaut (celle d'Oura attend la bague).
+  // L'écran Aujourd'hui et ses huit cartes, dans l'ordre par défaut (celle d'Oura invite à connecter la bague).
   await expect(page.getByRole('heading', { name: 'Aujourd’hui', level: 1 })).toBeVisible()
   await expect(page.getByText('Mercredi 21 octobre')).toBeVisible()
   const titles = page.getByRole('heading', { level: 2 })
   await expect(titles).toHaveText([
     'Au programme',
+    'Récupération',
     'Calories du jour',
     'Ma semaine',
     'Objectifs',
@@ -463,7 +464,14 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   await nav.getByRole('link', { name: 'Aujourd’hui' }).click()
   // L'accueil garde la barre finale de l'adresse (/CaliTrack/) : il se recharge sans erreur.
   await expect(page).toHaveURL(/\/CaliTrack\/$/)
-  const shown = ['Objectifs', 'Au programme', 'Calories du jour', 'Ma semaine', 'Records récents']
+  const shown = [
+    'Objectifs',
+    'Au programme',
+    'Récupération',
+    'Calories du jour',
+    'Ma semaine',
+    'Records récents',
+  ]
   await expect(titles).toHaveText(shown)
   await page.reload()
   await expect(titles).toHaveText(shown)

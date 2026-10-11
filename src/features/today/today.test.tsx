@@ -103,6 +103,7 @@ describe('écran Aujourd’hui', () => {
     await waitFor(() => {
       expect(cardTitles()).toEqual([
         'Au programme',
+        'Récupération',
         'Calories du jour',
         'Ma semaine',
         'Objectifs',

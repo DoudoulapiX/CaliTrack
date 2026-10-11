@@ -19,6 +19,7 @@ import { ClimbingCard } from './ClimbingCard'
 import { GoalsCard } from './GoalsCard'
 import { NutritionCard } from './NutritionCard'
 import { RecordsCard } from './RecordsCard'
+import { RecoveryCard } from './RecoveryCard'
 import { TodaySessionCard } from './TodaySessionCard'
 import { climbingPlanned } from './today-view'
 import { WeekCard } from './WeekCard'
@@ -52,7 +53,7 @@ export function TodayPage() {
   const cards = shownCards(settings)
   const card: Record<DashboardCardKey, () => ReactNode> = {
     todaySession: () => <TodaySessionCard program={program} items={items} day={day} />,
-    recovery: () => null,
+    recovery: () => <RecoveryCard day={day} />,
     nutrition: () => <NutritionCard day={day} />,
     week: () => <WeekCard agenda={agenda} dates={dates} day={day} />,
     goals: () => <GoalsCard />,

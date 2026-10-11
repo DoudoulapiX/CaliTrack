@@ -9,7 +9,7 @@ import {
   rescaleItem,
 } from './photo-view'
 
-const NB = ' '
+const NB = '\u00a0'
 
 const rice: EstimatedItem = {
   name: 'Riz blanc cuit',
