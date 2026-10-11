@@ -51,6 +51,43 @@ jobs:
         run: npm run e2e
         env:
           CI: 'true'
+          # Temporaire : sorties des navigateurs, pour comprendre les plantages de WebKit.
+          DEBUG: pw:browser
+
+      - name: Diagnostic WebKit (temporaire)
+        if: failure()
+        run: |
+          python3 - <<'PYEOF'
+          import glob, json, zipfile
+
+          for path in sorted(glob.glob('test-results/*webkit*/trace.zip')):
+              print('=====', path)
+              with zipfile.ZipFile(path) as z:
+                  for name in z.namelist():
+                      if name.endswith('-trace.trace'):
+                          events = [json.loads(line) for line in z.read(name).decode('utf8', 'replace').splitlines()]
+                          shown = []
+                          for ev in events:
+                              kind = ev.get('type')
+                              if kind == 'before':
+                                  params = ev.get('params', {})
+                                  shown.append(f"{ev.get('startTime', 0):10.0f} call {ev.get('method')} {params.get('url', '')}{params.get('selector', '')}"[:220])
+                              elif kind == 'after' and ev.get('error'):
+                                  shown.append(f"{ev.get('endTime', 0):10.0f} error {json.dumps(ev.get('error'))}"[:300])
+                              elif kind == 'log':
+                                  shown.append(f"{ev.get('time', 0):10.0f} log {ev.get('message')}"[:220])
+                              elif kind in ('console', 'event'):
+                                  shown.append(f"{ev.get('time', 0):10.0f} {kind} {ev.get('messageType', '')} {ev.get('method', '')} {ev.get('text', '')} {json.dumps(ev.get('params', ''))}"[:300])
+                          print('\n'.join(shown[-45:]))
+                      elif name.endswith('-trace.network'):
+                          print('--- réseau (fin)')
+                          for line in z.read(name).decode('utf8', 'replace').splitlines()[-30:]:
+                              snap = json.loads(line).get('snapshot', {})
+                              response = snap.get('response', {})
+                              date = next((h['value'] for h in response.get('headers', []) if h['name'].lower() == 'date'), '')
+                              print(snap.get('startedDateTime'), round(snap.get('time', 0)), response.get('status'),
+                                    snap.get('request', {}).get('url'), date, response.get('_failureText', ''))
+          PYEOF
 
       - name: Rapport Playwright
         if: failure()
