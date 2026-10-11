@@ -1,4 +1,5 @@
 import { resetDb } from '@/test/db'
+import { v1Settings } from '@/test/fixtures'
 import { frenchSpacing } from '@/lib/typography'
 import {
   BACKUP_FORMAT,
@@ -114,6 +115,50 @@ describe('sauvegardes', () => {
     delete partial.tables.goals
     const parsed = parseBackup(JSON.stringify(partial))
     expect(parsed.ok).toBe(true)
+  })
+
+  it('restaure une sauvegarde de la version 1, faite avant la nutrition', async () => {
+    const file = JSON.parse(serializeBackup(await collectBackup())) as {
+      format: number
+      dbVersion: number
+      tables: Record<string, unknown[]>
+    }
+    file.format = 1
+    file.dbVersion = 1
+    file.tables.settings = [v1Settings({ accent: '#2563eb' })]
+    // Ni aliments, ni repas, ni objectifs caloriques, ni données Oura en version 1.
+    const { foods, foodEntries, nutritionGoals, ouraDays, ...v1Tables } = file.tables
+    expect([foods, foodEntries, nutritionGoals, ouraDays].every(Array.isArray)).toBe(true)
+    file.tables = v1Tables
+    file.tables.bodyMetrics = [metric('ancien', 81)]
+
+    const parsed = parseBackup(JSON.stringify(file))
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    expect(parsed.backup.format).toBe(BACKUP_FORMAT)
+    await restoreBackup(parsed.backup)
+
+    expect(await db.settings.get('app')).toMatchObject({
+      accent: '#2563eb',
+      aiModel: 'claude-opus-5-5',
+      tabs: ['today', 'training', 'nutrition', 'climbing'],
+    })
+    expect(await db.nutritionGoals.get('me')).toMatchObject({ phase: 'maintain', kcal: null })
+    expect(await db.bodyMetrics.get('ancien')).toBeDefined()
+  })
+
+  it('garde la clé d’IA et le jeton Oura hors des sauvegardes', async () => {
+    await db.secrets.put({ id: 'anthropic', value: 'sk-ant-test', expiresAt: null, updatedAt: 'x' })
+    const text = serializeBackup(await collectBackup())
+    expect(text).not.toContain('sk-ant-test')
+
+    // Restaurer une sauvegarde ne retire pas la clé de l'iPhone ; tout effacer, si.
+    const parsed = parseBackup(text)
+    if (!parsed.ok) throw new Error(parsed.error)
+    await restoreBackup(parsed.backup)
+    expect(await db.secrets.get('anthropic')).toBeDefined()
+    await resetAllData()
+    expect(await db.secrets.count()).toBe(0)
   })
 
   it('remet l’appli à zéro avec les réglages par défaut', async () => {

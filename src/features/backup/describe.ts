@@ -8,13 +8,18 @@ function count(value: number, word: string, complement = ''): string {
   return `${String(value)}${NBSP}${word}${value > 1 ? 's' : ''}${complement}`
 }
 
-/** Ce que contient une sauvegarde : « 12 séances, 4 séances d’escalade, 3 objectifs ». */
+/**
+ * Ce que contient une sauvegarde : « 12 séances, 4 séances d’escalade, 3 objectifs », puis les aliments
+ * notés dans le journal des repas s'il y en a.
+ */
 export function describeContents(backup: BackupFile): string {
   const summary = summarizeBackup(backup)
+  const foods = summary.foodEntries
   return [
     count(summary.workouts, 'séance'),
     count(summary.climbingSessions, 'séance', ' d’escalade'),
     count(summary.goals, 'objectif'),
+    ...(foods > 0 ? [count(foods, 'aliment', foods > 1 ? ' notés' : ' noté')] : []),
   ].join(', ')
 }
 

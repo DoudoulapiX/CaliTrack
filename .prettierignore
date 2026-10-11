@@ -9,3 +9,4 @@ package-lock.json
 scripts/.cache
 src/data/*.json
 scripts/i18n/**/*.json
+scripts/source

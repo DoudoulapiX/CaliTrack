@@ -96,4 +96,39 @@ describe('NumberField', () => {
     await user.click(screen.getByRole('button', { name: 'Remplacer' }))
     expect(screen.getByRole('textbox', { name: 'Valeur' })).toHaveValue('42')
   })
+
+  it('se vide quand la valeur est effacée ailleurs, après la sortie du champ', async () => {
+    const user = userEvent.setup()
+    // Comme une valeur enregistrée dans la base : elle revient un peu plus tard.
+    function Saved() {
+      const [value, setValue] = useState<number | null>(null)
+      const later = (next: number | null) => {
+        setTimeout(() => {
+          setValue(next)
+        }, 5)
+      }
+      return (
+        <>
+          <NumberField label="Valeur" value={value} min={800} max={6000} onChange={later} />
+          <button
+            type="button"
+            onClick={() => {
+              later(null)
+            }}
+          >
+            Effacer
+          </button>
+          <p>Enregistré : {String(value)}</p>
+        </>
+      )
+    }
+    render(<Saved />)
+    const input = screen.getByRole('textbox', { name: 'Valeur' })
+    await user.type(input, '2300')
+    expect(await screen.findByText('Enregistré : 2300')).toBeInTheDocument()
+    // Le clic fait d'abord sortir du champ, sans rien changer.
+    await user.click(screen.getByRole('button', { name: 'Effacer' }))
+    expect(await screen.findByText('Enregistré : null')).toBeInTheDocument()
+    expect(input).toHaveValue('')
+  })
 })

@@ -311,7 +311,9 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await page.getByRole('button', { name: 'Fermer' }).click()
 
       // L'escalade prévue aujourd'hui, commencée depuis le calendrier.
-      await nav.getByRole('link', { name: 'Calendrier' }).click()
+      // Le calendrier n'a pas d'onglet par défaut : on y va par « Plus ».
+      await nav.getByRole('link', { name: 'Plus' }).click()
+      await page.getByRole('link', { name: 'Calendrier' }).click()
       await page.getByRole('button', { name: /^Escalade/ }).click()
       const planned = page.getByRole('dialog', { name: 'Escalade' })
       await expect(planned.getByRole('button', { name: 'Commencer la séance' })).toBeVisible()

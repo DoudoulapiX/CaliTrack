@@ -24,8 +24,8 @@ describe('climbingModulePatch', () => {
   it('masquer l’escalade retire son onglet et sa carte', () => {
     expect(climbingModulePatch(layout(), false)).toEqual({
       hiddenModules: ['climbing'],
-      tabs: ['today', 'calendar', 'training'],
-      dashboardCards: ['todaySession', 'week', 'goals', 'weight', 'records'],
+      tabs: ['today', 'training', 'nutrition'],
+      dashboardCards: ['todaySession', 'recovery', 'nutrition', 'week', 'goals', 'weight', 'records'],
     })
   })
 
@@ -33,8 +33,17 @@ describe('climbingModulePatch', () => {
     const hidden = climbingModulePatch(layout(), false)
     expect(climbingModulePatch(hidden, true)).toEqual({
       hiddenModules: [],
-      tabs: ['today', 'calendar', 'training', 'climbing'],
-      dashboardCards: ['todaySession', 'week', 'goals', 'weight', 'records', 'climbing'],
+      tabs: ['today', 'training', 'nutrition', 'climbing'],
+      dashboardCards: [
+        'todaySession',
+        'recovery',
+        'nutrition',
+        'week',
+        'goals',
+        'weight',
+        'records',
+        'climbing',
+      ],
     })
   })
 

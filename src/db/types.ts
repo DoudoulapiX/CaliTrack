@@ -8,13 +8,17 @@ import type { WeightUnit } from '@/lib/units'
 export type ThemeMode = 'system' | 'light' | 'dark'
 
 /** Écrans qui peuvent occuper un onglet de la barre du bas. */
-export type TabKey = 'today' | 'calendar' | 'training' | 'climbing' | 'goals' | 'library'
+export type TabKey = 'today' | 'calendar' | 'training' | 'nutrition' | 'climbing' | 'goals' | 'library'
 
 /** Cartes du tableau de bord « Aujourd'hui ». */
-export type DashboardCardKey = 'todaySession' | 'week' | 'goals' | 'climbing' | 'weight' | 'records'
+export type DashboardCardKey =
+  'todaySession' | 'recovery' | 'nutrition' | 'week' | 'goals' | 'climbing' | 'weight' | 'records'
 
 /** Modules que l'on peut masquer. */
 export type ModuleKey = 'climbing'
+
+/** Modèles Claude proposés pour l'IA (photo de repas, coach). */
+export type AiModel = 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'claude-haiku-5-5'
 
 export interface AppSettings {
   id: 'app'
@@ -35,6 +39,12 @@ export interface AppSettings {
   climbingGym: string
   /** Lieu utilisé pour filtrer les exercices « avec mon matériel ». */
   currentLocationId: string | null
+  /** Modèle Claude utilisé par l'IA. */
+  aiModel: AiModel
+  /** Identifiant de l'application Oura créée par l'utilisateur ('' : pas encore). */
+  ouraClientId: string
+  /** Adresse du relais qui transmet les demandes à Oura ('' : pas encore). */
+  ouraRelayUrl: string
   createdAt: string
   updatedAt: string
 }
@@ -520,4 +530,117 @@ export interface Snapshot {
   reason: 'before-import' | 'manual'
   sizeBytes: number
   data: string
+}
+
+/* ------------------------------------------------------------------ */
+/* Nutrition                                                           */
+/* ------------------------------------------------------------------ */
+
+export type MealKey = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+/** Valeurs nutritionnelles : énergie en kcal, le reste en grammes ; null : inconnu. */
+export interface Nutrients {
+  kcal: number
+  protein: number
+  carbs: number
+  fat: number
+  fiber: number | null
+  sugars: number | null
+  satFat: number | null
+  salt: number | null
+}
+
+/** Aliment perso, ou produit trouvé par son code-barres (gardé pour le retrouver hors connexion). */
+export interface Food {
+  id: string
+  source: 'off' | 'custom'
+  name: string
+  brand: string
+  barcode: string | null
+  /** Valeurs pour 100 g. */
+  per100: Nutrients
+  /** Portion habituelle en grammes (celle du paquet, ou la sienne) ; null : inconnue. */
+  servingG: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** D'où vient un aliment noté : table Ciqual, Open Food Facts, aliment perso, photo analysée, saisie rapide. */
+export type EntrySource = 'ciqual' | 'off' | 'custom' | 'ai' | 'quick'
+
+export interface FoodEntry {
+  id: string
+  date: ISODate
+  meal: MealKey
+  source: EntrySource
+  /**
+   * Aliment d'origine (« ciqual:13050 », « off:3017620422003 » ou l'identifiant d'un aliment perso) ;
+   * null pour une estimation de l'IA ou une saisie rapide.
+   */
+  foodId: string | null
+  name: string
+  /** Quantité mangée en grammes ; null : saisie rapide, sans quantité. */
+  grams: number | null
+  /** Valeurs pour 100 g au moment de la saisie (pour changer la quantité ensuite) ; null : saisie rapide. */
+  per100: Nutrients | null
+  /** Valeurs de la quantité mangée. */
+  nutrients: Nutrients
+  note: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type NutritionPhase = 'cut' | 'maintain' | 'bulk'
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive'
+
+/** Objectifs caloriques : calculés d'après le profil, sauf les valeurs fixées à la main. */
+export interface NutritionGoals {
+  id: 'me'
+  phase: NutritionPhase
+  activity: ActivityLevel
+  /** Valeurs fixées à la main ; null : calculées. */
+  kcal: number | null
+  proteinG: number | null
+  carbsG: number | null
+  fatG: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+/* ------------------------------------------------------------------ */
+/* Oura                                                                */
+/* ------------------------------------------------------------------ */
+
+/** Résumé d'une journée vue par la bague Oura ; null : donnée absente. */
+export interface OuraDay {
+  date: ISODate
+  sleepScore: number | null
+  readinessScore: number | null
+  activityScore: number | null
+  /** Sommeil de la nuit principale, en minutes. */
+  sleepMin: number | null
+  /** Efficacité du sommeil, en %. */
+  sleepEfficiency: number | null
+  /** VFC moyenne pendant la nuit principale, en ms. */
+  hrvMs: number | null
+  /** Fréquence cardiaque la plus basse de la nuit, en battements par minute. */
+  lowestHr: number | null
+  /** Écart de température par rapport à d'habitude, en °C. */
+  temperatureDeviation: number | null
+  activeKcal: number | null
+  totalKcal: number | null
+  steps: number | null
+  syncedAt: string
+}
+
+/* ------------------------------------------------------------------ */
+/* Secrets (jamais exportés dans les sauvegardes)                      */
+/* ------------------------------------------------------------------ */
+
+export interface Secret {
+  id: 'anthropic' | 'oura'
+  value: string
+  /** Fin de validité (jeton Oura) ; null : sans limite. */
+  expiresAt: string | null
+  updatedAt: string
 }

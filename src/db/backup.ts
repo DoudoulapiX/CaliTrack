@@ -3,13 +3,17 @@ import { formatDay, formatTimeOf, localDateOf, nowISO, today } from '@/lib/dates
 import { newId } from '@/lib/ids'
 import { frenchSpacing, keepTogether } from '@/lib/typography'
 import { DATA_TABLES, DB_VERSION, db as defaultDb, type CaliTrackDB, type DataTableName } from './db'
+import { settingsV1toV2 } from './migrations'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
 import type { Snapshot } from './types'
 
 export const BACKUP_APP = 'CaliTrack'
-/** Version du format de fichier. À augmenter (avec une conversion) si le format change. */
-export const BACKUP_FORMAT = 1
+/**
+ * Version du format de fichier. À augmenter (avec une conversion dans upgradeTables) si le format change.
+ * 1 : étape 1 (entraînement). 2 : nutrition et Oura (réglages complétés, nouvelles tables).
+ */
+export const BACKUP_FORMAT = 2
 /** Nombre de copies de sécurité internes conservées. */
 export const MAX_SNAPSHOTS = 3
 
@@ -38,6 +42,10 @@ export const TABLE_LABEL: Record<DataTableName, string> = {
   gradeScales: 'cotations',
   goals: 'objectifs',
   bodyMetrics: 'mesures',
+  foods: 'aliments perso',
+  foodEntries: 'repas',
+  nutritionGoals: 'objectifs caloriques',
+  ouraDays: 'données Oura',
 }
 
 export interface BackupSummary {
@@ -48,6 +56,7 @@ export interface BackupSummary {
   goals: number
   events: number
   bodyMetrics: number
+  foodEntries: number
 }
 
 function dataTables(database: CaliTrackDB) {
@@ -101,6 +110,7 @@ export function summarizeBackup(backup: BackupFile): BackupSummary {
     goals: backup.tables.goals.length,
     events: backup.tables.events.length,
     bodyMetrics: backup.tables.bodyMetrics.length,
+    foodEntries: backup.tables.foodEntries.length,
   }
 }
 
@@ -111,6 +121,20 @@ const headerSchema = z.object({
   dbVersion: z.number().int().min(1),
   tables: z.record(z.string(), z.unknown()),
 })
+
+/** Met les tables d'un fichier d'une version antérieure au format actuel (avant leur vérification). */
+export function upgradeTables(format: number, tables: Record<string, unknown>): Record<string, unknown> {
+  if (format >= 2) return tables
+  const settings = tables.settings
+  return {
+    ...tables,
+    settings: Array.isArray(settings)
+      ? settings.map((row: unknown) =>
+          row !== null && typeof row === 'object' ? settingsV1toV2(row as Record<string, unknown>) : row,
+        )
+      : settings,
+  }
+}
 
 export type ParseBackupResult = { ok: true; backup: BackupFile } | { ok: false; error: string }
 
@@ -140,9 +164,10 @@ export function parseBackup(text: string): ParseBackupResult {
         'Cette sauvegarde vient d’une version plus récente de CaliTrack. Mets l’appli à jour puis réessaie.',
     }
   }
+  const upgraded = upgradeTables(header.data.format, header.data.tables)
   const tables: Partial<Record<DataTableName, unknown[]>> = {}
   for (const name of DATA_TABLES) {
-    const rows = header.data.tables[name] ?? []
+    const rows = upgraded[name] ?? []
     const parsed = z.array(TABLE_SCHEMAS[name]).safeParse(rows)
     if (!parsed.success) {
       const issue = parsed.error.issues[0]
@@ -155,9 +180,9 @@ export function parseBackup(text: string): ParseBackupResult {
     ok: true,
     backup: {
       app: BACKUP_APP,
-      format: header.data.format,
+      format: BACKUP_FORMAT,
       exportedAt: header.data.exportedAt,
-      dbVersion: header.data.dbVersion,
+      dbVersion: DB_VERSION,
       tables: tables as BackupTables,
     },
   }
@@ -209,10 +234,14 @@ export async function restoreSnapshot(id: string, database: CaliTrackDB = defaul
   await replaceAll(parsed.backup, database)
 }
 
-/** Efface toutes les données (les copies de sécurité internes comprises) et repart de zéro. */
+/**
+ * Efface toutes les données (les copies de sécurité internes, la clé d'IA et le jeton Oura compris) et
+ * repart de zéro.
+ */
 export async function resetAllData(database: CaliTrackDB = defaultDb): Promise<void> {
-  await database.transaction('rw', [...dataTables(database), database.snapshots], async () => {
-    for (const table of [...dataTables(database), database.snapshots]) await table.clear()
+  const tables = [...dataTables(database), database.snapshots, database.secrets]
+  await database.transaction('rw', tables, async () => {
+    for (const table of tables) await table.clear()
   })
   await ensureSeeded(database)
 }

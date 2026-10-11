@@ -16,6 +16,8 @@ export const WEIGHT_UNIT_OPTIONS: { value: WeightUnit; label: string }[] = [
 /** Cartes de l'accueil, dans l'ordre proposé par défaut. */
 export const DASHBOARD_CARD_LABEL: Record<DashboardCardKey, string> = {
   todaySession: 'Au programme',
+  recovery: 'Récupération (Oura)',
+  nutrition: 'Calories du jour',
   week: 'Ma semaine',
   goals: 'Objectifs épinglés',
   climbing: 'Escalade',

@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import { settingsV1toV2 } from './migrations'
 import type {
   AppSettings,
   BodyMetric,
@@ -8,11 +9,16 @@ import type {
   EventSeries,
   Exercise,
   ExerciseMeta,
+  Food,
+  FoodEntry,
   Goal,
   GradeScale,
   Location,
+  NutritionGoals,
+  OuraDay,
   Profile,
   Program,
+  Secret,
   Snapshot,
   Workout,
 } from './types'
@@ -33,6 +39,11 @@ export type CaliTrackDB = Dexie & {
   goals: EntityTable<Goal, 'id'>
   bodyMetrics: EntityTable<BodyMetric, 'id'>
   snapshots: EntityTable<Snapshot, 'id'>
+  foods: EntityTable<Food, 'id'>
+  foodEntries: EntityTable<FoodEntry, 'id'>
+  nutritionGoals: EntityTable<NutritionGoals, 'id'>
+  ouraDays: EntityTable<OuraDay, 'date'>
+  secrets: EntityTable<Secret, 'id'>
 }
 
 /**
@@ -57,9 +68,21 @@ export const SCHEMA_V1 = {
   snapshots: 'id, createdAt',
 } as const
 
-export const DB_VERSION = 1
+/** Version 2 : nutrition (aliments, journal des repas, objectifs), Oura et secrets (clé d'IA, jeton Oura). */
+export const SCHEMA_V2 = {
+  foods: 'id, barcode, source',
+  foodEntries: 'id, date, foodId',
+  nutritionGoals: 'id',
+  ouraDays: 'date',
+  secrets: 'id',
+} as const
 
-/** Toutes les tables qui contiennent des données de l'utilisateur (exportées dans les sauvegardes). */
+export const DB_VERSION = 2
+
+/**
+ * Toutes les tables qui contiennent des données de l'utilisateur (exportées dans les sauvegardes). Les
+ * secrets (clé d'IA, jeton Oura) restent hors des sauvegardes, comme les copies de sécurité.
+ */
 export const DATA_TABLES = [
   'settings',
   'profile',
@@ -75,6 +98,10 @@ export const DATA_TABLES = [
   'gradeScales',
   'goals',
   'bodyMetrics',
+  'foods',
+  'foodEntries',
+  'nutritionGoals',
+  'ouraDays',
 ] as const
 
 export type DataTableName = (typeof DATA_TABLES)[number]
@@ -82,6 +109,17 @@ export type DataTableName = (typeof DATA_TABLES)[number]
 export function createDb(name = 'calitrack'): CaliTrackDB {
   const instance = new Dexie(name) as CaliTrackDB
   instance.version(1).stores(SCHEMA_V1)
+  instance
+    .version(2)
+    .stores(SCHEMA_V2)
+    .upgrade(async (tx) => {
+      await tx
+        .table('settings')
+        .toCollection()
+        .modify((row: Record<string, unknown>) => {
+          Object.assign(row, settingsV1toV2(row))
+        })
+    })
   return instance
 }
 

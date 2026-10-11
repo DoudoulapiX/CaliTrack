@@ -9,9 +9,13 @@ import type {
   EventSeries,
   Exercise,
   ExerciseMeta,
+  Food,
+  FoodEntry,
   Goal,
   GradeScale,
   Location,
+  NutritionGoals,
+  OuraDay,
   Profile,
   Program,
   Workout,
@@ -69,8 +73,10 @@ export const settingsSchema = z.object({
   themeMode: z.enum(['system', 'light', 'dark']),
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   weightUnit: z.enum(['kg', 'lb']),
-  tabs: z.array(z.enum(['today', 'calendar', 'training', 'climbing', 'goals', 'library'])),
-  dashboardCards: z.array(z.enum(['todaySession', 'week', 'goals', 'climbing', 'weight', 'records'])),
+  tabs: z.array(z.enum(['today', 'calendar', 'training', 'nutrition', 'climbing', 'goals', 'library'])),
+  dashboardCards: z.array(
+    z.enum(['todaySession', 'recovery', 'nutrition', 'week', 'goals', 'climbing', 'weight', 'records']),
+  ),
   hiddenModules: z.array(z.enum(['climbing'])),
   restTimerDefaultSec: z.number().int().min(0).max(3600),
   restTimerSound: z.boolean(),
@@ -82,6 +88,9 @@ export const settingsSchema = z.object({
   activeGradeScaleId: z.string(),
   climbingGym: z.string(),
   currentLocationId: z.string().nullable(),
+  aiModel: z.enum(['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']),
+  ouraClientId: z.string(),
+  ouraRelayUrl: z.string(),
   createdAt: timestamp,
   updatedAt: timestamp,
 })
@@ -443,6 +452,74 @@ export const bodyMetricSchema = z.object({
   createdAt: timestamp,
 })
 
+const grams = z.number().min(0)
+
+const nutrients = z.object({
+  kcal: grams,
+  protein: grams,
+  carbs: grams,
+  fat: grams,
+  fiber: grams.nullable(),
+  sugars: grams.nullable(),
+  satFat: grams.nullable(),
+  salt: grams.nullable(),
+})
+
+export const foodSchema = z.object({
+  id: z.string().min(1),
+  source: z.enum(['off', 'custom']),
+  name: named,
+  brand: z.string(),
+  barcode: z.string().nullable(),
+  per100: nutrients,
+  servingG: z.number().positive().nullable(),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+export const foodEntrySchema = z.object({
+  id: z.string().min(1),
+  date: isoDate,
+  meal: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  source: z.enum(['ciqual', 'off', 'custom', 'ai', 'quick']),
+  foodId: z.string().nullable(),
+  name: named,
+  grams: z.number().positive().nullable(),
+  per100: nutrients.nullable(),
+  nutrients,
+  note: z.string(),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+export const nutritionGoalsSchema = z.object({
+  id: z.literal('me'),
+  phase: z.enum(['cut', 'maintain', 'bulk']),
+  activity: z.enum(['sedentary', 'light', 'moderate', 'active', 'veryActive']),
+  kcal: z.number().int().positive().nullable(),
+  proteinG: grams.nullable(),
+  carbsG: grams.nullable(),
+  fatG: grams.nullable(),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+export const ouraDaySchema = z.object({
+  date: isoDate,
+  sleepScore: z.number().nullable(),
+  readinessScore: z.number().nullable(),
+  activityScore: z.number().nullable(),
+  sleepMin: z.number().min(0).nullable(),
+  sleepEfficiency: z.number().nullable(),
+  hrvMs: z.number().min(0).nullable(),
+  lowestHr: z.number().min(0).nullable(),
+  temperatureDeviation: z.number().nullable(),
+  activeKcal: z.number().min(0).nullable(),
+  totalKcal: z.number().min(0).nullable(),
+  steps: z.number().min(0).nullable(),
+  syncedAt: timestamp,
+})
+
 /* Vérification de compilation : chaque schéma correspond exactement à son type (une différence casse `tsc`). */
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false
 type Expect<T extends true> = T
@@ -461,6 +538,10 @@ export type SchemaMatchesTypes = [
   Expect<Same<z.infer<typeof climbingSessionSchema>, ClimbingSession>>,
   Expect<Same<z.infer<typeof goalSchema>, Goal>>,
   Expect<Same<z.infer<typeof bodyMetricSchema>, BodyMetric>>,
+  Expect<Same<z.infer<typeof foodSchema>, Food>>,
+  Expect<Same<z.infer<typeof foodEntrySchema>, FoodEntry>>,
+  Expect<Same<z.infer<typeof nutritionGoalsSchema>, NutritionGoals>>,
+  Expect<Same<z.infer<typeof ouraDaySchema>, OuraDay>>,
 ]
 
 /** Schéma de chaque table exportée dans une sauvegarde. */
@@ -479,4 +560,8 @@ export const TABLE_SCHEMAS = {
   gradeScales: gradeScaleSchema,
   goals: goalSchema,
   bodyMetrics: bodyMetricSchema,
+  foods: foodSchema,
+  foodEntries: foodEntrySchema,
+  nutritionGoals: nutritionGoalsSchema,
+  ouraDays: ouraDaySchema,
 } as const

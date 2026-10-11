@@ -1,5 +1,6 @@
 import { buildCatalog, loadFedbExercises, type Catalog } from '@/content/exercises/catalog'
-import { defaultProfile } from '@/db/defaults'
+import { defaultProfile, defaultSettings } from '@/db/defaults'
+import { V1_DEFAULT_DASHBOARD_CARDS, V1_DEFAULT_TABS } from '@/db/migrations'
 import type {
   BoulderResult,
   CalendarEvent,
@@ -206,6 +207,20 @@ export function eventSeries(id: string, patch: Partial<EventSeries> = {}): Event
     notes: '',
     createdAt: '2026-10-10T08:00:00.000Z',
     updatedAt: '2026-10-10T08:00:00.000Z',
+    ...patch,
+  }
+}
+
+/** Des réglages tels que les enregistrait la version 1 de l'appli (avant la nutrition et Oura). */
+export function v1Settings(patch: Record<string, unknown> = {}): Record<string, unknown> {
+  const settings: Record<string, unknown> = { ...defaultSettings('2026-10-12T08:00:00.000Z') }
+  delete settings.aiModel
+  delete settings.ouraClientId
+  delete settings.ouraRelayUrl
+  return {
+    ...settings,
+    tabs: [...V1_DEFAULT_TABS],
+    dashboardCards: [...V1_DEFAULT_DASHBOARD_CARDS],
     ...patch,
   }
 }

@@ -93,6 +93,47 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'nutrition',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/NutritionPage')).NutritionPage,
+            }),
+          },
+          {
+            path: 'nutrition/add',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/AddFoodPage')).AddFoodPage,
+            }),
+          },
+          {
+            path: 'nutrition/scan',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/nutrition/ScanPage')).ScanPage }),
+          },
+          {
+            path: 'nutrition/targets',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/TargetsPage')).TargetsPage,
+            }),
+          },
+          {
+            path: 'nutrition/foods',
+            lazy: async () => ({ Component: (await import('@/features/nutrition/FoodsPage')).FoodsPage }),
+          },
+          {
+            path: 'nutrition/foods/new',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/FoodEditPage')).FoodEditPage,
+            }),
+          },
+          {
+            path: 'nutrition/foods/:id',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/FoodEditPage')).FoodEditPage,
+            }),
+          },
+          {
             path: 'climbing',
             lazy: async () => ({
               Component: (await import('@/features/climbing/ClimbingPage')).ClimbingPage,
