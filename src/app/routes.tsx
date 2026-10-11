@@ -110,6 +110,11 @@ export const appRoutes: RouteObject[] = [
             lazy: async () => ({ Component: (await import('@/features/nutrition/ScanPage')).ScanPage }),
           },
           {
+            path: 'nutrition/photo',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/nutrition/PhotoPage')).PhotoPage }),
+          },
+          {
             path: 'nutrition/targets',
             lazy: async () => ({
               Component: (await import('@/features/nutrition/TargetsPage')).TargetsPage,
@@ -213,6 +218,12 @@ export const appRoutes: RouteObject[] = [
             path: 'more/settings',
             lazy: async () => ({
               Component: (await import('@/features/settings/SettingsPage')).SettingsPage,
+            }),
+          },
+          {
+            path: 'more/ai',
+            lazy: async () => ({
+              Component: (await import('@/features/ai/AiSettingsPage')).AiSettingsPage,
             }),
           },
           {

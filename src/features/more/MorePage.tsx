@@ -1,4 +1,4 @@
-import { Backpack, HardDriveDownload, Info, Settings2, UserRound } from 'lucide-react'
+import { Backpack, HardDriveDownload, Info, Settings2, Sparkles, UserRound } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { ALL_TAB_KEYS, TAB_DEFS, visibleTabs } from '@/app/tabs'
 import { ListGroup, ListRow } from '@/ui/List'
@@ -51,6 +51,12 @@ export function MorePage() {
             subtitle="Thème, couleur, onglets, minuteur"
             to="/more/settings"
             leading={<Settings2 size={22} aria-hidden />}
+          />
+          <ListRow
+            title="Intelligence artificielle"
+            subtitle="Clé Claude, modèle, coût"
+            to="/more/ai"
+            leading={<Sparkles size={22} aria-hidden />}
           />
           <ListRow
             title="Sauvegarde"

@@ -127,9 +127,9 @@ export function ScanPage() {
               muted
               aria-label="Image de la caméra"
             />
-            {/* Le cadre où placer le code-barres. */}
+            {/* Le cadre où placer le code-barres, l'image assombrie autour pour qu'il se voie partout. */}
             <div
-              className="pointer-events-none absolute inset-x-10 top-1/2 h-24 -translate-y-1/2 rounded-xl border-2 border-white/80"
+              className="pointer-events-none absolute inset-x-10 top-1/2 h-24 -translate-y-1/2 rounded-xl border-2 border-white/80 shadow-[0_0_0_100vmax_rgb(0_0_0/0.35)]"
               aria-hidden
             />
           </div>

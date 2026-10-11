@@ -2,7 +2,8 @@ import type { Nutrients } from '@/db/types'
 import { MAX_GRAMS } from '@/db/nutrition'
 import { cn } from '@/lib/cn'
 import { NumberField } from '@/ui/Field'
-import { nutrientTiles, quantityOptions } from './nutrition-view'
+import { NutrientTiles } from './NutrientTiles'
+import { quantityOptions } from './nutrition-view'
 
 /**
  * La quantité mangée : un champ, des quantités courantes en un geste (portion habituelle, 100 g…) et
@@ -53,14 +54,7 @@ export function QuantityPicker({
       </div>
       <div aria-live="polite" className="rounded-xl bg-surface-2 px-2 py-3">
         {nutrients ? (
-          <dl className="grid grid-cols-4 gap-1 text-center">
-            {nutrientTiles(nutrients).map((tile) => (
-              <div key={tile.label} className="flex flex-col-reverse">
-                <dt className="text-[12px] text-ink-3">{tile.label}</dt>
-                <dd className="text-[15px] font-semibold text-ink tabular">{tile.value}</dd>
-              </div>
-            ))}
-          </dl>
+          <NutrientTiles nutrients={nutrients} />
         ) : (
           <p className="px-1.5 text-[14px] text-ink-3">Indique une quantité pour voir ce qu’elle apporte.</p>
         )}

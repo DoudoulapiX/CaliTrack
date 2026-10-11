@@ -313,6 +313,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
       // L'escalade prévue aujourd'hui, commencée depuis le calendrier.
       // Le calendrier n'a pas d'onglet par défaut : on y va par « Plus ».
       await nav.getByRole('link', { name: 'Plus' }).click()
+      await expect(page.getByRole('heading', { name: 'Plus', level: 1 })).toBeVisible()
       await page.getByRole('link', { name: 'Calendrier' }).click()
       await page.getByRole('button', { name: /^Escalade/ }).click()
       const planned = page.getByRole('dialog', { name: 'Escalade' })

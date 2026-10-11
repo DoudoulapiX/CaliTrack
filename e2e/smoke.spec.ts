@@ -224,6 +224,7 @@ test('calendrier : séance du programme passée, course ajoutée en deux touches
   const nav = page.getByRole('navigation', { name: 'Navigation principale' })
   // Le calendrier n'a pas d'onglet par défaut : on y va par « Plus ».
   await nav.getByRole('link', { name: 'Plus' }).click()
+  await expect(page.getByRole('heading', { name: 'Plus', level: 1 })).toBeVisible()
   await page.getByRole('link', { name: 'Calendrier' }).click()
   await expect(page.getByRole('heading', { name: 'Octobre 2026', level: 2 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Mercredi 21 octobre · Aujourd’hui' })).toBeVisible()
