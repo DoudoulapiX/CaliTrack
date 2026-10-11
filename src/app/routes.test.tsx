@@ -9,6 +9,12 @@ describe('navigation', () => {
     expect(router.state.location.pathname).toBe('/onboarding')
   })
 
+  it('laisse s’afficher le retour d’Oura avant la fin de l’accueil', async () => {
+    const { router } = await renderApp('/oura/callback#error=access_denied', { onboarded: false })
+    expect(await screen.findByRole('heading', { name: 'Accès refusé', level: 2 })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/oura/callback')
+  })
+
   it('quitte l’accueil une fois terminé', async () => {
     const { router } = await renderApp('/onboarding')
     expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument()

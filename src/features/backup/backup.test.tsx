@@ -4,6 +4,7 @@ import { db } from '@/db/db'
 import { today } from '@/lib/dates'
 import { climbSession, doneWorkout } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
+import { expectFrenchSpacing } from '@/test/typography'
 import { stubProperty } from '@/test/stub'
 
 const settings = async () => {
@@ -136,6 +137,16 @@ describe('écran À propos', () => {
       'https://github.com/yuhonas/free-exercise-db',
     )
     expect(screen.getByText(/Kaskad Coaching/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Valeurs nutritionnelles.*Etalab 2\.0/ })).toHaveAttribute(
+      'href',
+      'https://ciqual.anses.fr',
+    )
+    expect(screen.getByRole('link', { name: /^Produits scannés.*ODbL/ })).toHaveAttribute(
+      'href',
+      'https://world.openfoodfacts.org',
+    )
+    expect(screen.getByText(/la photo d’un repas \(vers Anthropic, avec ta clé\)/)).toBeInTheDocument()
+    expectFrenchSpacing()
     // Dans Safari, pas encore sur l'écran d'accueil : les étapes pour l'y mettre.
     expect(screen.getByText(/Sur l’écran d’accueil\s»/)).toBeInTheDocument()
 

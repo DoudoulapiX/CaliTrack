@@ -6,11 +6,11 @@ const keys = (settings: Parameters<typeof visibleTabs>[0]) => visibleTabs(settin
 describe('onglets', () => {
   it('affiche les onglets choisis, sans doublon ni module masqué, puis « Plus »', () => {
     const settings = defaultSettings('2026-10-01T08:00:00.000Z')
-    expect(keys(settings)).toEqual(['today', 'calendar', 'training', 'climbing', 'more'])
+    expect(keys(settings)).toEqual(['today', 'training', 'nutrition', 'climbing', 'more'])
     expect(keys({ ...settings, hiddenModules: ['climbing'] })).toEqual([
       'today',
-      'calendar',
       'training',
+      'nutrition',
       'more',
     ])
     expect(keys({ ...settings, tabs: ['goals', 'goals', 'today'] })).toEqual(['goals', 'today', 'more'])
@@ -24,6 +24,7 @@ describe('onglets', () => {
     expect(sectionOf('/calendar')).toBe('calendar')
     expect(sectionOf('/training/programs/p1')).toBe('training')
     expect(sectionOf('/workout/w1')).toBe('training')
+    expect(sectionOf('/nutrition/add')).toBe('nutrition')
     expect(sectionOf('/climbing/stats')).toBe('climbing')
     expect(sectionOf('/goals/new')).toBe('goals')
     expect(sectionOf('/library/pullup')).toBe('library')
@@ -34,6 +35,8 @@ describe('onglets', () => {
   it('met en avant « Plus » pour un écran sans onglet', () => {
     const tabs = visibleTabs(defaultSettings('2026-10-01T08:00:00.000Z'))
     expect(activeTab('/training/history', tabs)).toBe('training')
+    expect(activeTab('/nutrition/foods', tabs)).toBe('nutrition')
+    expect(activeTab('/calendar', tabs)).toBe('more')
     expect(activeTab('/goals/g1', tabs)).toBe('more')
     expect(activeTab('/library', tabs)).toBe('more')
     expect(activeTab('/more/backup', tabs)).toBe('more')

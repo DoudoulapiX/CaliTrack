@@ -93,6 +93,52 @@ export const appRoutes: RouteObject[] = [
             }),
           },
           {
+            path: 'nutrition',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/NutritionPage')).NutritionPage,
+            }),
+          },
+          {
+            path: 'nutrition/add',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/AddFoodPage')).AddFoodPage,
+            }),
+          },
+          {
+            path: 'nutrition/scan',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/nutrition/ScanPage')).ScanPage }),
+          },
+          {
+            path: 'nutrition/photo',
+            handle: fullScreen,
+            lazy: async () => ({ Component: (await import('@/features/nutrition/PhotoPage')).PhotoPage }),
+          },
+          {
+            path: 'nutrition/targets',
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/TargetsPage')).TargetsPage,
+            }),
+          },
+          {
+            path: 'nutrition/foods',
+            lazy: async () => ({ Component: (await import('@/features/nutrition/FoodsPage')).FoodsPage }),
+          },
+          {
+            path: 'nutrition/foods/new',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/FoodEditPage')).FoodEditPage,
+            }),
+          },
+          {
+            path: 'nutrition/foods/:id',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/nutrition/FoodEditPage')).FoodEditPage,
+            }),
+          },
+          {
             path: 'climbing',
             lazy: async () => ({
               Component: (await import('@/features/climbing/ClimbingPage')).ClimbingPage,
@@ -172,6 +218,25 @@ export const appRoutes: RouteObject[] = [
             path: 'more/settings',
             lazy: async () => ({
               Component: (await import('@/features/settings/SettingsPage')).SettingsPage,
+            }),
+          },
+          {
+            path: 'more/ai',
+            lazy: async () => ({
+              Component: (await import('@/features/ai/AiSettingsPage')).AiSettingsPage,
+            }),
+          },
+          {
+            path: 'more/oura',
+            lazy: async () => ({
+              Component: (await import('@/features/oura/OuraSettingsPage')).OuraSettingsPage,
+            }),
+          },
+          {
+            path: 'oura/callback',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/oura/OuraCallbackPage')).OuraCallbackPage,
             }),
           },
           {

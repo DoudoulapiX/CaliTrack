@@ -21,9 +21,12 @@
     "e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build && npm run e2e",
     "data:exercises": "node scripts/build-exercises.ts",
+    "data:foods": "node scripts/build-foods.ts",
     "data:icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.133.0",
+    "barcode-detector": "3.2.2",
     "date-fns": "4.4.0",
     "dexie": "4.4.6",
     "dexie-react-hooks": "4.4.0",

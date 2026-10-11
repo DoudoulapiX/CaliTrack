@@ -6,6 +6,7 @@ import {
   House,
   Mountain,
   Target,
+  Utensils,
   type LucideIcon,
 } from 'lucide-react'
 import type { AppSettings, TabKey } from '@/db/types'
@@ -22,6 +23,7 @@ export const TAB_DEFS: Record<TabKey, TabDef> = {
   today: { key: 'today', label: 'Aujourd’hui', icon: House, to: '/' },
   calendar: { key: 'calendar', label: 'Calendrier', icon: CalendarDays, to: '/calendar' },
   training: { key: 'training', label: 'Entraînement', icon: Dumbbell, to: '/training' },
+  nutrition: { key: 'nutrition', label: 'Nutrition', icon: Utensils, to: '/nutrition' },
   climbing: { key: 'climbing', label: 'Escalade', icon: Mountain, to: '/climbing' },
   goals: { key: 'goals', label: 'Objectifs', icon: Target, to: '/goals' },
   library: { key: 'library', label: 'Exercices', icon: BookOpen, to: '/library' },
@@ -51,6 +53,8 @@ export function sectionOf(pathname: string): TabDef['key'] | null {
     case 'training':
     case 'workout':
       return 'training'
+    case 'nutrition':
+      return 'nutrition'
     case 'climbing':
       return 'climbing'
     case 'goals':

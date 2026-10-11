@@ -222,7 +222,10 @@ test('calendrier : séance du programme passée, course ajoutée en deux touches
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
   await page.getByRole('button', { name: 'Terminer' }).click()
   const nav = page.getByRole('navigation', { name: 'Navigation principale' })
-  await nav.getByRole('link', { name: 'Calendrier' }).click()
+  // Le calendrier n'a pas d'onglet par défaut : on y va par « Plus ».
+  await nav.getByRole('link', { name: 'Plus' }).click()
+  await expect(page.getByRole('heading', { name: 'Plus', level: 1 })).toBeVisible()
+  await page.getByRole('link', { name: 'Calendrier' }).click()
   await expect(page.getByRole('heading', { name: 'Octobre 2026', level: 2 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Mercredi 21 octobre · Aujourd’hui' })).toBeVisible()
   await expect(page.getByRole('button', { name: /^Vendredi 23 octobre, Corps complet/ })).toBeVisible()
@@ -413,12 +416,14 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   const nav = page.getByRole('navigation', { name: 'Navigation principale' })
   await expect(nav).toBeVisible()
 
-  // L'écran Aujourd'hui et ses six cartes, dans l'ordre par défaut.
+  // L'écran Aujourd'hui et ses huit cartes, dans l'ordre par défaut (celle d'Oura invite à connecter la bague).
   await expect(page.getByRole('heading', { name: 'Aujourd’hui', level: 1 })).toBeVisible()
   await expect(page.getByText('Mercredi 21 octobre')).toBeVisible()
   const titles = page.getByRole('heading', { level: 2 })
   await expect(titles).toHaveText([
     'Au programme',
+    'Récupération',
+    'Calories du jour',
     'Ma semaine',
     'Objectifs',
     'Escalade',
@@ -448,8 +453,9 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   await expect(page.getByRole('heading', { name: 'Réglages', level: 1 })).toBeVisible()
   const cards = page.getByRole('list', { name: 'Cartes de l’accueil' })
   await cards.getByRole('switch', { name: 'Poids' }).click()
-  await cards.getByRole('button', { name: 'Objectifs épinglés : monter' }).click()
-  await cards.getByRole('button', { name: 'Objectifs épinglés : monter' }).click()
+  for (let move = 0; move < 4; move++) {
+    await cards.getByRole('button', { name: 'Objectifs épinglés : monter' }).click()
+  }
   await page.getByRole('switch', { name: 'Module escalade' }).click()
   await expect(page.getByText('Escalade masquée')).toBeVisible()
   await expect(nav.getByRole('link', { name: 'Escalade' })).toHaveCount(0)
@@ -458,7 +464,14 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   await nav.getByRole('link', { name: 'Aujourd’hui' }).click()
   // L'accueil garde la barre finale de l'adresse (/CaliTrack/) : il se recharge sans erreur.
   await expect(page).toHaveURL(/\/CaliTrack\/$/)
-  const shown = ['Objectifs', 'Au programme', 'Ma semaine', 'Records récents']
+  const shown = [
+    'Objectifs',
+    'Au programme',
+    'Récupération',
+    'Calories du jour',
+    'Ma semaine',
+    'Records récents',
+  ]
   await expect(titles).toHaveText(shown)
   await page.reload()
   await expect(titles).toHaveText(shown)

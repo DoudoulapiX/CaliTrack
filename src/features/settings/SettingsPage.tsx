@@ -2,10 +2,12 @@ import { useState, type ReactNode } from 'react'
 import {
   CalendarDays,
   Dumbbell,
+  HeartPulse,
   Mountain,
   Palette,
   Target,
   Trophy,
+  Utensils,
   Weight,
   type LucideIcon,
 } from 'lucide-react'
@@ -36,6 +38,8 @@ import {
 
 const CARD_ICON: Record<DashboardCardKey, LucideIcon> = {
   todaySession: Dumbbell,
+  recovery: HeartPulse,
+  nutrition: Utensils,
   week: CalendarDays,
   goals: Target,
   climbing: Mountain,

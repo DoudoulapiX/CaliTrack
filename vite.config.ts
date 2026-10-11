@@ -52,7 +52,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        // Le lecteur de codes-barres (WebAssembly) aussi : le scan marche hors ligne pour les produits connus.
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,wasm}'],
         globIgnores: ['ex/**', 'splash/**'],
         navigateFallback: 'index.html',
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,

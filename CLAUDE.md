@@ -13,7 +13,7 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
 ## Organisation
 
 - `src/content/` : logique sans interface (programmes, progression, records, agenda, objectifs,
-  escalade), testée seule.
+  escalade, nutrition, IA, Oura), testée seule.
 - `src/db/` : base Dexie, schémas zod (`schema.ts`), écritures et sauvegardes (`backup.ts`).
 - `src/features/<écran>/` : écrans ; la mise en forme des textes est dans `*-view.ts`, testée à part.
 - `src/ui/` : composants communs. `src/lib/` : dates, unités, typographie, couleurs.
@@ -24,8 +24,8 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
 - Toute l'interface est en français, au tutoiement.
 - Typographie : espace insécable avant « : ; ! ? % » et à l'intérieur des guillemets avec
   `frenchSpacing()`, groupes à ne pas couper avec `keepTogether()`, sinon `NBSP`. Jamais d'espace
-  insécable écrite telle quelle dans le code : toujours `\u00a0`. Les `aria-label` composés en code gardent
-  des espaces normales.
+  insécable écrite telle quelle dans le code : toujours `\u00a0` (ESLint le vérifie). Les `aria-label`
+  composés en code gardent des espaces normales.
 - Prettier : pas de point-virgule, guillemets simples, 110 colonnes.
 - Classes Tailwind écrites en entier (pas de noms construits par morceaux).
 - Le routeur garde la barre finale de `BASENAME` (`/CaliTrack/`) : sans elle, recharger l'accueil échoue.
@@ -38,6 +38,18 @@ jamais par une modification de `SCHEMA_V1`. Les fichiers de sauvegarde déjà fa
 restaurables : si leur format change, augmenter la version du format dans `src/db/backup.ts` et convertir
 les anciens fichiers.
 
+## Services extérieurs
+
+- Clé Claude et accès Oura : table `secrets`, sur l'appareil seulement, jamais dans les sauvegardes ni
+  dans le dépôt.
+- Claude (photos des repas) : SDK officiel appelé depuis le navigateur avec la clé de l'utilisateur.
+- Open Food Facts : lecture seule des produits scannés, gardés ensuite dans `foods`.
+- Oura : accès par OAuth implicite (30 jours), lectures par le relais Cloudflare dont le code est produit
+  par `src/content/oura/relay.ts`. Changer ce code oblige chaque utilisateur à le recopier dans son
+  Worker : garder la compatibilité (`/ping`, `/v2/usercollection/…`).
+- Dans les tests, ces services sont simulés (`src/test/anthropic.ts`, `src/test/oura.ts`, routes
+  Playwright dans `e2e/`) : aucun test n'appelle le vrai réseau.
+
 ## Tests
 
 - Vitest : jsdom, fake-indexeddb, fuseau `Europe/Paris`. Pour fixer la date :
@@ -47,6 +59,9 @@ les anciens fichiers.
 - La navigation entre écrans est asynchrone (routes chargées à la demande) : attendre avec `waitFor` ou
   `findBy…`.
 - Playwright simule un iPhone 13 : Chromium en local, Chromium et WebKit en CI.
+- Un test qui simule un service extérieur avec `page.route` bloque le service worker
+  (`test.use({ serviceWorkers: 'block' })`) : sous WebKit, les requêtes d'une page qu'il contrôle échappent
+  à `page.route` et partent sur le vrai réseau.
 
 ## Mise en ligne
 

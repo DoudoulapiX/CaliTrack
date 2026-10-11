@@ -17,13 +17,15 @@ import { useActiveProgram } from '@/features/training/useTraining'
 import { BackupReminderCard } from './BackupReminderCard'
 import { ClimbingCard } from './ClimbingCard'
 import { GoalsCard } from './GoalsCard'
+import { NutritionCard } from './NutritionCard'
 import { RecordsCard } from './RecordsCard'
+import { RecoveryCard } from './RecoveryCard'
 import { TodaySessionCard } from './TodaySessionCard'
 import { climbingPlanned } from './today-view'
 import { WeekCard } from './WeekCard'
 import { WeightCard } from './WeightCard'
 
-/** Y a-t-il des données qui méritent une sauvegarde (séances, escalade, objectifs, pesées, agenda) ? */
+/** Y a-t-il des données qui méritent une sauvegarde (séances, escalade, objectifs, pesées, agenda, repas) ? */
 async function hasUserData(): Promise<boolean> {
   const counts = await Promise.all([
     db.workouts.count(),
@@ -31,6 +33,7 @@ async function hasUserData(): Promise<boolean> {
     db.goals.count(),
     db.bodyMetrics.count(),
     db.events.count(),
+    db.foodEntries.count(),
   ])
   return counts.some((count) => count > 0)
 }
@@ -50,6 +53,8 @@ export function TodayPage() {
   const cards = shownCards(settings)
   const card: Record<DashboardCardKey, () => ReactNode> = {
     todaySession: () => <TodaySessionCard program={program} items={items} day={day} />,
+    recovery: () => <RecoveryCard day={day} />,
+    nutrition: () => <NutritionCard day={day} />,
     week: () => <WeekCard agenda={agenda} dates={dates} day={day} />,
     goals: () => <GoalsCard />,
     climbing: () => <ClimbingCard planned={climbingPlanned(items)} day={day} />,

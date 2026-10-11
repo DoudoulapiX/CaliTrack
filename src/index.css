@@ -42,6 +42,10 @@
   --ct-success: #12703a;
   --ct-warning: #8a4b00;
   --ct-info: #0a5fc2;
+  /* Protéines, glucides, lipides (barres de la nutrition). */
+  --ct-macro-protein: #0a5fc2;
+  --ct-macro-carbs: #b86e00;
+  --ct-macro-fat: #7a3fc4;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -69,6 +73,9 @@
   --ct-success: #3ad16b;
   --ct-warning: #ffb340;
   --ct-info: #4aa3ff;
+  --ct-macro-protein: #4aa3ff;
+  --ct-macro-carbs: #ffb340;
+  --ct-macro-fat: #b48cff;
 
   color-scheme: dark;
 }

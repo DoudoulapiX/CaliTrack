@@ -58,11 +58,11 @@ describe('réglages', () => {
     const { user } = await renderApp('/more/settings')
     const list = await screen.findByRole('list', { name: 'Onglets de la barre' })
     const toggle = (name: string) => within(list).getByRole('switch', { name })
-    expect(tabBar()).toEqual(['Aujourd’hui', 'Calendrier', 'Entraînement', 'Escalade', 'Plus'])
+    expect(tabBar()).toEqual(['Aujourd’hui', 'Entraînement', 'Nutrition', 'Escalade', 'Plus'])
 
     // Barre pleine : il faut d'abord en retirer un.
     expect(toggle('Objectifs')).toBeDisabled()
-    await user.click(toggle('Calendrier'))
+    await user.click(toggle('Nutrition'))
     await waitFor(() => {
       expect(tabBar()).toEqual(['Aujourd’hui', 'Entraînement', 'Escalade', 'Plus'])
     })
@@ -100,6 +100,8 @@ describe('réglages', () => {
     await waitFor(async () => {
       expect((await settings()).dashboardCards).toEqual([
         'todaySession',
+        'recovery',
+        'nutrition',
         'week',
         'goals',
         'climbing',
@@ -110,6 +112,8 @@ describe('réglages', () => {
     await waitFor(async () => {
       expect((await settings()).dashboardCards).toEqual([
         'todaySession',
+        'recovery',
+        'nutrition',
         'week',
         'goals',
         'records',
@@ -121,7 +125,16 @@ describe('réglages', () => {
       within(list)
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['Au programme', 'Ma semaine', 'Objectifs épinglés', 'Records récents', 'Escalade', 'Poids'])
+    ).toEqual([
+      'Au programme',
+      'Récupération (Oura)',
+      'Calories du jour',
+      'Ma semaine',
+      'Objectifs épinglés',
+      'Records récents',
+      'Escalade',
+      'Poids',
+    ])
   })
 
   it('règle le son, la voix et la veille pendant la séance', async () => {
@@ -150,7 +163,7 @@ describe('réglages', () => {
     await user.click(module)
     expect(await screen.findByText('Escalade masquée')).toBeInTheDocument()
     await waitFor(() => {
-      expect(tabBar()).toEqual(['Aujourd’hui', 'Calendrier', 'Entraînement', 'Plus'])
+      expect(tabBar()).toEqual(['Aujourd’hui', 'Entraînement', 'Nutrition', 'Plus'])
     })
     expect(screen.queryByRole('link', { name: 'Couleurs et cotations' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Salle des nouvelles séances')).not.toBeInTheDocument()
@@ -160,13 +173,13 @@ describe('réglages', () => {
     expect(within(cards).queryByRole('switch', { name: 'Escalade' })).not.toBeInTheDocument()
     expect(await settings()).toMatchObject({
       hiddenModules: ['climbing'],
-      tabs: ['today', 'calendar', 'training'],
+      tabs: ['today', 'training', 'nutrition'],
     })
 
     await user.click(module)
     expect(await screen.findByText('Escalade affichée')).toBeInTheDocument()
     await waitFor(() => {
-      expect(tabBar()).toEqual(['Aujourd’hui', 'Calendrier', 'Entraînement', 'Escalade', 'Plus'])
+      expect(tabBar()).toEqual(['Aujourd’hui', 'Entraînement', 'Nutrition', 'Escalade', 'Plus'])
     })
     expect(within(cards).getByRole('switch', { name: 'Escalade' })).toBeChecked()
   })

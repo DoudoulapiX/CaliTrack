@@ -190,7 +190,9 @@ export function NumberInput({
             return
           }
           const next = clamp(round(parsed))
-          setDraft(display(next))
+          // Pas de mise à jour quand le texte ne change pas : React la garderait en attente et elle
+          // écraserait une valeur changée ensuite de l'extérieur (champ remis à zéro par un bouton).
+          if (display(next) !== draft) setDraft(display(next))
           if (next !== value) onChange(next)
         }}
       />

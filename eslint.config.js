@@ -39,6 +39,17 @@ export default defineConfig([
       'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
       eqeqeq: ['error', 'always'],
       'no-console': ['error', { allow: ['warn', 'error'] }],
+      // Une espace insécable s'écrit \u00a0, jamais telle quelle (invisible à la relecture).
+      'no-irregular-whitespace': [
+        'error',
+        {
+          skipStrings: false,
+          skipComments: false,
+          skipRegExps: false,
+          skipTemplates: false,
+          skipJSXText: false,
+        },
+      ],
     },
   },
   {

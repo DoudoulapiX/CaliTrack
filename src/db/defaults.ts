@@ -1,21 +1,26 @@
 import { nowISO } from '@/lib/dates'
 import { VERTICAL_ART_SCALE_ID } from '@/content/grades'
-import type { AppSettings, DashboardCardKey, Profile, TabKey } from './types'
+import type { AiModel, AppSettings, DashboardCardKey, NutritionGoals, Profile, TabKey } from './types'
 
 export const DEFAULT_ACCENT = '#ff6a2b'
 
 /** Onglets affichés par défaut (l'onglet « Plus » est toujours ajouté à la fin). */
-export const DEFAULT_TABS: TabKey[] = ['today', 'calendar', 'training', 'climbing']
+export const DEFAULT_TABS: TabKey[] = ['today', 'training', 'nutrition', 'climbing']
 export const MAX_TABS = 4
 
 export const DEFAULT_DASHBOARD_CARDS: DashboardCardKey[] = [
   'todaySession',
+  'recovery',
+  'nutrition',
   'week',
   'goals',
   'climbing',
   'weight',
   'records',
 ]
+
+/** Modèle Claude par défaut (changeable dans les réglages). */
+export const DEFAULT_AI_MODEL: AiModel = 'claude-opus-5-5'
 
 export function defaultSettings(now: string = nowISO()): AppSettings {
   return {
@@ -36,6 +41,9 @@ export function defaultSettings(now: string = nowISO()): AppSettings {
     activeGradeScaleId: VERTICAL_ART_SCALE_ID,
     climbingGym: 'Vertical’Art',
     currentLocationId: null,
+    aiModel: DEFAULT_AI_MODEL,
+    ouraClientId: '',
+    ouraRelayUrl: '',
     createdAt: now,
     updatedAt: now,
   }
@@ -57,6 +65,20 @@ export function defaultProfile(now: string = nowISO()): Profile {
     trainingDays: [1, 3, 5],
     climbingDays: [],
     levelTest: null,
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+export function defaultNutritionGoals(now: string = nowISO()): NutritionGoals {
+  return {
+    id: 'me',
+    phase: 'maintain',
+    activity: 'moderate',
+    kcal: null,
+    proteinG: null,
+    carbsG: null,
+    fatG: null,
     createdAt: now,
     updatedAt: now,
   }
