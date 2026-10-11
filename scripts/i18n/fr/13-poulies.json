@@ -1,0 +1,740 @@
+{
+  "Alternating_Cable_Shoulder_Press": {
+    "n": "Développé épaules alterné à la poulie",
+    "s": [
+      "Poulies réglées en bas des deux colonnes. Debout entre les deux, poignées à hauteur d’épaules, paumes vers l’avant.",
+      "Tête et poitrine hautes, pousse une poignée droit au-dessus de la tête.",
+      "Marque une pause en haut, redescends, puis pousse de l’autre côté."
+    ]
+  },
+  "Bent_Over_Low-Pulley_Side_Lateral": {
+    "n": "Oiseau un bras à la poulie basse",
+    "s": [
+      "Poignée de la poulie basse dans la main droite. Penche-toi jusqu’à avoir le buste presque parallèle au sol, genoux légèrement fléchis, main gauche sur la cuisse gauche.",
+      "Bras droit pendant devant toi, coude légèrement fléchi.",
+      "Monte le bras sur le côté jusqu’à l’horizontale, dans l’alignement de l’oreille. Expire.",
+      "Redescends lentement en inspirant. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Bosu_Ball_Cable_Crunch_With_Side_Bends": {
+    "n": "Crunch à la poulie sur Bosu, finition en flexions latérales",
+    "s": [
+      "Poignées aux deux poulies basses, Bosu devant la machine. Allonge-toi dessus, bas du dos épousant le Bosu, fesses près du sol sans le toucher.",
+      "Attrape une poignée dans chaque main derrière toi, puis tends les bras devant toi entre les genoux, pieds écartés.",
+      "Bras tendus dans l’axe des câbles, enroule le buste vers le haut, puis redescends lentement jusqu’à étirer les abdos. Enchaîne jusqu’à l’échec.",
+      "Ensuite, abdos serrés, décolle le dos du Bosu, bras le long du corps, et enchaîne des flexions latérales en allant chercher les talons."
+    ],
+    "e": [["cableMachine", "other"]]
+  },
+  "Cable_Chest_Press": {
+    "n": "Développé poitrine à la poulie, assis",
+    "s": [
+      "Assis, poignées en main, haut des bras à environ 45° du corps, coudes pliés à 90°, tête et poitrine hautes.",
+      "Pousse les poignées devant toi en les rapprochant, omoplates serrées.",
+      "Marque une pause bras tendus, puis reviens en gardant les câbles tendus."
+    ],
+    "t": ["Variantes : dos décollé du dossier, incliné, décliné ou en alternant les bras."]
+  },
+  "Cable_Crossover": {
+    "n": "Écarté à la poulie vis-à-vis",
+    "s": [
+      "Poulies réglées en haut, une poignée dans chaque main. Avance d’un pas devant la ligne des poulies, buste légèrement penché, mains rapprochées devant toi.",
+      "Coudes légèrement fléchis, ouvre les bras en grand arc jusqu’à sentir l’étirement de la poitrine. Inspire.",
+      "Ramène les mains devant toi par le même arc en expirant. Tiens une seconde."
+    ],
+    "t": ["Seules les épaules bougent : bras et buste restent fixes."]
+  },
+  "Cable_Crunch": {
+    "n": "Crunch à la poulie haute",
+    "s": [
+      "À genoux sous une poulie haute équipée d’une corde. Attrape la corde et descends les mains de chaque côté du visage.",
+      "Fléchis légèrement les hanches et laisse la charge étirer le bas du dos.",
+      "Hanches immobiles, enroule le buste en contractant les abdos pour amener les coudes vers le milieu des cuisses. Expire et tiens une seconde.",
+      "Remonte lentement en inspirant."
+    ],
+    "t": ["Ne charge pas trop : ce sont les abdos qui travaillent, pas le bas du dos."]
+  },
+  "Cable_Deadlifts": {
+    "n": "Soulevé de terre aux poulies",
+    "s": [
+      "Poulies réglées en bas des deux colonnes. Debout entre les deux, accroupis-toi en pliant hanches et genoux pour attraper les poignées.",
+      "Pousse dans les talons pour te relever, mains le long du corps, tête et poitrine hautes.",
+      "Une fois debout, redescends en contrôlant."
+    ]
+  },
+  "Cable_Hammer_Curls_-_Rope_Attachment": {
+    "n": "Curl marteau à la corde, poulie basse",
+    "s": [
+      "Corde à la poulie basse, debout face à la machine à 30 cm, corde en prise neutre (paumes face à face).",
+      "Coudes collés au corps et immobiles, monte la corde en contractant les biceps. Expire.",
+      "Serre une seconde, puis redescends lentement."
+    ]
+  },
+  "Cable_Hip_Adduction": {
+    "n": "Adduction de hanche à la poulie basse",
+    "s": [
+      "Sangle de cheville à la poulie basse, attachée à la cheville la plus proche de la machine.",
+      "Éloigne-toi, pieds écartés, et tiens-toi à la machine. Appuie-toi sur la jambe libre et laisse la jambe attachée partir vers la poulie.",
+      "Avec l’intérieur de la cuisse, ramène la jambe attachée devant l’autre. Expire.",
+      "Reviens lentement en inspirant. Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Cable_Incline_Pushdown": {
+    "n": "Pull-over à la poulie haute sur banc incliné",
+    "s": [
+      "Allongé sur un banc incliné, dos à une poulie haute équipée d’une barre droite.",
+      "Attrape la barre au-dessus de toi en pronation, mains largeur d’épaules, et tends les bras devant toi, barre à quelques centimètres des cuisses.",
+      "Bras tendus, laisse remonter la barre en arc jusqu’au-dessus de la tête. Inspire.",
+      "Ramène-la aux cuisses avec les dorsaux et serre une seconde. Expire."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_Incline_Triceps_Extension": {
+    "n": "Extension des triceps à la poulie haute sur banc incliné",
+    "s": [
+      "Allongé sur un banc incliné, dos à une poulie haute équipée d’une barre droite.",
+      "Attrape la barre au-dessus de toi en pronation, prise serrée, coudes rentrés, haut des bras à environ 25° du sol.",
+      "Haut des bras immobile, tends les bras en contractant les triceps. Expire et tiens une seconde.",
+      "Reviens lentement."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_Internal_Rotation": {
+    "n": "Rotation interne de l’épaule à la poulie",
+    "s": [
+      "Assis de profil à côté d’une poulie basse (ou sur un banc si la poulie se règle), poignée dans la main la plus proche.",
+      "Coude collé au flanc, plié à 90°, avant-bras pointé vers la poulie.",
+      "Coude fixe, ramène la poignée vers le ventre en tournant l’épaule vers l’intérieur, avant-bras toujours perpendiculaire au buste.",
+      "Reviens lentement. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Cable_Iron_Cross": {
+    "n": "Croix de fer à la poulie",
+    "s": [
+      "Poulies réglées en haut, une poignée dans chaque main. Debout entre les deux, bras ouverts en T, tête et poitrine hautes.",
+      "Coudes tendus, abaisse les bras sur les côtés jusqu’au corps.",
+      "Marque une pause, puis remonte en T en contrôlant."
+    ]
+  },
+  "Cable_Judo_Flip": {
+    "n": "Projection de judo à la poulie",
+    "s": [
+      "Corde à la poulie basse. De profil, pieds bien écartés, attrape la corde à deux mains.",
+      "Tourne le buste à l’opposé de la poulie en faisant passer la corde par-dessus l’épaule, comme pour une projection de judo.",
+      "Transfère le poids d’un pied sur l’autre en tournant et en enroulant le buste vers l’avant pour tirer vers le bas.",
+      "Reviens et enchaîne. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Cable_Lying_Triceps_Extension": {
+    "n": "Barre au front à la poulie basse",
+    "s": [
+      "Allongé sur un banc plat, tête vers une poulie basse équipée d’une barre droite. Prends la barre en pronation, prise serrée (le plus simple : te la faire passer).",
+      "Bras tendus au-dessus du buste, à 90° du corps.",
+      "Haut des bras immobile, coudes rentrés, descends la barre jusqu’à effleurer le front. Inspire.",
+      "Tends les bras avec les triceps en expirant. Tiens une seconde."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_One_Arm_Tricep_Extension": {
+    "n": "Extension du triceps un bras, poulie haute, prise inversée",
+    "s": [
+      "Face à la poulie haute, poignée dans la main droite en supination (paume vers le haut).",
+      "Tire la poignée jusqu’à coller le coude au flanc, coude plié à moins de 90°. Pieds décalés pour l’équilibre.",
+      "Haut du bras immobile, tends le bras vers le bas en contractant le triceps. Expire et tiens une seconde.",
+      "Reviens lentement. Termine la série puis change de bras."
+    ]
+  },
+  "Cable_Preacher_Curl": {
+    "n": "Curl pupitre à la poulie basse",
+    "s": [
+      "Pupitre placé à environ 60 cm d’une poulie basse équipée d’une barre droite.",
+      "Assis au pupitre, haut des bras sur le coussin, fais-toi passer la barre et tends les bras.",
+      "Monte la barre vers les épaules en serrant fort les biceps. Expire et tiens une seconde.",
+      "Redescends lentement."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_Rear_Delt_Fly": {
+    "n": "Oiseau à la poulie vis-à-vis",
+    "s": [
+      "Poulies réglées au-dessus de la tête. Prends la poulie gauche avec la main droite et la droite avec la main gauche : les câbles se croisent devant toi.",
+      "Bras tendus, écarte-les vers l’arrière et l’extérieur.",
+      "Marque une pause, puis reviens en contrôlant."
+    ]
+  },
+  "Cable_Reverse_Crunch": {
+    "n": "Relevé de bassin à la poulie basse",
+    "s": [
+      "Sangles de cheville à la poulie basse, tapis devant. Assis pieds vers la poulie, attache les chevilles.",
+      "Allongé, jambes levées, genoux à 90°, câble dans l’axe des jambes. Mains derrière la tête.",
+      "Ramène les genoux vers le buste en décollant les hanches du sol.",
+      "Marque une pause, puis redescends lentement jusqu’à 90°, abdos toujours sous tension."
+    ]
+  },
+  "Cable_Rope_Overhead_Triceps_Extension": {
+    "n": "Extension des triceps à la corde au-dessus de la tête",
+    "s": [
+      "Corde à la poulie basse. Tiens-la à deux mains, bras tendus au-dessus de la tête, paumes face à face, coudes près de la tête.",
+      "Haut des bras immobile, descends lentement la corde derrière la tête jusqu’à bien étirer les triceps. Inspire.",
+      "Tends les bras en contractant les triceps en expirant."
+    ]
+  },
+  "Cable_Rope_Rear-Delt_Rows": {
+    "n": "Tirage visage à la poulie basse, assis",
+    "s": [
+      "Assis au poste de tirage horizontal, corde accrochée, prise pronation, bras tendus à l’horizontale, coudes ouverts.",
+      "Dos droit, hanches reculées, genoux légèrement fléchis.",
+      "Tire la corde vers le haut de la poitrine, sous le cou, coudes hauts et ouverts, jusqu’à ce qu’ils passent légèrement derrière le dos. Expire.",
+      "Reviens bras tendus, épaules étirées vers l’avant, en inspirant."
+    ],
+    "t": ["Garde le haut des bras à l’horizontale du début à la fin."]
+  },
+  "Cable_Russian_Twists": {
+    "n": "Rotations russes à la poulie sur swiss ball",
+    "s": [
+      "Poignée à une poulie réglée à mi-hauteur. Haut du dos posé sur un swiss ball, perpendiculaire au câble, à une longueur de bras de la poulie.",
+      "Poignée à deux mains, bras tendus au-dessus de la poitrine, alignés avec la poulie. Hanches hautes, corps à plat de la tête aux genoux.",
+      "Abdos gainés, tourne le buste à l’opposé de la poulie d’un quart de tour.",
+      "Marque une pause et reviens lentement. Termine la série puis change de côté."
+    ],
+    "e": [["cableMachine", "swissBall"]],
+    "u": true
+  },
+  "Cable_Seated_Crunch": {
+    "n": "Crunch assis à la poulie haute",
+    "s": [
+      "Assis sur un banc plat, dos à une poulie haute, corde tenue à deux mains au-dessus des épaules, paumes face à face.",
+      "Laisse la charge étirer légèrement le bas du dos.",
+      "Hanches immobiles, enroule le buste pour amener les coudes vers les hanches. Expire.",
+      "Remonte lentement en inspirant."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_Seated_Lateral_Raise": {
+    "n": "Élévation latérale penché aux poulies basses",
+    "s": [
+      "Banc plat entre deux poulies basses. Assis au bout du banc, penche-toi dos plat, buste sur les cuisses.",
+      "Prends la poulie gauche avec la main droite et la droite avec la main gauche : les câbles passent sous tes genoux. Bras tendus, paumes face à face, coudes légèrement fléchis.",
+      "Monte les bras sur les côtés jusqu’à hauteur d’épaules. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Cable_Shoulder_Press": {
+    "n": "Développé épaules aux poulies",
+    "s": [
+      "Poulies réglées en bas des deux colonnes. Debout entre les deux, poignées à hauteur d’épaules, paumes vers l’avant.",
+      "Tête et poitrine hautes, pousse les poignées droit au-dessus de la tête.",
+      "Marque une pause en haut, puis redescends."
+    ]
+  },
+  "Cable_Shrugs": {
+    "n": "Haussement d’épaules à la poulie basse",
+    "s": [
+      "Barre à la poulie basse, prise pronation largeur d’épaules ou un peu plus. Debout près de la poulie, bras tendus.",
+      "Monte les épaules le plus haut possible en expirant. Tiens une seconde.",
+      "Redescends lentement."
+    ],
+    "t": ["Bras tendus : seules les épaules bougent."]
+  },
+  "Cable_Wrist_Curl": {
+    "n": "Flexion des poignets à la poulie basse",
+    "s": [
+      "Banc plat devant une poulie basse équipée d’une barre droite. Assis, barre en supination, avant-bras posés sur les cuisses, poignets au-delà des genoux.",
+      "Monte la barre en pliant les poignets en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant. Seuls les poignets bougent."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Close-Grip_Front_Lat_Pulldown": {
+    "n": "Tirage vertical prise serrée",
+    "s": [
+      "Assis au poste de tirage vertical, cuisses bloquées sous les boudins. Prends la barre en pronation, mains plus serrées que les épaules.",
+      "Bras tendus, penche le buste d’environ 30° en arrière, poitrine sortie, bas du dos cambré.",
+      "Tire la barre jusqu’au haut de la poitrine en abaissant les épaules et les coudes. Expire et serre le dos une seconde.",
+      "Remonte lentement jusqu’aux bras tendus en inspirant."
+    ],
+    "t": ["Le buste reste immobile : seuls les bras bougent."]
+  },
+  "Elevated_Cable_Rows": {
+    "n": "Tirage horizontal assis surélevé",
+    "s": [
+      "Pose un step de 10 à 15 cm sur le siège du tirage horizontal et assieds-toi dessus, pieds sur l’appui, genoux légèrement fléchis.",
+      "Penche-toi pour attraper la poignée triangle, puis redresse-toi à 90°, dos légèrement cambré, poitrine sortie.",
+      "Buste immobile, tire la poignée jusqu’au ventre, bras près du corps. Expire et serre le dos une seconde.",
+      "Reviens lentement en inspirant."
+    ]
+  },
+  "External_Rotation_with_Cable": {
+    "n": "Rotation externe de l’épaule à la poulie",
+    "s": [
+      "Poulie réglée à hauteur de coude. Debout de profil, côté gauche vers la poulie, à un bon pas.",
+      "Poignée dans la main droite, coude collé au flanc (tu peux coincer une serviette roulée), coude à 90°, main devant le ventre.",
+      "Coude fixe, tourne l’avant-bras vers l’extérieur, comme un revers au tennis.",
+      "Reviens lentement. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Face_Pull": {
+    "n": "Face pull",
+    "s": [
+      "Corde à une poulie haute, face à la machine, bras tendus devant toi.",
+      "Tire la corde vers ton visage en écartant les mains, coudes hauts, haut des bras parallèles au sol.",
+      "Serre les omoplates une seconde, puis reviens en contrôlant."
+    ],
+    "t": ["Excellent pour la santé des épaules et la posture."]
+  },
+  "Flat_Bench_Cable_Flyes": {
+    "n": "Écarté couché aux poulies basses",
+    "s": [
+      "Banc plat entre deux poulies basses, poitrine alignée avec les poulies. Allongé, pieds au sol, fais-toi passer les poignées, paumes vers le haut.",
+      "Bras ouverts sur les côtés, parallèles au sol, coudes légèrement fléchis (garde cet angle).",
+      "Ramène les mains au-dessus de la poitrine en demi-cercle en serrant les pectoraux. Expire et tiens une seconde.",
+      "Reviens lentement."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Front_Cable_Raise": {
+    "n": "Élévation frontale un bras à la poulie basse",
+    "s": [
+      "Dos à une poulie basse, poignée dans la main gauche devant les cuisses, paume vers les cuisses.",
+      "Sans balancer, coude légèrement fléchi, monte le bras devant toi jusqu’un peu au-dessus de l’horizontale. Expire et marque une pause.",
+      "Redescends lentement en inspirant. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Full_Range-Of-Motion_Lat_Pulldown": {
+    "n": "Tirage vertical bras croisés, amplitude complète",
+    "s": [
+      "Debout ou assis sur un banc haut entre deux poulies hautes. Attrape les poignées bras croisés au-dessus de toi, paumes vers l’avant.",
+      "Poitrine haute, bas du dos légèrement cambré, tire les poignées vers le bas en arc, en tournant les mains : paumes face à face en bas.",
+      "Remonte lentement."
+    ]
+  },
+  "High_Cable_Curls": {
+    "n": "Curl aux poulies hautes",
+    "s": [
+      "Debout entre deux poulies hautes, une poignée dans chaque main, haut des bras à l’horizontale, paumes vers toi.",
+      "Haut des bras immobile, ramène les poignées vers les oreilles en contractant les biceps. Expire et tiens une seconde.",
+      "Reviens lentement."
+    ]
+  },
+  "Incline_Cable_Chest_Press": {
+    "n": "Développé incliné aux poulies",
+    "s": [
+      "Assis incliné, poignées en main, haut des bras à environ 45° du corps, coudes à 90°, tête et poitrine hautes.",
+      "Pousse les poignées devant toi en les rapprochant, omoplates serrées.",
+      "Marque une pause bras tendus, puis reviens en gardant les câbles tendus."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Incline_Cable_Flye": {
+    "n": "Écarté incliné aux poulies basses",
+    "s": [
+      "Poulies réglées tout en bas, banc incliné à 45° entre les deux. Allongé, une poignée dans chaque main, mains réunies bras tendus devant le visage.",
+      "Coudes légèrement fléchis, ouvre les bras en grand arc jusqu’à sentir l’étirement de la poitrine. Inspire.",
+      "Ramène les mains par le même arc en serrant les pectoraux. Expire et tiens une seconde."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists": {
+    "n": "Crunch à genoux à la poulie avec rotations",
+    "s": [
+      "Corde à la poulie haute, tapis devant. À genoux à environ 60 cm de la machine, corde derrière la tête, mains près des oreilles.",
+      "Mains fixes, enroule le buste vers le bas jusqu’à amener les coudes aux genoux. Pause, puis remonte lentement.",
+      "À la répétition suivante, à mi-descente, tourne pour amener un coude vers le genou opposé, puis remonte.",
+      "Alterne : crunch droit, rotation d’un côté, crunch droit, rotation de l’autre côté."
+    ]
+  },
+  "Kneeling_Cable_Triceps_Extension": {
+    "n": "Extension des triceps à genoux à la poulie haute",
+    "s": [
+      "Banc en travers devant une poulie haute équipée d’une barre droite. Tiens la barre au-dessus de la tête, mains écartées de 15 cm, paumes vers le bas.",
+      "Dos à la machine, mets-toi à genoux et pose la tête et l’arrière des bras sur le banc, coudes pliés, avant-bras vers la poulie.",
+      "Coudes rentrés, tends les bras en arc jusqu’à les avoir parallèles au sol. Contracte fort une seconde. Expire.",
+      "Reviens lentement en inspirant."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Kneeling_High_Pulley_Row": {
+    "n": "Tirage à genoux à la poulie haute",
+    "s": [
+      "Corde à une poulie au-dessus de la tête. À genoux à un bon pas de la machine, corde tenue bras tendus devant toi.",
+      "Tire la corde vers le haut de la poitrine en pliant les coudes, ouverts sur les côtés, et en serrant les omoplates.",
+      "Marque une pause, puis reviens lentement."
+    ]
+  },
+  "Kneeling_Single-Arm_High_Pulley_Row": {
+    "n": "Tirage un bras à genoux à la poulie haute",
+    "s": [
+      "Poignée à la poulie haute. À genoux face à la machine, poignée dans une main, bras tendu, paume vers l’avant.",
+      "Tire la poignée vers le buste en pliant le coude et en serrant l’omoplate, en tournant le poignet : paume vers toi à la fin.",
+      "Marque une pause, puis reviens. Termine la série puis change de bras."
+    ]
+  },
+  "Low_Cable_Crossover": {
+    "n": "Écarté aux poulies basses, debout",
+    "s": [
+      "Poulies réglées en bas, une poignée dans chaque main. Avance d’un pas pour tendre les câbles, bras tendus, mains sous la taille, paumes vers l’avant.",
+      "Coudes légèrement fléchis, monte les mains vers le centre jusqu’à les réunir devant la poitrine, paumes vers le haut.",
+      "Marque une pause, puis reviens en contrôlant."
+    ]
+  },
+  "Low_Cable_Triceps_Extension": {
+    "n": "Extension des triceps allongé à la poulie basse",
+    "s": [
+      "Allongé sur le dos sur le siège du tirage horizontal, tête vers la poulie équipée d’une corde. Attrape les extrémités de la corde, paumes face à face.",
+      "Haut des bras verticaux, coudes rentrés et pliés à 90°, avant-bras vers la poulie.",
+      "Tends les avant-bras jusqu’à la verticale en expirant. Contracte fort une seconde.",
+      "Reviens lentement en inspirant."
+    ]
+  },
+  "Low_Pulley_Row_To_Neck": {
+    "n": "Tirage au cou à la poulie basse",
+    "s": [
+      "Assis au tirage horizontal avec une corde, prise pronation, dos presque vertical, genoux légèrement fléchis, bras tendus devant toi.",
+      "Buste immobile, monte les coudes et tire la corde vers le cou, haut des bras parallèles au sol. Expire.",
+      "Continue jusqu’à avoir les mains presque près des oreilles, coudes écartés. Tiens une seconde.",
+      "Reviens lentement en inspirant."
+    ]
+  },
+  "Lying_Cable_Curl": {
+    "n": "Curl allongé à la poulie basse",
+    "s": [
+      "Barre droite ou EZ à la poulie basse, prise supination largeur d’épaules.",
+      "Allongé sur le dos au sol devant la machine, pieds contre le cadre, jambes tendues, bras tendus le long du corps, coudes légèrement fléchis.",
+      "Haut des bras immobile, monte lentement la barre vers la poitrine en serrant les biceps. Expire et tiens une seconde.",
+      "Reviens lentement."
+    ]
+  },
+  "Lying_Close-Grip_Bar_Curl_On_High_Pulley": {
+    "n": "Curl allongé à la poulie haute",
+    "s": [
+      "Banc plat devant une poulie haute. Barre droite en supination, mains largeur d’épaules.",
+      "Allongé sur le dos, tête au bout du banc, bras tendus au-dessus des épaules, à 90° du buste, coudes rentrés.",
+      "Haut des bras immobile, ramène la barre en arc jusqu’au menton en expirant. Serre une seconde.",
+      "Reviens lentement."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "One-Arm_High-Pulley_Cable_Side_Bends": {
+    "n": "Flexion latérale un bras à la poulie haute",
+    "s": [
+      "Poignée à la poulie la plus haute. De profil, attrape-la d’une main en supination.",
+      "Tire-la jusqu’à coller le coude au flanc, poignée près de l’épaule. Pieds largeur de hanches, main libre sur la hanche.",
+      "Bras fixe, contracte les obliques pour te pencher sur le côté vers le bas.",
+      "Reviens lentement sans relâcher complètement la charge. Termine la série puis change de côté."
+    ]
+  },
+  "One-Legged_Cable_Kickback": {
+    "n": "Extension de hanche à la poulie basse",
+    "s": [
+      "Sangle de cheville à la poulie basse, attachée à une cheville. Face à la machine à environ 60 cm, tiens le cadre.",
+      "Genoux et hanches légèrement fléchis, abdos serrés, envoie la jambe vers l’arrière en arc, aussi haut que confortable, en contractant le fessier. Expire et serre une seconde.",
+      "Ramène lentement la jambe en résistant au câble. Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "One_Arm_Lat_Pulldown": {
+    "n": "Tirage vertical un bras",
+    "s": [
+      "Règle la charge et le boudin de cuisses. Attrape la poignée d’une main en pronation, bras tendu.",
+      "Tire la poignée vers le bas en ramenant le coude contre le flanc.",
+      "Marque une pause, puis remonte lentement sans laisser la charge se reposer. Termine la série puis change de bras."
+    ]
+  },
+  "Overhead_Cable_Curl": {
+    "n": "Curl biceps aux poulies hautes, bras en croix",
+    "s": [
+      "Même charge des deux côtés, poulies réglées au-dessus des épaules. Debout au milieu, une poignée dans chaque main en supination, bras tendus à l’horizontale, pieds largeur d’épaules.",
+      "Plie les coudes pour ramener les poignées vers la tête en serrant les biceps. Expire.",
+      "Reviens lentement bras tendus en inspirant. Seuls les avant-bras bougent."
+    ]
+  },
+  "Pallof_Press": {
+    "n": "Pallof press",
+    "s": [
+      "Poignée à une poulie à hauteur d’épaules (ou basse). De profil, attrape-la à deux mains et écarte-toi à une longueur de bras pour tendre le câble.",
+      "Pieds largeur de hanches, genoux légèrement fléchis, poignée contre le milieu de la poitrine.",
+      "Pousse la poignée devant toi jusqu’aux bras tendus, abdos gainés, sans laisser le buste tourner.",
+      "Tiens quelques secondes, puis ramène-la. Termine la série puis change de côté."
+    ],
+    "t": ["Marche aussi avec un élastique accroché à un poteau."],
+    "e": [["cableMachine"], ["bands"]],
+    "u": true
+  },
+  "Pallof_Press_With_Rotation": {
+    "n": "Pallof press avec rotation",
+    "s": [
+      "Poignée à une poulie à hauteur d’épaules. De profil, à une longueur de bras, ramène la poignée contre la poitrine à deux mains, pieds largeur de hanches.",
+      "Pousse-la devant toi jusqu’aux bras tendus, abdos gainés.",
+      "Hanches fixes, tourne le buste à l’opposé de la poulie d’un quart de tour, bras tendus, puis reviens lentement face à l’avant.",
+      "Ramène la poignée à la poitrine : c’est une répétition. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Pull_Through": {
+    "n": "Pull-through à la poulie basse",
+    "s": [
+      "Corde à la poulie basse. Dos à la machine, à quelques pas, enjambe le câble, pieds bien écartés.",
+      "Plie aux hanches pour passer les mains entre les jambes le plus loin possible, genoux légèrement fléchis.",
+      "Bras tendus, redresse-toi en poussant les hanches vers l’avant. Le mouvement vient des hanches, pas des épaules."
+    ]
+  },
+  "Reverse_Cable_Curl": {
+    "n": "Curl inversé à la poulie basse",
+    "s": [
+      "Debout, buste droit, barre de la poulie basse en pronation, mains largeur d’épaules, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules. Expire et serre une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Reverse_Grip_Triceps_Pushdown": {
+    "n": "Extension des triceps à la poulie haute, prise inversée",
+    "s": [
+      "Barre droite ou EZ à la poulie haute. Face à la machine, prends-la en supination, mains largeur d’épaules, et descends-la jusqu’aux bras tendus le long du corps, coudes au corps.",
+      "Laisse remonter la barre jusqu’à la poitrine en inspirant ; seuls les avant-bras bougent.",
+      "Repousse vers le bas en contractant fort les triceps en expirant."
+    ]
+  },
+  "Rope_Crunch": {
+    "n": "Crunch à la corde, à genoux",
+    "s": [
+      "À genoux à 30–60 cm d’une poulie haute avec une corde. Attrape-la à deux mains au-dessus de toi, buste droit.",
+      "Enroule la colonne pour rapprocher les côtes des cuisses en tirant la corde vers le bas.",
+      "Marque une pause, puis remonte lentement."
+    ],
+    "t": ["Ajoute une rotation ou incline-toi sur le côté pour cibler les obliques."]
+  },
+  "Rope_Straight-Arm_Pulldown": {
+    "n": "Tirage bras tendus à la corde",
+    "s": [
+      "Corde à une poulie haute. Recule d’un bon pas, pieds décalés, corde à deux mains. Penche-toi aux hanches, dos droit, bras tendus devant toi vers le haut.",
+      "Bras tendus, tire la corde jusqu’aux cuisses.",
+      "Serre les dorsaux une seconde, puis remonte sans laisser la charge se reposer."
+    ]
+  },
+  "Seated_Cable_Rows": {
+    "n": "Tirage horizontal assis",
+    "s": [
+      "Assis au tirage horizontal avec une poignée triangle, pieds sur l’appui, genoux légèrement fléchis.",
+      "Penche-toi pour attraper la poignée, puis redresse-toi à 90°, dos légèrement cambré, poitrine sortie, bras tendus.",
+      "Buste immobile, tire la poignée jusqu’au ventre, bras près du corps. Expire et serre fort le dos une seconde.",
+      "Reviens lentement en inspirant."
+    ]
+  },
+  "Seated_Cable_Shoulder_Press": {
+    "n": "Développé épaules assis aux poulies",
+    "s": [
+      "Assis, poignées en main, haut des bras à 90° du corps, coudes pliés à 90°, tête et poitrine hautes.",
+      "Pousse les poignées au-dessus de la tête en les rapprochant.",
+      "Marque une pause, puis redescends en gardant les câbles tendus."
+    ],
+    "t": ["Variantes : dos décollé du dossier, ou en alternant les bras."]
+  },
+  "Seated_One-arm_Cable_Pulley_Rows": {
+    "n": "Tirage horizontal un bras assis",
+    "s": [
+      "Assis au tirage horizontal, pieds sur l’appui, genoux légèrement fléchis. Attrape la poignée de la main gauche en pronation.",
+      "Redresse-toi à 90°, poitrine sortie, bras tendu ; main droite à la taille.",
+      "Buste immobile, tire la poignée vers le ventre en tournant le poignet : paume vers toi à la fin. Expire et serre le dos.",
+      "Reviens lentement en retournant la paume vers le bas. Termine la série puis change de bras."
+    ]
+  },
+  "Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl": {
+    "n": "Flexion des poignets assis à la poulie basse",
+    "s": [
+      "Banc devant une poulie basse avec barre droite ou EZ, assez loin pour que le câble soit tendu quand la barre est sur tes cuisses.",
+      "Barre en supination, mains largeur d’épaules. Assis, avant-bras sur les cuisses, poignets au-delà des genoux.",
+      "Laisse descendre la barre au maximum en serrant la prise. Inspire.",
+      "Monte-la le plus haut possible en pliant les poignets. Tiens une seconde, puis redescends."
+    ],
+    "e": [["cableMachine", "bench"]]
+  },
+  "Shotgun_Row": {
+    "n": "Tirage un bras en fente (shotgun row)",
+    "s": [
+      "Poignée à la poulie basse. Recule d’un bon pas en fente large, bras tendu, épaule en avant.",
+      "Tire la poignée en serrant l’omoplate et en pliant le coude, en tournant la paume vers le haut.",
+      "Marque une pause, puis reviens. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Single-Arm_Cable_Crossover": {
+    "n": "Écarté alterné à la poulie vis-à-vis",
+    "s": [
+      "Poulies réglées en haut, une poignée dans chaque main. Avance d’un pas, pieds décalés, buste penché, bras tendus devant toi, mains réunies.",
+      "Bras gauche fixe, ouvre le bras droit sur le côté à hauteur d’épaule, coude légèrement fléchi.",
+      "Ramène-le au centre et tiens une seconde.",
+      "Fais la même chose avec le bras gauche. Continue en alternant."
+    ],
+    "u": false
+  },
+  "Standing_Biceps_Cable_Curl": {
+    "n": "Curl debout à la poulie basse",
+    "s": [
+      "Debout, buste droit, barre de la poulie basse en supination, mains largeur d’épaules, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules en contractant les biceps. Expire et serre une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Standing_Cable_Chest_Press": {
+    "n": "Développé poitrine debout aux poulies",
+    "s": [
+      "Poulies à hauteur de poitrine. Debout à 30–60 cm devant, une poignée dans chaque main, pieds décalés pour la stabilité.",
+      "Haut des bras à 90°, omoplates serrées.",
+      "Corps immobile, pousse les poignées devant toi en les rapprochant.",
+      "Marque une pause, puis reviens."
+    ]
+  },
+  "Standing_Cable_Lift": {
+    "n": "Bûcheron inversé à la poulie basse",
+    "s": [
+      "Poignée à la poulie la plus basse. De profil, à une longueur de bras, pieds largeur d’épaules ; accroupis-toi et attrape la poignée à deux mains, bras tendus.",
+      "D’un seul mouvement, tire la poignée vers le haut en diagonale à travers le corps jusqu’au-dessus de la tête, bras tendus.",
+      "Pivote sur le pied arrière et tends les jambes pour une amplitude complète, dos droit.",
+      "Reviens lentement. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Standing_Cable_Wood_Chop": {
+    "n": "Bûcheron à la poulie haute",
+    "s": [
+      "Poignée à la poulie la plus haute. De profil, à une longueur de bras, pieds largeur d’épaules ; attrape la poignée à deux mains, bras tendus.",
+      "D’un seul mouvement, tire la poignée vers le bas en diagonale jusqu’au genou avant en tournant le buste.",
+      "Dos et bras tendus, abdos gainés, pivote sur le pied arrière et plie les genoux pour une amplitude complète.",
+      "Reviens lentement. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Standing_Low-Pulley_Deltoid_Raise": {
+    "n": "Élévation latérale un bras à la poulie basse",
+    "s": [
+      "Debout à droite d’une poulie basse. Main gauche en travers du corps sur la poignée, paume vers le bas ; main droite tenant la machine.",
+      "Dos droit, pieds largeur d’épaules.",
+      "Monte la main gauche en travers du corps jusqu’à hauteur d’épaule en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant. Termine la série puis change de bras."
+    ],
+    "u": true
+  },
+  "Standing_Low-Pulley_One-Arm_Triceps_Extension": {
+    "n": "Extension un bras au-dessus de la tête, poulie basse",
+    "s": [
+      "Poignée de la poulie basse dans la main gauche. Dos à la machine, monte-la à deux mains au-dessus de la tête, paume vers l’avant, haut du bras vertical ; main droite sur le coude gauche.",
+      "Haut du bras immobile, coude près de la tête, descends la poignée en arc derrière la tête jusqu’à ce que l’avant-bras touche le biceps. Inspire.",
+      "Remonte avec le triceps en expirant. Termine la série puis change de bras."
+    ]
+  },
+  "Standing_One-Arm_Cable_Curl": {
+    "n": "Curl un bras à la poulie basse",
+    "s": [
+      "Poignée de la poulie basse en main, assez loin pour que le bras porte la charge.",
+      "Haut du bras immobile et vertical, coude rentré, paume vers l’avant ; main libre à la taille.",
+      "Monte lentement la poignée jusqu’à ce que l’avant-bras touche le biceps. Expire et serre.",
+      "Redescends lentement en inspirant. Termine la série puis change de bras."
+    ]
+  },
+  "Standing_Rope_Crunch": {
+    "n": "Crunch debout à la corde",
+    "s": [
+      "Corde à une poulie haute. Dos à la machine, tiens la corde à deux mains par-dessus les épaules, contre le haut de la poitrine.",
+      "Enroule la colonne pour descendre la charge le plus bas possible.",
+      "Tiens la contraction un instant, puis reviens."
+    ]
+  },
+  "Straight-Arm_Pulldown": {
+    "n": "Tirage bras tendus à la poulie haute",
+    "s": [
+      "Barre large à la poulie haute, prise pronation plus large que les épaules. Recule d’environ 60 cm.",
+      "Penche le buste d’environ 30°, bras tendus devant toi, coudes légèrement fléchis. Contracte les dorsaux.",
+      "Bras tendus, tire la barre jusqu’aux cuisses avec les dorsaux. Expire.",
+      "Remonte bras tendus en inspirant."
+    ]
+  },
+  "Triceps_Overhead_Extension_with_Rope": {
+    "n": "Extension des triceps à la corde, dos à la poulie",
+    "s": [
+      "Corde à une poulie basse. Attrape-la à deux mains et tourne le dos à la machine.",
+      "Mains derrière la tête, coudes pointés vers le haut et pliés ; pieds décalés, légèrement penché vers l’avant pour la stabilité.",
+      "Haut des bras fixe, tends les coudes pour monter les mains au-dessus de la tête.",
+      "Serre les triceps en haut, puis redescends lentement."
+    ]
+  },
+  "Triceps_Pushdown": {
+    "n": "Extension des triceps à la poulie haute",
+    "s": [
+      "Barre droite ou coudée à la poulie haute, prise pronation largeur d’épaules.",
+      "Debout, buste droit très légèrement penché, haut des bras collés au corps et verticaux, avant-bras vers la poulie.",
+      "Avec les triceps, descends la barre jusqu’aux cuisses, bras tendus. Expire et tiens une seconde.",
+      "Remonte lentement en inspirant. Seuls les avant-bras bougent."
+    ]
+  },
+  "Triceps_Pushdown_-_Rope_Attachment": {
+    "n": "Extension des triceps à la corde",
+    "s": [
+      "Corde à la poulie haute, prise neutre (paumes face à face).",
+      "Debout, buste droit très légèrement penché, haut des bras collés au corps et verticaux.",
+      "Descends la corde en écartant les extrémités de chaque côté des cuisses, bras tendus. Expire et tiens une seconde.",
+      "Remonte lentement en inspirant. Seuls les avant-bras bougent."
+    ]
+  },
+  "Triceps_Pushdown_-_V-Bar_Attachment": {
+    "n": "Extension des triceps à la barre en V",
+    "s": [
+      "Barre en V à la poulie haute, prise pronation largeur d’épaules, pouces plus hauts que les petits doigts.",
+      "Debout, buste droit très légèrement penché, haut des bras collés au corps et verticaux.",
+      "Descends la barre jusqu’aux cuisses, bras tendus. Expire et tiens une seconde.",
+      "Remonte lentement en inspirant. Seuls les avant-bras bougent."
+    ]
+  },
+  "Underhand_Cable_Pulldowns": {
+    "n": "Tirage vertical prise inversée",
+    "s": [
+      "Assis au poste de tirage vertical, cuisses bloquées. Attrape la barre en supination (paumes vers toi), mains plus serrées que les épaules.",
+      "Bras tendus, penche le buste d’environ 30° en arrière, poitrine sortie.",
+      "Tire la barre jusqu’au haut de la poitrine, coudes près du corps. Expire et serre le dos une seconde.",
+      "Remonte lentement jusqu’aux bras tendus en inspirant."
+    ]
+  },
+  "Upright_Cable_Row": {
+    "n": "Tirage menton à la poulie basse",
+    "s": [
+      "Barre droite à la poulie basse, prise pronation un peu plus serrée que les épaules, barre contre les cuisses, coudes légèrement fléchis, dos droit.",
+      "Monte la barre près du corps jusqu’au menton en menant avec les coudes, toujours plus hauts que les avant-bras. Expire et tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "V-Bar_Pulldown": {
+    "n": "Tirage vertical prise neutre (triangle)",
+    "s": [
+      "Assis au poste de tirage vertical avec une poignée triangle, cuisses bloquées.",
+      "Prise neutre, poitrine sortie, penche-toi légèrement en arrière (environ 30°).",
+      "Tire la poignée vers le bas avec les dorsaux en serrant les omoplates, jusqu’à presque toucher la poitrine. Expire.",
+      "Tiens une seconde, puis remonte lentement en inspirant."
+    ]
+  },
+  "Wide-Grip_Lat_Pulldown": {
+    "n": "Tirage vertical prise large",
+    "s": [
+      "Assis au poste de tirage vertical, cuisses bloquées. Attrape la barre en pronation, mains plus larges que les épaules.",
+      "Bras tendus, penche le buste d’environ 30° en arrière, poitrine sortie, bas du dos cambré.",
+      "Tire la barre jusqu’au haut de la poitrine en abaissant épaules et coudes. Expire et serre les omoplates une seconde.",
+      "Remonte lentement jusqu’aux bras tendus en inspirant."
+    ],
+    "t": ["Le buste reste immobile : ne tire pas avec les avant-bras."]
+  },
+  "Wide-Grip_Pulldown_Behind_The_Neck": {
+    "n": "Tirage vertical nuque",
+    "s": [
+      "Assis au poste de tirage vertical, cuisses bloquées. Attrape la barre en pronation, prise large.",
+      "Penche le buste et la tête légèrement en avant, barre dans l’axe de la nuque.",
+      "Tire la barre jusqu’à la nuque en abaissant épaules et coudes. Expire et serre les omoplates une seconde.",
+      "Remonte lentement jusqu’aux bras tendus en inspirant."
+    ],
+    "t": ["Demande une bonne mobilité d’épaules : le tirage devant est plus sûr."]
+  }
+}

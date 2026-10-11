@@ -1,0 +1,458 @@
+{
+  "Flutter_Kicks": {
+    "n": "Battements de jambes sur banc (à plat ventre)",
+    "s": [
+      "Allongé à plat ventre sur un banc, hanches au bord, mains agrippées à l’avant du banc, jambes tendues dans le vide.",
+      "Serre les fessiers et monte les jambes à hauteur des hanches.",
+      "Monte une jambe pendant que l’autre descend, puis inverse, comme un battement de nage.",
+      "Garde un mouvement contrôlé et respire normalement."
+    ],
+    "e": [["bench"]]
+  },
+  "Frog_Hops": {
+    "n": "Sauts de grenouille",
+    "s": [
+      "Debout, mains derrière la tête, descends en squat en gardant le buste droit et la tête haute.",
+      "Saute vers l’avant d’environ un mètre, sans monter inutilement haut.",
+      "Amortis la réception avec les jambes et ressaute aussitôt. Enchaîne 5 à 10 sauts."
+    ],
+    "m": "reps"
+  },
+  "Frog_Sit-Ups": {
+    "n": "Crunch grenouille",
+    "s": [
+      "Allongé sur le dos, plie les genoux et colle les plantes de pied l’une contre l’autre, genoux ouverts vers le sol.",
+      "Rapproche les pieds le plus possible des fesses : les jambes forment un losange.",
+      "Croise les bras sur la poitrine, mains sur les épaules opposées.",
+      "En expirant, plaque le bas du dos au sol et enroule le haut du buste. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Front_Leg_Raises": {
+    "n": "Balancés de jambe avant-arrière",
+    "s": [
+      "Debout à côté d’une chaise ou d’un mur, tiens-toi d’une main.",
+      "Balance la jambe tendue vers l’avant, puis vers l’arrière aussi loin que ta souplesse le permet.",
+      "Fais 5 à 10 balancés puis change de jambe."
+    ],
+    "m": "reps",
+    "u": true
+  },
+  "Glute_Kickback": {
+    "n": "Kickback fessier à quatre pattes",
+    "s": [
+      "À quatre pattes, mains sous les épaules, genoux pliés à 90°, regard vers le sol devant toi.",
+      "En expirant, monte une jambe en gardant le genou plié à 90°, jusqu’à ce que la cuisse soit dans le prolongement du dos.",
+      "Serre le fessier une seconde en haut.",
+      "Redescends en inspirant et alterne les jambes."
+    ]
+  },
+  "Gorilla_Chin_Crunch": {
+    "n": "Traction gorille avec crunch",
+    "s": [
+      "Suspends-toi à la barre en supination (paumes vers toi), mains un peu plus larges que les épaules.",
+      "Plie les genoux à 90°, mollets parallèles au sol.",
+      "En expirant, fais une traction en remontant les genoux vers la poitrine, jusqu’à avoir le nez au niveau de la barre.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Groin_and_Back_Stretch": {
+    "n": "Étirement des adducteurs et du dos (papillon)",
+    "s": [
+      "Assis au sol, genoux pliés, plantes de pied l’une contre l’autre.",
+      "Croise les doigts derrière la tête.",
+      "Enroule le dos vers l’avant en amenant les coudes à l’intérieur des cuisses.",
+      "Reviens dos droit et tête haute. Fais 10 à 20 répétitions."
+    ],
+    "m": "reps"
+  },
+  "Groiners": {
+    "n": "Groiners (pieds aux mains)",
+    "s": [
+      "En position de pompe.",
+      "Saute pour ramener les deux pieds à côté des mains, tête haute.",
+      "Repars aussitôt en position de pompe et enchaîne 10 à 20 répétitions."
+    ],
+    "m": "reps"
+  },
+  "Hamstring_Stretch": {
+    "n": "Étirement des ischios avec sangle",
+    "s": [
+      "Allongé sur le dos, une jambe tendue au sol, l’autre levée vers le plafond.",
+      "Passe une ceinture, un élastique ou une serviette sous l’avant du pied levé.",
+      "Tire doucement pour étirer l’arrière de la jambe et le mollet. Tiens 10 à 30 secondes puis change de jambe."
+    ],
+    "u": true
+  },
+  "Hip_Circles_prone": {
+    "n": "Cercles de hanche à quatre pattes",
+    "s": [
+      "À quatre pattes, dos bien placé, décolle un genou du sol en le gardant plié.",
+      "Dessine lentement le plus grand cercle possible avec le genou.",
+      "Fais quelques répétitions puis change de côté."
+    ],
+    "m": "reps",
+    "u": true
+  },
+  "Hug_Knees_To_Chest": {
+    "n": "Genoux serrés contre la poitrine",
+    "s": [
+      "Allongé sur le dos, ramène les deux genoux vers la poitrine.",
+      "Passe les bras sous les genoux (pas par-dessus, pour ménager les articulations).",
+      "Tire doucement les genoux vers les épaules et relâche le bas du dos."
+    ]
+  },
+  "Hyperextensions_With_No_Hyperextension_Bench": {
+    "n": "Extensions lombaires sur banc plat",
+    "s": [
+      "Allongé à plat ventre sur un banc, hanches au bord et buste dans le vide, un partenaire te tient les jambes.",
+      "Corps droit, croise les bras sur la poitrine ou derrière la tête.",
+      "Descends lentement le buste en gardant le dos plat, jusqu’à sentir l’étirement des ischios. Inspire.",
+      "Remonte jusqu’à l’horizontale en expirant, sans cambrer au-delà."
+    ],
+    "t": [
+      "Ne arrondis jamais le dos et ne prends pas d’élan.",
+      "Tiens un disque contre la poitrine pour ajouter de la charge."
+    ]
+  },
+  "Inchworm": {
+    "n": "Chenille (inchworm)",
+    "s": [
+      "Debout, pieds serrés. Jambes tendues, penche-toi et pose les mains au sol devant toi.",
+      "Avance les mains pas à pas en gardant les jambes tendues, jusqu’en position de pompe.",
+      "Garde les mains en place et rapproche les pieds à petits pas, jambes toujours tendues, jusqu’à tes mains."
+    ],
+    "m": "reps"
+  },
+  "Incline_Push-Up_Close-Grip": {
+    "n": "Pompes inclinées mains serrées",
+    "s": [
+      "Face à une barre ou un support stable à bonne hauteur, mains l’une à côté de l’autre dessus.",
+      "Recule les pieds : bras tendus, corps droit.",
+      "Descends la poitrine vers le support en pliant les bras, corps gainé.",
+      "Pousse pour revenir bras tendus."
+    ]
+  },
+  "Incline_Push-Up_Medium": {
+    "n": "Pompes inclinées mains largeur d’épaules",
+    "s": [
+      "Face à une barre ou un support stable à bonne hauteur, mains largeur d’épaules dessus.",
+      "Recule les pieds : bras tendus, corps droit.",
+      "Descends la poitrine vers le support en pliant les bras, corps gainé.",
+      "Pousse pour revenir bras tendus."
+    ]
+  },
+  "Incline_Push-Up_Reverse_Grip": {
+    "n": "Pompes inclinées prise inversée",
+    "s": [
+      "Face à une barre stable à bonne hauteur, prends-la paumes vers le haut, mains largeur d’épaules.",
+      "Recule les pieds : bras tendus, corps droit.",
+      "Descends la poitrine vers la barre en pliant les bras, coudes près du corps.",
+      "Pousse pour revenir bras tendus."
+    ]
+  },
+  "Incline_Push-Up_Wide": {
+    "n": "Pompes inclinées mains larges",
+    "s": [
+      "Face à une barre ou un support stable à bonne hauteur, mains plus larges que les épaules.",
+      "Recule les pieds : bras tendus et perpendiculaires au corps, corps droit.",
+      "Descends la poitrine vers le support en pliant les bras.",
+      "Pousse pour revenir bras tendus."
+    ]
+  },
+  "Iron_Crosses_stretch": {
+    "n": "Croix de fer (rotation au sol)",
+    "s": [
+      "Allongé à plat ventre, bras écartés en croix, paumes au sol.",
+      "Plie un genou et passe la jambe derrière toi pour toucher le sol près de la main opposée.",
+      "Reviens vite et alterne avec l’autre jambe, 10 à 20 répétitions."
+    ],
+    "m": "reps"
+  },
+  "Isometric_Chest_Squeezes": {
+    "n": "Contraction isométrique des pectoraux",
+    "s": [
+      "Assis ou debout, coudes pliés à 90°, paumes collées devant la poitrine, doigts vers l’avant.",
+      "Presse les mains l’une contre l’autre en augmentant progressivement la force, en respirant normalement.",
+      "Tiens le temps prévu puis relâche doucement."
+    ]
+  },
+  "Isometric_Neck_Exercise_-_Front_And_Back": {
+    "n": "Renforcement isométrique du cou (avant et arrière)",
+    "s": [
+      "Tête droite, pose les deux mains sur le front.",
+      "Pousse la tête vers l’avant contre tes mains sans la laisser bouger, en augmentant doucement la force. Respire normalement.",
+      "Tiens le temps prévu, relâche doucement.",
+      "Après la pause, recommence avec les mains derrière la tête."
+    ]
+  },
+  "Isometric_Neck_Exercise_-_Sides": {
+    "n": "Renforcement isométrique du cou (côtés)",
+    "s": [
+      "Tête droite, pose la main gauche sur le côté gauche de la tête.",
+      "Pousse la tête contre ta main sans la laisser bouger, en augmentant doucement la force. Respire normalement.",
+      "Tiens le temps prévu, relâche doucement.",
+      "Recommence de l’autre côté."
+    ],
+    "u": true
+  },
+  "Isometric_Wipers": {
+    "n": "Essuie-glaces en pompe",
+    "s": [
+      "En position de pompe, mains un peu plus larges que les épaules, corps droit.",
+      "Bascule le poids du corps d’un côté en pliant ce coude pour descendre.",
+      "Tends ce bras pour revenir au centre et descends de l’autre côté.",
+      "Continue en alternant."
+    ],
+    "m": "reps"
+  },
+  "Jackknife_Sit-Up": {
+    "n": "Relevé en V (jackknife)",
+    "s": [
+      "Allongé sur le dos, bras tendus derrière la tête, jambes tendues.",
+      "En expirant, plie-toi à la taille : monte en même temps les jambes tendues et les bras pour qu’ils se rejoignent au-dessus des hanches.",
+      "Redescends bras et jambes en inspirant."
+    ]
+  },
+  "Janda_Sit-Up": {
+    "n": "Relevé de buste Janda",
+    "s": [
+      "Allongé sur le dos, genoux pliés à 90°, pieds au sol, bras croisés sur la poitrine ou le long du corps.",
+      "Serre fort les fessiers et les ischios, inspire, puis monte le buste très lentement (3 à 6 secondes) en expirant.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Serrer les fessiers coupe le travail des fléchisseurs de hanche : les abdos font tout le travail."]
+  },
+  "Knee_Across_The_Body": {
+    "n": "Torsion allongée, genou croisé",
+    "s": [
+      "Allongé sur le dos, jambe droite tendue. Plie la jambe gauche et fais-la passer de l’autre côté du corps, genou tenu vers le sol avec la main droite.",
+      "Bras gauche posé au sol, tourne la tête vers la gauche.",
+      "Laisse le coccyx descendre vers le sol pendant que la poitrine part dans l’autre sens. Change de côté."
+    ],
+    "u": true
+  },
+  "Knee_Circles": {
+    "n": "Cercles de genoux",
+    "s": [
+      "Debout, jambes serrées, mains sur les genoux ou à la taille.",
+      "Fais tourner les genoux en cercle en respirant normalement.",
+      "Change de sens à mi-temps."
+    ]
+  },
+  "Knee_Tuck_Jump": {
+    "n": "Sauts genoux à la poitrine",
+    "s": [
+      "Debout, genoux légèrement fléchis, mains devant la poitrine paumes vers le bas.",
+      "Fléchis rapidement en quart de squat et saute aussitôt de façon explosive.",
+      "Monte les genoux vers la poitrine pour toucher tes paumes.",
+      "Réceptionne-toi en tendant les jambes puis en pliant les genoux pour amortir."
+    ]
+  },
+  "Kneeling_Arm_Drill": {
+    "n": "Éducatif de bras à genoux (course)",
+    "s": [
+      "À genoux, pied gauche devant, genou droit au sol. Appuie dans le talon avant pour garder fessiers et ischios actifs.",
+      "Balance les bras comme des pendules, d’abord amples, puis plus courts comme en footing.",
+      "Accélère jusqu’au rythme d’un sprint : dès que la main passe la hanche, ramène-la vite vers l’avant.",
+      "Change de genou et recommence."
+    ],
+    "m": "time"
+  },
+  "Kneeling_Forearm_Stretch": {
+    "n": "Étirement des avant-bras à genoux",
+    "s": [
+      "À genoux sur un tapis, paumes à plat, doigts tournés vers les genoux.",
+      "Penche-toi lentement en arrière en gardant les paumes au sol, jusqu’à sentir l’étirement des poignets et des avant-bras.",
+      "Tiens 20 à 30 secondes."
+    ],
+    "t": ["Indispensable avant la poutre d’escalade et le travail de poignets."]
+  },
+  "Kneeling_Hip_Flexor": {
+    "n": "Étirement du psoas à genoux",
+    "s": [
+      "À genoux sur un tapis, avance le pied droit à plat devant toi, jambe gauche tendue derrière, dessus du pied au sol.",
+      "Avance le bassin jusqu’à sentir l’étirement à l’avant de la hanche gauche.",
+      "Tiens 15 secondes puis change de côté."
+    ],
+    "u": true
+  },
+  "Lateral_Bound": {
+    "n": "Bonds latéraux",
+    "s": [
+      "En demi-squat, de profil par rapport à ta direction.",
+      "Charge le poids sur la jambe extérieure.",
+      "Pousse fort pour bondir le plus loin possible sur le côté.",
+      "À la réception, repars aussitôt dans l’autre sens. Enchaîne plusieurs allers-retours."
+    ]
+  },
+  "Leg-Up_Hamstring_Stretch": {
+    "n": "Étirement des ischios, jambe en l’air",
+    "s": [
+      "Allongé sur le dos, plie un genou, pied à plat au sol pour stabiliser le dos.",
+      "Lève l’autre jambe, plante du pied vers le plafond, aussi tendue que possible.",
+      "Tends la jambe au maximum puis tire-la doucement vers toi. Change de côté."
+    ],
+    "u": true
+  },
+  "Leg_Lift": {
+    "n": "Flexion de jambe debout",
+    "s": [
+      "Debout, pieds largeur d’épaules, tiens-toi à un support stable (chaise, rack).",
+      "Avec ou sans lest à la cheville, plie une jambe pour amener le talon vers la fesse, l’autre jambe tendue. Expire.",
+      "Redescends lentement en inspirant.",
+      "Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Leg_Pull-In": {
+    "n": "Ramené de genoux au sol",
+    "s": [
+      "Allongé sur un tapis, jambes tendues, mains au sol à côté de toi ou sous les fesses.",
+      "En expirant, plie les genoux et ramène les cuisses vers le ventre jusqu’à hauteur de poitrine, mollets parallèles au sol. Tiens une seconde.",
+      "Tends les jambes en inspirant."
+    ]
+  },
+  "Linear_3-Part_Start_Technique": {
+    "n": "Départ de sprint en 3 appuis",
+    "s": [
+      "Pieds sur une ligne : pointe du pied gauche au niveau de la cheville droite, pied droit 10 à 15 cm derrière.",
+      "Pose la main droite sur la ligne et rapproche le nez du genou gauche.",
+      "Fléchis et penche-toi en avant, tête plus basse que les hanches, poids sur la jambe gauche.",
+      "Monte la main gauche parallèle au sol vers l’arrière, puis démarre en explosant."
+    ]
+  },
+  "Linear_Acceleration_Wall_Drill": {
+    "n": "Éducatif d’accélération au mur",
+    "s": [
+      "Penche-toi à environ 45° contre un mur, pieds joints, fessiers contractés.",
+      "Monte vite le genou droit, marque une pause, puis frappe le sol droit vers le bas.",
+      "Fais de même avec l’autre jambe.",
+      "Refais une fois à droite, puis enchaîne les deux jambes le plus vite possible."
+    ]
+  },
+  "Looking_At_Ceiling": {
+    "n": "Regard au plafond (ouverture à genoux)",
+    "s": [
+      "À genoux, attrape tes talons avec les mains.",
+      "Pousse les hanches vers l’avant et bascule la tête en arrière pour regarder le plafond, en cambrant le dos."
+    ]
+  },
+  "Lower_Back_Curl": {
+    "n": "Extensions du dos à plat ventre",
+    "s": [
+      "Allongé à plat ventre, bras écartés sur les côtés.",
+      "Avec les muscles du bas du dos, décolle la poitrine du sol, tête haute, sans pousser avec les bras.",
+      "Redescends lentement. Fais 10 à 20 répétitions."
+    ],
+    "m": "reps"
+  },
+  "Lying_Crossover": {
+    "n": "Torsion allongée avec partenaire",
+    "s": [
+      "Allongé sur le dos, croise une jambe pliée par-dessus l’autre en approchant le genou du sol. Ton partenaire tient ton épaule au sol et la jambe croisée.",
+      "Essaie de remonter le genou pendant que ton partenaire t’en empêche, 10 à 20 secondes.",
+      "Relâche : ton partenaire pousse doucement le genou vers le sol. Change de côté."
+    ],
+    "u": true
+  },
+  "Lying_Glute": {
+    "n": "Étirement du fessier avec partenaire",
+    "s": [
+      "Allongé sur le dos, plie une hanche et tourne la jambe pour amener le pied au-dessus de la hanche opposée. Ton partenaire tient le genou et la cheville.",
+      "Pousse la jambe contre ton partenaire, qui t’empêche de bouger, 10 à 20 secondes.",
+      "Relâche complètement : ton partenaire pousse doucement la jambe vers ta poitrine. Dis-lui stop à temps."
+    ],
+    "u": true
+  },
+  "Lying_Prone_Quadriceps": {
+    "n": "Étirement des quadriceps à plat ventre avec partenaire",
+    "s": [
+      "À plat ventre, plie un genou pour amener le pied vers les fesses. Ton partenaire tient le genou et la cheville.",
+      "Essaie de tendre la jambe pendant que ton partenaire t’en empêche, 10 à 20 secondes.",
+      "Relâche : ton partenaire pousse doucement le pied vers les fesses. Tiens puis change de côté."
+    ],
+    "u": true
+  },
+  "Middle_Back_Stretch": {
+    "n": "Rotation du buste debout",
+    "s": [
+      "Debout, pieds largeur d’épaules, mains sur les hanches.",
+      "Tourne le buste jusqu’à sentir l’étirement et tiens 10 à 15 secondes.",
+      "Tourne de l’autre côté."
+    ],
+    "u": true
+  },
+  "Moving_Claw_Series": {
+    "n": "Course en griffé",
+    "s": [
+      "Cours en pliant bien le genou : le talon vient vers les fesses quand la hanche s’étend.",
+      "Ramène la jambe vers l’avant et griffe le sol à l’appui suivant.",
+      "Garde des bras actifs, en rythme rapide."
+    ],
+    "m": "time"
+  },
+  "Oblique_Crunches": {
+    "n": "Crunch oblique jambes surélevées",
+    "s": [
+      "Allongé sur le dos, bas du dos plaqué au sol, pieds posés sur un support (chaise, banc).",
+      "Une main derrière la tête, l’autre au sol sur le côté.",
+      "En expirant, monte l’épaule pour amener le coude vers le genou opposé.",
+      "Redescends en inspirant et alterne les côtés."
+    ]
+  },
+  "Oblique_Crunches_-_On_The_Floor": {
+    "n": "Crunch oblique couché sur le côté",
+    "s": [
+      "Allongé sur le côté droit, jambes l’une sur l’autre, genoux un peu pliés.",
+      "Main gauche derrière la tête.",
+      "En expirant, monte le coude gauche le plus haut possible en contractant les obliques. Tiens une seconde.",
+      "Redescends lentement en inspirant, termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "On_Your_Side_Quad_Stretch": {
+    "n": "Étirement des quadriceps couché sur le côté",
+    "s": [
+      "Allongé sur le côté droit, genou droit plié à 90° devant toi pour stabiliser le buste.",
+      "Plie le genou gauche derrière toi et attrape le pied gauche avec la main gauche.",
+      "Pousse la hanche gauche vers l’avant en tirant doucement le pied. Change de côté."
+    ],
+    "u": true
+  },
+  "One_Arm_Against_Wall": {
+    "n": "Étirement du grand dorsal contre un mur",
+    "s": [
+      "Debout, pose un bras plié contre un mur ou un cadre de porte, au-dessus de la tête.",
+      "Penche-toi lentement vers le bras jusqu’à sentir l’étirement sur le côté du dos. Change de côté."
+    ],
+    "u": true
+  },
+  "One_Half_Locust": {
+    "n": "Demi-sauterelle",
+    "s": [
+      "Allongé à plat ventre, main gauche sous la hanche gauche pour la protéger.",
+      "Plie le genou droit et attrape le pied droit avec la main droite.",
+      "Monte le pied et décolle en même temps les épaules du sol.",
+      "Change de côté. Si ton dos le permet, essaie avec les deux bras et les deux jambes."
+    ],
+    "u": true
+  },
+  "One_Knee_To_Chest": {
+    "n": "Un genou à la poitrine",
+    "s": [
+      "Allongé sur le dos, une jambe tendue.",
+      "Ramène l’autre genou vers la poitrine en le tenant sous l’articulation.",
+      "Tire doucement le genou vers le nez, puis change de côté."
+    ],
+    "u": true
+  },
+  "Overhead_Stretch": {
+    "n": "Grand étirement bras en l’air",
+    "s": [
+      "Debout, croise les doigts et tourne les paumes vers le plafond.",
+      "Tends les bras vers le haut en gardant les épaules basses.",
+      "Rentre le bassin et gaine le buste pour étirer l’avant et l’arrière du tronc."
+    ]
+  }
+}

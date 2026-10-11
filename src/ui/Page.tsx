@@ -1,0 +1,138 @@
+import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router'
+import { ChevronLeft } from 'lucide-react'
+import { cn } from '@/lib/cn'
+
+export interface PageProps {
+  title: string
+  /** Petit texte au-dessus du titre (date, contexte). */
+  eyebrow?: ReactNode
+  /** Affiche un bouton retour (vers `backTo`, sinon la page précédente). */
+  back?: boolean
+  backTo?: string
+  backLabel?: string
+  /** Action du bouton retour à la place de la navigation (étapes d'un assistant). */
+  onBack?: () => void
+  actions?: ReactNode
+  children: ReactNode
+  /** Grand titre style iOS (par défaut) ou titre compact pour les sous-pages. */
+  large?: boolean
+  /** Contenu fixé sous l'en-tête (onglets, recherche). */
+  toolbar?: ReactNode
+  /** Barre d'actions collée en bas de l'écran. */
+  footer?: ReactNode
+  className?: string
+  /** Pas de barre d'onglets sur cet écran : marge basse réduite. */
+  noTabBar?: boolean
+}
+
+export function Page({
+  title,
+  eyebrow,
+  back = false,
+  backTo,
+  backLabel = 'Retour',
+  onBack,
+  actions,
+  children,
+  large = !back,
+  toolbar,
+  footer,
+  className,
+  noTabBar = false,
+}: PageProps) {
+  const navigate = useNavigate()
+  const goBack = () => {
+    if (onBack) onBack()
+    else if (backTo) void navigate(backTo)
+    else if (window.history.length > 1) void navigate(-1)
+    else void navigate('/')
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-20 bg-canvas/95 pt-safe backdrop-blur-xl">
+        {/*
+         * Trois colonnes : les côtés prennent la place de leurs boutons, puis se partagent le reste à
+         * parts égales pour garder le titre centré. Un titre trop long se décale, puis se tronque,
+         * sans jamais passer sous le bouton retour.
+         */}
+        <div className="grid min-h-12 grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)] items-center gap-1 px-2">
+          <div className="flex items-center">
+            {(back || onBack) && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="flex h-11 items-center gap-0.5 rounded-lg pr-2 text-[17px] text-accent-text active:opacity-60"
+              >
+                <ChevronLeft size={26} className="shrink-0" aria-hidden />
+                <span className="max-w-30 truncate">{backLabel}</span>
+              </button>
+            )}
+          </div>
+          {large ? (
+            <span />
+          ) : (
+            <h1 className="min-w-0 truncate text-center text-[17px] font-semibold text-ink">{title}</h1>
+          )}
+          <div className="flex min-w-11 items-center justify-end gap-1">{actions}</div>
+        </div>
+        {toolbar && <div className="px-4 pb-2">{toolbar}</div>}
+      </header>
+      <main
+        className={cn(
+          'flex-1 px-4',
+          footer ? (noTabBar ? 'pb-footer' : 'pb-tabbar-footer') : noTabBar ? 'pb-safe pb-8' : 'pb-tabbar',
+          className,
+        )}
+      >
+        {large && (
+          <div className="mb-4 pt-1">
+            {eyebrow && (
+              <p className="text-[13px] font-semibold tracking-wide text-ink-3 uppercase">{eyebrow}</p>
+            )}
+            <h1 className="text-[30px] leading-tight font-bold tracking-tight text-ink">{title}</h1>
+          </div>
+        )}
+        {children}
+        {/* Collée en bas de l'écran, mais dans la zone principale (repère pour les lecteurs d'écran). */}
+        {footer && (
+          <div
+            className={cn(
+              'fixed inset-x-0 z-30 border-t border-line bg-canvas/95 px-4 pt-3 backdrop-blur-xl',
+              noTabBar
+                ? 'bottom-0 pb-[calc(var(--safe-bottom)+12px)]'
+                : 'bottom-[calc(var(--tabbar-height)+var(--safe-bottom)+var(--workout-bar-height))] pb-3',
+            )}
+          >
+            {footer}
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
+
+export function Section({
+  title,
+  action,
+  children,
+  className,
+}: {
+  title?: ReactNode
+  action?: ReactNode
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <section className={cn('mb-6', className)}>
+      {(title ?? action) && (
+        <div className="mb-2 flex min-h-5 items-center justify-between gap-2 px-1">
+          {title && <h2 className="text-[13px] font-semibold tracking-wide text-ink-3 uppercase">{title}</h2>}
+          {action}
+        </div>
+      )}
+      {children}
+    </section>
+  )
+}

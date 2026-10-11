@@ -1,0 +1,570 @@
+{
+  "Anti-Gravity_Press": {
+    "n": "Développé anti-gravité sur banc incliné",
+    "s": [
+      "Pose une barre au sol derrière le haut d’un banc incliné et allonge-toi à plat ventre sur le banc.",
+      "Attrape la barre en pronation et monte-la près de la poitrine en pliant les coudes.",
+      "Pousse la barre devant ta tête en tendant les bras, toujours parallèles au sol.",
+      "Ramène-la près de la poitrine et recommence."
+    ],
+    "e": [["barbell", "bench"]]
+  },
+  "Barbell_Ab_Rollout": {
+    "n": "Roulé d’abdos à la barre, debout",
+    "s": [
+      "En position de pompe sur les orteils, mains sur une barre légèrement chargée posée au sol.",
+      "Abdos serrés, dos stable, monte les hanches en faisant rouler la barre vers tes pieds. Expire.",
+      "Serre une seconde, puis fais rouler la barre lentement vers l’avant jusqu’au départ en inspirant."
+    ],
+    "t": ["Garde les bras perpendiculaires au sol, sinon ce sont surtout les épaules qui travaillent."]
+  },
+  "Barbell_Ab_Rollout_-_On_Knees": {
+    "n": "Roulé d’abdos à la barre, à genoux",
+    "s": [
+      "À genoux, mains sur une barre légèrement chargée posée au sol devant toi.",
+      "Fais rouler la barre droit devant en étirant le corps, aussi loin que possible sans toucher le sol. Inspire.",
+      "Marque une pause, puis reviens en contractant les abdos en expirant."
+    ],
+    "t": ["Va lentement et garde les abdos serrés tout le temps."]
+  },
+  "Barbell_Bench_Press_-_Medium_Grip": {
+    "n": "Développé couché à la barre",
+    "s": [
+      "Allongé sur un banc plat, prends la barre avec un écart qui fait un angle droit aux coudes à mi-mouvement. Sors-la du support, bras tendus au-dessus de toi.",
+      "Descends lentement jusqu’à toucher le milieu de la poitrine en inspirant.",
+      "Marque une pause et pousse avec les pectoraux jusqu’aux bras tendus en expirant.",
+      "À la fin de la série, repose la barre sur le support."
+    ],
+    "t": ["Descends deux fois plus lentement que tu ne montes.", "Avec une barre lourde, travaille avec un pareur."]
+  },
+  "Barbell_Curl": {
+    "n": "Curl à la barre",
+    "s": [
+      "Debout, buste droit, barre tenue en supination, mains largeur d’épaules, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules en contractant les biceps. Expire.",
+      "Serre une seconde en haut, puis redescends lentement en inspirant."
+    ],
+    "t": ["Seuls les avant-bras bougent : pas d’élan avec le dos."]
+  },
+  "Barbell_Curls_Lying_Against_An_Incline": {
+    "n": "Curl à la barre allongé sur banc incliné",
+    "s": [
+      "Allongé à plat ventre contre un banc incliné, barre tenue bras pendants.",
+      "Haut des bras immobile, monte la barre le plus haut possible en serrant les biceps. Expire.",
+      "Marque une pause, puis redescends lentement jusqu’en bas en inspirant."
+    ]
+  },
+  "Barbell_Deadlift": {
+    "n": "Soulevé de terre",
+    "s": [
+      "Debout face à la barre chargée, pieds sous la barre.",
+      "Dos droit, plie les genoux et penche-toi pour attraper la barre en pronation, mains largeur d’épaules.",
+      "Pousse avec les jambes en redressant le buste en même temps, barre près du corps. Expire. En haut, poitrine sortie, omoplates serrées.",
+      "Redescends en pliant les genoux et en penchant le buste, dos toujours droit, jusqu’à poser la barre."
+    ],
+    "t": ["Si la prise lâche, alterne une main en pronation et l’autre en supination."]
+  },
+  "Barbell_Full_Squat": {
+    "n": "Squat complet à la barre",
+    "s": [
+      "Dans un rack, barre juste au-dessus des épaules. Place-toi dessous, barre sur le haut du dos, et sors-la en tendant les jambes.",
+      "Recule, pieds largeur d’épaules, pointes légèrement ouvertes, tête haute, dos droit.",
+      "Descends lentement en pliant les genoux et en reculant les hanches jusqu’à ce que les ischios touchent les mollets. Inspire.",
+      "Remonte en poussant dans les talons ou le milieu du pied en expirant."
+    ]
+  },
+  "Barbell_Glute_Bridge": {
+    "n": "Pont fessier à la barre",
+    "s": [
+      "Assis au sol, barre chargée sur les jambes (une mousse sur la barre évite d’avoir mal). Fais-la rouler jusqu’aux hanches et allonge-toi.",
+      "Pousse dans les talons pour monter les hanches à travers la barre ; le poids repose sur le haut du dos et les talons.",
+      "Monte au maximum, puis redescends."
+    ]
+  },
+  "Barbell_Guillotine_Bench_Press": {
+    "n": "Développé guillotine",
+    "s": [
+      "Allongé sur un banc plat, prise moyenne, sors la barre et tiens-la bras tendus au-dessus du cou.",
+      "Descends lentement jusqu’à environ 3 cm du cou en inspirant.",
+      "Marque une pause, puis pousse avec les pectoraux jusqu’aux bras tendus en expirant.",
+      "À la fin de la série, repose la barre sur le support."
+    ],
+    "t": ["Exercice à risque : charge légère et pareur indispensable."]
+  },
+  "Barbell_Hack_Squat": {
+    "n": "Hack squat à la barre",
+    "s": [
+      "Debout, pieds largeur d’épaules, barre tenue derrière toi bras tendus, paumes vers l’arrière.",
+      "Tête haute, dos droit, descends jusqu’à avoir les cuisses parallèles au sol en inspirant.",
+      "Remonte en poussant surtout dans les talons en expirant."
+    ]
+  },
+  "Barbell_Hip_Thrust": {
+    "n": "Hip thrust à la barre",
+    "s": [
+      "Assis au sol, dos contre le bord d’un banc, barre chargée sur les jambes (une mousse sur la barre évite d’avoir mal).",
+      "Fais rouler la barre jusqu’aux hanches et appuie le haut des omoplates sur le banc.",
+      "Pousse dans les pieds pour monter les hanches jusqu’à aligner cuisses et buste ; le poids repose sur les omoplates et les pieds.",
+      "Redescends en contrôlant."
+    ],
+    "e": [["barbell", "bench"]]
+  },
+  "Barbell_Incline_Bench_Press_-_Medium_Grip": {
+    "n": "Développé incliné à la barre",
+    "s": [
+      "Allongé sur un banc incliné, prise moyenne, sors la barre et tiens-la bras tendus au-dessus de toi.",
+      "Descends lentement jusqu’au haut de la poitrine en inspirant.",
+      "Marque une pause, puis pousse avec les pectoraux jusqu’aux bras tendus en expirant.",
+      "À la fin de la série, repose la barre sur le support."
+    ],
+    "t": ["Descends deux fois plus lentement que tu ne montes."]
+  },
+  "Barbell_Incline_Shoulder_Raise": {
+    "n": "Protraction des épaules à la barre, banc incliné",
+    "s": [
+      "Allongé sur un banc incliné, barre tenue bras tendus au-dessus de toi, mains un peu plus larges que les épaules.",
+      "Bras toujours tendus, monte la barre en avançant les omoplates : les épaules décollent du banc. Expire.",
+      "Redescends en inspirant."
+    ]
+  },
+  "Barbell_Lunge": {
+    "n": "Fente à la barre",
+    "s": [
+      "Dans un rack, barre un peu sous les épaules. Place-toi dessous, barre sur le haut du dos, et sors-la en tendant les jambes.",
+      "Recule, puis fais un grand pas en avant avec la jambe droite et descends, buste droit. Inspire.",
+      "Remonte en poussant surtout dans le talon avant en expirant.",
+      "Termine la série, puis fais-la avec la jambe gauche."
+    ],
+    "u": true
+  },
+  "Barbell_Rear_Delt_Row": {
+    "n": "Rowing arrière d’épaules à la barre",
+    "s": [
+      "Debout, barre tenue en pronation, mains plus larges que les épaules.",
+      "Genoux légèrement fléchis, penche-toi jusqu’à avoir le buste parallèle au sol, dos plat, bras pendants. Écarte les coudes : buste et bras forment un T.",
+      "Haut des bras perpendiculaires au buste, tire la barre vers le haut de la poitrine en serrant l’arrière des épaules. Expire.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Les mains ne sont que des crochets : ne tire pas avec les biceps."]
+  },
+  "Barbell_Rollout_from_Bench": {
+    "n": "Roulé à la barre depuis un banc",
+    "s": [
+      "Barre chargée au sol près du bout d’un banc. À genoux sur le banc, attrape-la, mains moyennement serrées.",
+      "Tends les hanches pour faire rouler lentement la barre vers l’avant, puis monte les bras au-dessus de la tête, toujours tendus.",
+      "Une fois au plus loin, reviens au départ."
+    ]
+  },
+  "Barbell_Seated_Calf_Raise": {
+    "n": "Mollets assis à la barre",
+    "s": [
+      "Pose une cale (ou un disque) à environ 30 cm devant un banc plat.",
+      "Assis sur le banc, avant des pieds sur la cale ; fais poser une barre sur tes cuisses, à quelques centimètres des genoux.",
+      "Monte sur la pointe des pieds le plus haut possible en contractant les mollets. Expire.",
+      "Tiens une seconde, puis redescends lentement en étirant bien les mollets."
+    ]
+  },
+  "Barbell_Shoulder_Press": {
+    "n": "Développé épaules assis à la barre",
+    "s": [
+      "Assis sur un banc avec dossier dans un rack, barre juste au-dessus de la tête. Attrape-la en pronation.",
+      "Sors-la bras tendus au-dessus de la tête, légèrement devant.",
+      "Descends lentement jusqu’aux épaules en inspirant.",
+      "Repousse jusqu’aux bras tendus en expirant."
+    ],
+    "t": ["Possible aussi debout, abdos et fessiers contractés pour ne pas te cambrer."],
+    "e": [["barbell", "bench"]]
+  },
+  "Barbell_Shrug": {
+    "n": "Haussement d’épaules à la barre",
+    "s": [
+      "Debout, pieds largeur d’épaules, barre devant les cuisses en pronation, mains un peu plus larges que les épaules.",
+      "Monte les épaules le plus haut possible en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Bras tendus : ne tire pas avec les biceps."]
+  },
+  "Barbell_Shrug_Behind_The_Back": {
+    "n": "Haussement d’épaules barre derrière le dos",
+    "s": [
+      "Debout, pieds largeur d’épaules, barre tenue derrière les cuisses, paumes vers l’arrière, mains un peu plus larges que les épaules.",
+      "Bras tendus, monte les épaules le plus haut possible en expirant. Tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Barbell_Side_Bend": {
+    "n": "Flexion latérale à la barre",
+    "s": [
+      "Debout, pieds largeur d’épaules, barre sur le haut du dos.",
+      "Dos droit, tête haute, penche-toi uniquement à la taille vers la droite, le plus loin possible. Inspire.",
+      "Tiens une seconde, puis remonte en expirant.",
+      "Fais la même chose à gauche, et continue en alternant."
+    ],
+    "t": ["Le reste du corps ne bouge pas."]
+  },
+  "Barbell_Side_Split_Squat": {
+    "n": "Fente latérale à la barre",
+    "s": [
+      "Debout, barre sur le haut du dos, pieds très écartés, pied de la jambe qui travaille tourné vers l’extérieur.",
+      "Descends du côté de ce pied en pliant le genou et la hanche, l’autre jambe presque tendue. Inspire.",
+      "Remonte en poussant sur la jambe pliée en expirant. Termine la série puis change de côté."
+    ],
+    "u": true
+  },
+  "Barbell_Squat": {
+    "n": "Squat à la barre",
+    "s": [
+      "Dans un rack, barre un peu sous les épaules. Place-toi dessous, barre sur le haut du dos, et sors-la en tendant les jambes.",
+      "Recule, pieds largeur d’épaules, pointes légèrement ouvertes, tête haute, dos droit.",
+      "Descends lentement en pliant genoux et hanches jusqu’à un peu plus bas que l’angle droit. Inspire.",
+      "Remonte en poussant dans les talons en expirant."
+    ],
+    "t": ["Genoux dans l’axe des pieds, poids sur tout le pied."]
+  },
+  "Barbell_Squat_To_A_Bench": {
+    "n": "Squat à la barre jusqu’au banc",
+    "s": [
+      "Dans un rack, place un banc plat ou une box derrière toi. Barre sur le haut du dos, sors-la en tendant les jambes.",
+      "Pieds largeur d’épaules, pointes légèrement ouvertes, tête haute, dos droit.",
+      "Descends lentement en reculant les hanches jusqu’à effleurer le banc. Inspire.",
+      "Remonte en poussant dans les talons en expirant."
+    ],
+    "t": ["Le banc t’apprend à reculer les hanches et à descendre assez bas."]
+  },
+  "Barbell_Step_Ups": {
+    "n": "Montées sur banc à la barre",
+    "s": [
+      "Debout derrière une box ou un banc, barre sur le haut du dos.",
+      "Pose le pied droit sur la box et monte en poussant dans le talon, puis pose le pied gauche à côté. Expire.",
+      "Redescends le pied gauche, puis le droit, en contrôlant.",
+      "Termine la série avec la jambe droite, puis fais-la avec la gauche."
+    ],
+    "e": [["barbell", "box"], ["barbell", "bench"]],
+    "u": true
+  },
+  "Barbell_Walking_Lunge": {
+    "n": "Fentes marchées à la barre",
+    "s": [
+      "Debout, pieds largeur d’épaules, barre sur le haut du dos.",
+      "Fais un pas en avant et descends jusqu’à ce que le genou arrière frôle le sol, buste droit, genou avant au-dessus du pied.",
+      "Pousse dans le talon avant pour remonter.",
+      "Avance le pied arrière et enchaîne la fente sur l’autre jambe."
+    ]
+  },
+  "Bench_Press_-_Powerlifting": {
+    "n": "Développé couché style force athlétique",
+    "s": [
+      "Allongé, yeux sous la barre, pieds ramenés sous toi, dos cambré. Serre les omoplates et pousse avec les pieds pour plaquer le haut du dos sur le banc.",
+      "Prends la barre, index au niveau des bagues, et sors-la sans avancer les épaules. Serre-la comme pour l’écarter.",
+      "Descends-la en bas de la poitrine, poignets et coudes alignés sous la barre.",
+      "Marque l’arrêt sur la poitrine, puis pousse le plus fort possible, coudes près du corps."
+    ],
+    "t": ["Avec une barre lourde, travaille avec un pareur."]
+  },
+  "Bench_Press_with_Chains": {
+    "n": "Développé couché avec chaînes",
+    "s": [
+      "Accroche des chaînes aux extrémités de la barre ; règle-les pour qu’elles reposent en partie au sol en bas du mouvement.",
+      "Allongé, pieds ramenés sous toi, dos cambré, omoplates serrées. Prends la barre et sors-la sans avancer les épaules.",
+      "Descends-la en bas de la poitrine, poignets et coudes alignés sous la barre.",
+      "Marque l’arrêt, puis pousse le plus fort possible : les chaînes alourdissent la barre en montant."
+    ],
+    "e": [["barbell", "bench", "other"]]
+  },
+  "Bent-Arm_Barbell_Pullover": {
+    "n": "Pull-over à la barre bras fléchis",
+    "s": [
+      "Allongé sur un banc plat, barre tenue au-dessus de la poitrine, mains largeur d’épaules, coudes un peu pliés.",
+      "Garde cet angle et descends la barre en arc derrière la tête jusqu’à sentir l’étirement de la poitrine. Inspire.",
+      "Ramène-la par le même arc en expirant. Tiens une seconde au-dessus de la poitrine."
+    ],
+    "e": [["barbell", "bench"]]
+  },
+  "Bent_Over_Barbell_Row": {
+    "n": "Rowing barre buste penché",
+    "s": [
+      "Barre en pronation, genoux légèrement fléchis. Penche-toi dos plat jusqu’à avoir le buste presque parallèle au sol, tête haute, bras pendants.",
+      "Buste immobile, tire la barre vers le bas de la poitrine, coudes près du corps. Expire et serre le dos.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Bent_Over_One-Arm_Long_Bar_Row": {
+    "n": "Rowing un bras à la barre en T",
+    "s": [
+      "Charge une seule extrémité d’une barre ; bloque l’autre dans un angle de mur ou sous un objet lourd.",
+      "Penche-toi, buste presque parallèle au sol, genoux légèrement fléchis. Attrape la barre d’une main juste derrière les disques, l’autre main sur le genou.",
+      "Tire la barre vers le bas de la poitrine, coude près du corps, en serrant le dos. Expire et tiens une seconde.",
+      "Redescends lentement sans poser les disques. Termine la série puis change de bras."
+    ],
+    "t": ["De petits disques donnent plus d’amplitude."]
+  },
+  "Bent_Over_Two-Arm_Long_Bar_Row": {
+    "n": "Rowing à la barre en T",
+    "s": [
+      "Charge une seule extrémité d’une barre ; bloque l’autre dans un angle de mur ou sous un objet lourd.",
+      "Enjambe la barre, penche-toi, buste presque parallèle au sol, genoux légèrement fléchis, et attrape-la à deux mains juste derrière les disques.",
+      "Tire la barre jusqu’à la poitrine, coudes près du corps, en serrant le dos. Expire et tiens une seconde.",
+      "Redescends lentement sans poser les disques."
+    ],
+    "t": ["Une poignée triangle passée sous la barre rend la prise plus confortable."]
+  },
+  "Board_Press": {
+    "n": "Développé couché sur planches",
+    "s": [
+      "Pose une à cinq planches empilées sur ta poitrine (tenues par un partenaire, un élastique ou sous ton t-shirt).",
+      "Allongé, pieds ramenés sous toi, dos cambré, omoplates serrées. Sors la barre sans avancer les épaules.",
+      "Descends la barre jusqu’aux planches, poignets et coudes alignés.",
+      "Pousse le plus fort possible, coudes près du corps."
+    ],
+    "t": ["Une prise largeur d’épaules cible davantage les triceps."],
+    "e": [["barbell", "bench"]]
+  },
+  "Bodyweight_Flyes": {
+    "n": "Écarté au sol sur barres EZ",
+    "s": [
+      "Pose au sol deux barres EZ chargées pareil, côte à côte, libres de rouler.",
+      "En position de pompe, bras tendus, une main sur chaque barre.",
+      "Lentement, écarte les mains en faisant rouler les barres, aussi loin que tu contrôles. Inspire.",
+      "Ramène-les l’une vers l’autre en contractant les pectoraux en expirant."
+    ],
+    "t": ["Commence à genoux si c’est trop dur."]
+  },
+  "Box_Squat": {
+    "n": "Box squat",
+    "s": [
+      "Dans un rack, place derrière toi une box qui t’amène à des cuisses parallèles au sol.",
+      "Barre sur le haut du dos, omoplates serrées. Sors-la, recule, pieds écartés, regard devant.",
+      "Dos et abdos gainés, pousse genoux et fesses vers l’extérieur et assieds-toi sur la box, tibias verticaux. Marque l’arrêt sans rebondir.",
+      "Poids sur les talons, pousse pieds et genoux vers l’extérieur pour te relever, en menant avec la tête."
+    ],
+    "t": ["Pieds larges : plus de dos, fessiers et ischios. Pieds serrés : plus de quadriceps."],
+    "e": [["barbell", "box"], ["barbell", "bench"]]
+  },
+  "Box_Squat_with_Bands": {
+    "n": "Box squat avec élastiques",
+    "s": [
+      "Dans un rack, box derrière toi. Fixe des élastiques entre les extrémités de la barre et le bas du rack (ou des haltères lourds bien calés).",
+      "Barre sur le haut du dos, omoplates serrées. Sors-la, recule, pieds écartés, regard devant.",
+      "Gainé, pousse genoux et fesses vers l’extérieur et assieds-toi sur la box. Marque l’arrêt sans rebondir.",
+      "Relève-toi en poussant dans les talons : les élastiques durcissent la montée. Repose la barre avec soin."
+    ],
+    "e": [["barbell", "box", "bands"]]
+  },
+  "Box_Squat_with_Chains": {
+    "n": "Box squat avec chaînes",
+    "s": [
+      "Dans un rack, box derrière toi. Accroche des chaînes aux extrémités de la barre : quelques maillons doivent rester au sol en haut.",
+      "Barre sur le haut du dos, omoplates serrées. Sors-la, recule, pieds écartés, regard devant.",
+      "Gainé, pousse genoux et fesses vers l’extérieur et assieds-toi sur la box. Marque l’arrêt sans rebondir.",
+      "Relève-toi en poussant dans les talons, gainé de la tête aux pieds."
+    ],
+    "e": [["barbell", "box", "other"]]
+  },
+  "Bradford_Rocky_Presses": {
+    "n": "Développé Bradford",
+    "s": [
+      "Assis sur un banc, barre à hauteur d’épaules devant toi, prise pronation plus large que les épaules.",
+      "Monte la barre juste au-dessus de la tête.",
+      "Fais-la passer derrière la tête et descends-la lentement sur la nuque. Inspire.",
+      "Remonte-la juste au-dessus de la tête puis ramène-la devant. Une répétition = devant puis derrière."
+    ],
+    "t": ["Charge légère : ne verrouille pas les bras en haut pour garder les épaules sous tension."],
+    "e": [["barbell", "bench"]]
+  },
+  "Car_Drivers": {
+    "n": "Volant avec un disque",
+    "s": [
+      "Debout, tiens un disque à deux mains à 3 h et 9 h, bras tendus devant toi.",
+      "Tourne le disque d’un côté le plus loin possible, comme un volant.",
+      "Tourne-le de l’autre côté, et continue en alternant."
+    ],
+    "e": [["plates"]]
+  },
+  "Clean": {
+    "n": "Épaulé (clean)",
+    "s": [
+      "Barre au sol contre les tibias, prise pronation juste à l’extérieur des jambes. Hanches basses, poids sur les talons, dos plat, poitrine haute, épaules juste devant la barre.",
+      "Premier tirage : pousse dans les talons pour tendre les genoux, même angle de dos, bras tendus, jusqu’au-dessus des genoux.",
+      "Deuxième tirage : quand la barre arrive à mi-cuisse, tends violemment hanches, genoux et chevilles comme pour sauter, bras toujours tendus.",
+      "Troisième tirage : hausse les épaules et tire-toi sous la barre en tournant les coudes dessous. Reçois-la sur l’avant des épaules en squat avant.",
+      "Relève-toi aussitôt en poussant dans les talons, buste droit, coudes hauts."
+    ],
+    "t": ["Mouvement très technique : apprends-le avec un coach et une barre légère."]
+  },
+  "Clean_Deadlift": {
+    "n": "Soulevé de terre d’épaulé",
+    "s": [
+      "Barre contre les tibias, pieds sous les hanches légèrement ouverts. Prise pronation largeur d’épaules, descends vers la barre, dos plat, épaules devant la barre.",
+      "Pousse dans le sol avec l’avant des talons en gardant le même angle de dos. Écarte les genoux pour laisser passer la barre.",
+      "Une fois la barre au-dessus des genoux, pousse les hanches vers la barre jusqu’à être debout."
+    ]
+  },
+  "Clean_Pull": {
+    "n": "Tirage d’épaulé",
+    "s": [
+      "Barre au sol contre les tibias, prise pronation juste à l’extérieur des jambes. Hanches basses, poids sur les talons, dos plat, poitrine haute.",
+      "Pousse dans les talons pour tendre les genoux, même angle de dos, bras tendus, coudes vers l’extérieur, jusqu’au-dessus des genoux.",
+      "À mi-cuisse, tends violemment hanches, genoux et chevilles comme pour sauter, bras tendus. L’extension doit être brève et explosive."
+    ]
+  },
+  "Clean_Shrug": {
+    "n": "Shrug d’épaulé",
+    "s": [
+      "Barre tenue à mi-cuisse, prise pronation largeur d’épaules, dos droit légèrement penché en avant.",
+      "Hausse les épaules vers les oreilles de façon explosive.",
+      "Redescends et enchaîne."
+    ],
+    "t": ["Tu peux charger plus qu’à l’épaulé, mais pas au point de ralentir le mouvement."]
+  },
+  "Clean_and_Jerk": {
+    "n": "Épaulé-jeté",
+    "s": [
+      "Barre au sol contre les tibias, prise pronation juste à l’extérieur des jambes, hanches basses, dos plat, poitrine haute.",
+      "Tends les genoux jusqu’au-dessus des genoux, puis à mi-cuisse tends violemment hanches, genoux et chevilles comme pour sauter.",
+      "Tire-toi sous la barre en tournant les coudes dessous, reçois-la sur l’avant des épaules en squat avant, puis relève-toi.",
+      "Jeté : fléchis légèrement les genoux sans reculer les hanches, puis pousse le plus fort possible en écartant la tête.",
+      "Passe sous la barre en fente, un pied devant et un derrière, bras verrouillés. Ramène les pieds pour te redresser."
+    ],
+    "t": ["Mouvement très technique : apprends-le avec un coach et une barre légère."]
+  },
+  "Clean_and_Press": {
+    "n": "Épaulé-développé",
+    "s": [
+      "Pieds largeur d’épaules, genoux entre les bras. Dos plat, attrape la barre en pronation un peu plus large que les épaules, barre contre les tibias, épaules au-dessus ou devant la barre.",
+      "Tends les genoux en gardant l’angle du dos, barre près du corps.",
+      "Passé les genoux, tends violemment chevilles, genoux et hanches et hausse les épaules pour monter la barre, coudes vers l’extérieur.",
+      "Passe sous la barre en tournant les coudes dessous et reçois-la sur l’avant des épaules en fléchissant les jambes, puis redresse-toi.",
+      "Sans bouger les pieds, pousse la barre au-dessus de la tête en expirant, puis redescends-la en contrôlant."
+    ]
+  },
+  "Clean_from_Blocks": {
+    "n": "Épaulé depuis des blocs",
+    "s": [
+      "Barre posée sur des blocs à la hauteur voulue, prise pronation juste à l’extérieur des jambes. Hanches basses, dos plat, poitrine haute, épaules juste devant la barre.",
+      "Pousse dans les talons et tends-toi violemment, bras tendus, coudes vers l’extérieur.",
+      "En pleine extension, hausse les épaules et tire-toi sous la barre en tournant les coudes dessous. Reçois-la en squat avant.",
+      "Relève-toi aussitôt, buste droit, coudes hauts, puis repose la barre sur les blocs."
+    ],
+    "e": [["barbell", "box"]]
+  },
+  "Close-Grip_Barbell_Bench_Press": {
+    "n": "Développé couché prise serrée",
+    "s": [
+      "Allongé sur un banc plat, prends la barre mains largeur d’épaules et sors-la, bras tendus au-dessus de toi.",
+      "Descends lentement jusqu’au milieu de la poitrine en inspirant, coudes collés au corps.",
+      "Marque une pause, puis pousse avec les triceps jusqu’aux bras tendus en expirant.",
+      "À la fin de la série, repose la barre sur le support."
+    ],
+    "t": ["Descends deux fois plus lentement que tu ne montes."]
+  },
+  "Close-Grip_EZ-Bar_Curl_with_Band": {
+    "n": "Curl barre EZ prise serrée avec élastique",
+    "s": [
+      "Accroche un élastique aux deux bouts de la barre EZ et pose un pied au milieu de l’élastique.",
+      "Debout, barre en supination prise serrée, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules en expirant. Serre une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "e": [["ezBar", "bands"]]
+  },
+  "Close-Grip_EZ-Bar_Press": {
+    "n": "Développé couché barre EZ prise serrée",
+    "s": [
+      "Allongé sur un banc plat, barre EZ tenue prise serrée au-dessus du buste, bras verticaux, coudes rentrés.",
+      "Descends la barre vers le bas de la poitrine en inspirant, coudes près du corps.",
+      "Pousse avec les triceps jusqu’aux bras tendus en expirant."
+    ],
+    "e": [["ezBar", "bench"]]
+  },
+  "Close-Grip_EZ_Bar_Curl": {
+    "n": "Curl barre EZ prise serrée",
+    "s": [
+      "Debout, buste droit, barre EZ tenue par les poignées intérieures, paumes vers l’avant, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules en contractant les biceps. Expire.",
+      "Serre une seconde, puis redescends lentement en inspirant."
+    ],
+    "e": [["ezBar"]]
+  },
+  "Close-Grip_Standing_Barbell_Curl": {
+    "n": "Curl à la barre prise serrée",
+    "s": [
+      "Debout, buste droit, barre en supination, mains écartées de quelques centimètres, coudes près du corps.",
+      "Haut des bras immobile, monte la barre en arc jusqu’à ce que les avant-bras touchent les biceps. Expire et serre une seconde.",
+      "Redescends lentement en inspirant."
+    ],
+    "t": ["Pas d’élan avec le dos : seuls les avant-bras bougent."]
+  },
+  "Deadlift_with_Bands": {
+    "n": "Soulevé de terre avec élastiques",
+    "s": [
+      "Passe de petits élastiques autour de la barre et sous tes pieds, ou fixe de grands élastiques à une base solide (rack, haltères lourds).",
+      "Pieds placés, prise en place, inspire fort, baisse les hanches jusqu’à toucher la barre avec les tibias. Regard devant, poitrine haute, dos cambré.",
+      "Pousse dans les talons. Une fois les genoux passés, tire la barre vers toi en serrant les omoplates et pousse les hanches vers la barre.",
+      "Redescends en pliant aux hanches et guide la barre jusqu’au sol."
+    ],
+    "e": [["barbell", "bands"]]
+  },
+  "Deadlift_with_Chains": {
+    "n": "Soulevé de terre avec chaînes",
+    "s": [
+      "Accroche des chaînes aux extrémités de la barre, ou pose-les en travers : la charge augmente en montant.",
+      "Barre au-dessus du milieu des pieds, pieds largeur de hanches. Plie aux hanches pour prendre la barre largeur d’épaules.",
+      "Inspire fort, baisse les hanches jusqu’à toucher la barre avec les tibias, poitrine haute, dos cambré, puis pousse dans les talons.",
+      "Une fois les genoux passés, pousse les hanches vers la barre en serrant les omoplates. Redescends en guidant la barre jusqu’au sol."
+    ],
+    "e": [["barbell", "other"]]
+  },
+  "Decline_Barbell_Bench_Press": {
+    "n": "Développé décliné à la barre",
+    "s": [
+      "Bloque les jambes au bout d’un banc décliné et allonge-toi doucement.",
+      "Prise moyenne, sors la barre (idéalement avec un pareur) et tiens-la bras tendus, perpendiculaires au sol.",
+      "Descends lentement jusqu’au bas de la poitrine en inspirant.",
+      "Marque une pause, puis pousse avec les pectoraux jusqu’aux bras tendus en expirant. Repose la barre à la fin."
+    ]
+  },
+  "Decline_Close-Grip_Bench_To_Skull_Crusher": {
+    "n": "Développé serré puis barre au front, banc décliné",
+    "s": [
+      "Bloque les jambes au bout d’un banc décliné et allonge-toi. Sors la barre prise un peu plus serrée que les épaules, bras tendus, coudes rentrés.",
+      "Descends la barre au bas de la poitrine, coudes près du corps, puis repousse avec les triceps.",
+      "Haut des bras immobile, descends la barre en arc jusqu’à effleurer le front, puis tends les bras.",
+      "Une répétition = un développé serré + une barre au front."
+    ]
+  },
+  "Decline_EZ_Bar_Triceps_Extension": {
+    "n": "Barre au front barre EZ, banc décliné",
+    "s": [
+      "Bloque les jambes au bout d’un banc décliné et allonge-toi. Barre EZ prise serrée, bras tendus, perpendiculaires au sol, coudes rentrés.",
+      "Haut des bras immobile, descends la barre en arc jusqu’à effleurer le front. Inspire.",
+      "Tends les bras avec les triceps en expirant."
+    ],
+    "e": [["ezBar", "bench"]]
+  },
+  "Deficit_Deadlift": {
+    "n": "Soulevé de terre en déficit",
+    "s": [
+      "Debout sur une plateforme ou des disques de 3 à 8 cm, barre au-dessus du milieu des pieds, pieds largeur de hanches.",
+      "Plie aux hanches pour prendre la barre largeur d’épaules. Inspire fort, baisse les hanches jusqu’à toucher la barre avec les tibias, poitrine haute, dos cambré.",
+      "Pousse dans les talons. Une fois les genoux passés, pousse les hanches vers la barre en serrant les omoplates.",
+      "Redescends en pliant aux hanches et guide la barre jusqu’au sol."
+    ]
+  },
+  "Drag_Curl": {
+    "n": "Curl traîné (drag curl)",
+    "s": [
+      "Debout, barre en supination contre les cuisses, coudes près du corps.",
+      "Monte la barre en la gardant au contact du buste : les coudes partent vers l’arrière. Expire.",
+      "Redescends lentement, barre toujours contre le corps."
+    ],
+    "t": ["Ne monte pas les épaules."]
+  },
+  "EZ-Bar_Curl": {
+    "n": "Curl barre EZ",
+    "s": [
+      "Debout, barre EZ tenue par les poignées extérieures, paumes vers l’avant, coudes près du corps.",
+      "Haut des bras immobile, monte la barre jusqu’aux épaules en contractant les biceps. Expire.",
+      "Serre un instant, puis redescends lentement en inspirant."
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+/** Petits calculs de couleurs pour garder un texte lisible quelle que soit la couleur choisie. */
+
+export type RGB = [number, number, number]
+
+export function hexToRgb(hex: string): RGB {
+  const clean = hex.replace('#', '')
+  const full =
+    clean.length === 3
+      ? clean
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : clean
+  const n = Number.parseInt(full.slice(0, 6), 16)
+  if (Number.isNaN(n)) return [0, 0, 0]
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+export function rgbToHex([r, g, b]: RGB): string {
+  return `#${[r, g, b]
+    .map((v) =>
+      Math.round(Math.min(255, Math.max(0, v)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
+}
+
+/** Couleur TSL (teinte en degrés, saturation et luminosité de 0 à 100) vers « #rrggbb ». */
+export function hslToHex(hue: number, saturation: number, lightness: number): string {
+  const h = (((hue % 360) + 360) % 360) / 360
+  const s = saturation / 100
+  const l = lightness / 100
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+  const p = 2 * l - q
+  const channelOf = (t0: number) => {
+    const t = t0 < 0 ? t0 + 1 : t0 > 1 ? t0 - 1 : t0
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+  return rgbToHex([channelOf(h + 1 / 3) * 255, channelOf(h) * 255, channelOf(h - 1 / 3) * 255])
+}
+
+/** Mélange de deux couleurs : t = 0 → a, t = 1 → b. */
+export function mix(a: string, b: string, t: number): string {
+  const ca = hexToRgb(a)
+  const cb = hexToRgb(b)
+  return rgbToHex([ca[0] + (cb[0] - ca[0]) * t, ca[1] + (cb[1] - ca[1]) * t, ca[2] + (cb[2] - ca[2]) * t])
+}
+
+function channel(v: number): number {
+  const s = v / 255
+  return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+}
+
+export function luminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex)
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+}
+
+/** Rapport de contraste WCAG entre deux couleurs (1 à 21). */
+export function contrast(a: string, b: string): number {
+  const la = luminance(a)
+  const lb = luminance(b)
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+}
+
+export const INK_DARK = '#0b0b0f'
+export const INK_LIGHT = '#ffffff'
+
+/**
+ * Couleur du texte posé sur un fond plein de cette couleur : blanc ou encre sombre, et noir pur pour
+ * les quelques tons moyens où aucune des deux n'atteint le contraste de 4,5 exigé pour un texte.
+ */
+export function readableOn(background: string): string {
+  const light = contrast(background, INK_LIGHT)
+  const dark = contrast(background, INK_DARK)
+  if (light >= 4.5 || dark >= 4.5) return light >= dark ? INK_LIGHT : INK_DARK
+  return light >= contrast(background, '#000000') ? INK_LIGHT : '#000000'
+}
+
+/**
+ * Variante de la couleur d'accent utilisable comme texte : on l'assombrit (thème clair) ou on
+ * l'éclaircit (thème sombre) jusqu'à un contraste suffisant sur tous les fonds donnés.
+ */
+export function readableAccent(
+  accent: string,
+  backgrounds: string[],
+  dark: boolean,
+  minContrast = 4.6,
+): string {
+  const target = dark ? '#ffffff' : '#000000'
+  for (let t = 0; t <= 1.0001; t += 0.05) {
+    const candidate = mix(accent, target, t)
+    if (backgrounds.every((bg) => contrast(candidate, bg) >= minContrast)) return candidate
+  }
+  return dark ? '#ffffff' : '#000000'
+}

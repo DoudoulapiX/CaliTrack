@@ -1,0 +1,494 @@
+{
+  "Peroneals_Stretch": {
+    "n": "Étirement des péroniers avec sangle",
+    "s": [
+      "Assis, passe une sangle, une serviette ou un élastique autour d’un pied.",
+      "Jambe tendue, talon décollé, tire la sangle pour tourner la plante du pied vers l’intérieur.",
+      "Tiens 10 à 20 secondes puis change de côté."
+    ],
+    "u": true
+  },
+  "Plate_Pinch": {
+    "n": "Pince de disques",
+    "s": [
+      "Colle deux disques à rebord large, faces lisses vers l’extérieur.",
+      "Pince-les entre les doigts d’un côté et le pouce de l’autre.",
+      "Serre et tiens le plus longtemps possible, puis change de main."
+    ],
+    "t": ["Excellent pour la force de pince en escalade."],
+    "m": "time",
+    "u": true
+  },
+  "Plate_Twist": {
+    "n": "Rotations russes avec disque",
+    "s": [
+      "Assis au sol, buste incliné en arrière, tiens un disque par les côtés devant le ventre, bras légèrement fléchis.",
+      "Croise les chevilles et décolle les pieds, genoux un peu fléchis.",
+      "Amène le disque au sol à gauche en expirant, reviens au centre en inspirant, puis va à droite."
+    ],
+    "t": ["Reste lent et contrôlé : les à-coups peuvent blesser le dos."]
+  },
+  "Platform_Hamstring_Slides": {
+    "n": "Glissés de talon (ischios)",
+    "s": [
+      "Sur un sol lisse, allongé sur le dos, jambes tendues, une serviette sous un talon.",
+      "Plie le genou en faisant glisser le talon vers toi, l’autre jambe reste tendue.",
+      "Au maximum de la flexion, fais glisser le talon pour revenir jambe tendue."
+    ],
+    "u": true
+  },
+  "Posterior_Tibialis_Stretch": {
+    "n": "Étirement du jambier postérieur avec sangle",
+    "s": [
+      "Assis, passe une sangle autour d’un pied.",
+      "Jambe tendue, talon décollé, tire pour tourner la plante du pied vers l’extérieur.",
+      "Tiens 10 à 20 secondes puis change de côté."
+    ],
+    "u": true
+  },
+  "Power_Stairs": {
+    "n": "Escalier de puissance",
+    "s": [
+      "Saisis la charge à deux mains (pneu, caisse lestée ou outil dédié), pieds écartés, tête et poitrine hautes.",
+      "Pousse dans les talons pour la décoller du sol.",
+      "En te penchant en arrière, balance-la sur la marche (40–45 cm), en t’aidant des jambes.",
+      "Fais 3 à 5 marches, puis recommence avec plus lourd, le plus vite possible."
+    ]
+  },
+  "Prowler_Sprint": {
+    "n": "Sprint au traîneau (prowler)",
+    "s": [
+      "Charge un traîneau assez lourd pour forcer, sans te ralentir énormément.",
+      "Mains sur les poignées hautes ou basses, bras tendus, penché dans le traîneau.",
+      "Pousse à petits pas rapides, le plus vite possible sur une courte distance."
+    ]
+  },
+  "Quad_Stretch": {
+    "n": "Étirement des quadriceps couché avec sangle",
+    "s": [
+      "Allongé sur le côté, passe une sangle autour du pied du dessus.",
+      "Plie le genou en ramenant le pied vers les fesses, sangle tenue à deux mains au-dessus de l’épaule.",
+      "Tire doucement pour accentuer. Tiens 10 à 20 secondes puis change de côté."
+    ],
+    "u": true
+  },
+  "Quick_Leap": {
+    "n": "Saut sur caisse et rebond",
+    "s": [
+      "Debout face à une caisse, à 30–60 cm du bord.",
+      "Saute dessus à pieds joints en poussant avec les hanches, réception jambes fléchies et pieds à plat.",
+      "Dès la réception, explose vers le haut en tendant tout le corps et en lançant les bras pour sauter de la caisse.",
+      "Amortis la réception au sol avec les jambes."
+    ]
+  },
+  "Reverse_Plate_Curls": {
+    "n": "Curl inversé avec un disque",
+    "s": [
+      "Debout, tiens un disque à deux mains en pronation (à 11 h et 13 h), bras tendus devant les hanches.",
+      "Coudes serrés et fixes, monte le disque en pliant les bras en expirant.",
+      "Tiens une seconde puis redescends lentement en inspirant."
+    ]
+  },
+  "Rickshaw_Carry": {
+    "n": "Marche au rickshaw",
+    "s": [
+      "Au centre du cadre chargé, saisis les poignées et soulève-le en poussant dans les talons, poitrine et tête hautes, dos droit.",
+      "Marche aussitôt d’un pas vif, à petits pas contrôlés, en respirant.",
+      "Repose le cadre à l’arrivée."
+    ]
+  },
+  "Rickshaw_Deadlift": {
+    "n": "Soulevé de terre au rickshaw",
+    "s": [
+      "Au centre du cadre chargé, pieds largeur de hanches, penche-toi pour saisir les poignées.",
+      "Inspire fort, descends les hanches, regard devant, poitrine haute, dos plat.",
+      "Pousse dans les talons pour monter ; serre les omoplates et pousse les hanches vers l’avant.",
+      "Redescends en pliant les hanches et en guidant la charge au sol."
+    ]
+  },
+  "Rocky_Pull-Ups_Pulldowns": {
+    "n": "Tractions Rocky (devant puis nuque)",
+    "s": [
+      "Prends la barre en pronation, prise large. Penche le buste d’environ 30° en arrière, poitrine sortie.",
+      "Tire jusqu’à ce que la barre touche le haut de la poitrine. Tiens une seconde puis redescends.",
+      "Fais ensuite une traction buste droit, barre derrière la nuque, tête légèrement penchée en avant.",
+      "Alterne devant et nuque."
+    ],
+    "t": ["La version nuque est exigeante pour les épaules : saute-la si tu manques de mobilité."],
+    "e": [["pullupBar"]]
+  },
+  "Rope_Climb": {
+    "n": "Montée de corde",
+    "s": [
+      "Attrape la corde à deux mains au-dessus de la tête et fais un petit saut en tirant.",
+      "Enroule la corde autour d’une jambe et pince-la avec les pieds ; monte les mains le plus haut possible.",
+      "Lâche les pieds et tire avec les bras en ramenant les genoux vers la poitrine.",
+      "Pince de nouveau la corde avec les pieds, redresse-toi et recommence jusqu’en haut. Redescends main après main en desserrant les pieds."
+    ]
+  },
+  "Rope_Jumping": {
+    "n": "Corde à sauter",
+    "s": [
+      "Tiens un bout de corde dans chaque main, corde au sol derrière toi.",
+      "Fais tourner la corde par-dessus la tête et saute quand elle arrive au sol devant toi.",
+      "Trouve un rythme que tu peux tenir, puis varie les vitesses et les techniques."
+    ],
+    "t": ["30 minutes de corde brûlent environ 350 kcal (pour 70 kg)."]
+  },
+  "Round_The_World_Shoulder_Stretch": {
+    "n": "Bâton derrière le dos vers le haut",
+    "s": [
+      "Debout, jambes serrées, tiens un manche à balai derrière les hanches, mains plus larges que les épaules, paumes vers le bas.",
+      "Monte lentement les bras derrière toi, sans forcer quand ça devient dur."
+    ]
+  },
+  "Sandbag_Load": {
+    "n": "Chargement de sacs de sable",
+    "s": [
+      "Place les sacs à environ 15 m de la plateforme.",
+      "Enlace le sac le plus possible et soulève-le haut en poussant avec hanches et jambes (sans le mettre sur l’épaule).",
+      "Avance vite jusqu’à la plateforme et charge-le en poussant sur hanches, genoux et chevilles.",
+      "Retourne chercher le sac suivant."
+    ]
+  },
+  "Seated_Band_Hamstring_Curl": {
+    "n": "Flexion des jambes assis à l’élastique",
+    "s": [
+      "Accroche un élastique près du sol et place un banc ou une chaise à quelques pas.",
+      "Assis, passe l’élastique derrière les chevilles, jambes tendues.",
+      "Plie les genoux pour ramener les pieds sous le siège, en te penchant un peu en arrière si besoin.",
+      "Marque une pause puis reviens lentement."
+    ],
+    "e": [["bands", "chair"], ["bands", "bench"]]
+  },
+  "Seated_Hamstring_and_Calf_Stretch": {
+    "n": "Étirement des ischios et du mollet assis avec sangle",
+    "s": [
+      "Assis, jambes tendues, passe une sangle autour d’un pied.",
+      "Penche-toi légèrement en avant et tire la sangle pour ramener les orteils vers toi.",
+      "Tiens 10 à 20 secondes puis change de jambe."
+    ],
+    "u": true
+  },
+  "Seated_Head_Harness_Neck_Resistance": {
+    "n": "Flexion de la nuque au harnais",
+    "s": [
+      "Assis au bout d’un banc, pieds écartés, charge posée au sol. Penche-toi et fixe le harnais autour de la tête.",
+      "Redresse-toi presque à la verticale, tête et buste légèrement penchés vers l’avant, mains sur les genoux.",
+      "Baisse lentement la tête jusqu’à toucher le haut de la poitrine avec le menton, en inspirant.",
+      "Remonte la tête en expirant."
+    ]
+  },
+  "Side_Hop-Sprint": {
+    "n": "Sauts latéraux puis sprint",
+    "s": [
+      "Debout à côté d’un plot ou d’une petite haie.",
+      "Saute par-dessus sur le côté et rebondis aussitôt pour revenir.",
+      "Enchaîne le nombre de sauts prévu le plus vite possible, puis sprinte sur une courte distance."
+    ]
+  },
+  "Side_To_Side_Chins": {
+    "n": "Tractions d’un côté à l’autre",
+    "s": [
+      "Prends la barre en pronation, prise large ; penche le buste d’environ 30° en arrière, poitrine sortie.",
+      "Tire en te décalant vers la main gauche jusqu’à ce que la barre frôle le haut de la poitrine. Tiens une seconde puis redescends.",
+      "Fais la même chose vers la main droite.",
+      "Alterne jusqu’à la fin de la série."
+    ]
+  },
+  "Side_to_Side_Box_Shuffle": {
+    "n": "Pas croisés sur caisse",
+    "s": [
+      "Debout à côté d’une caisse, pied gauche posé au milieu.",
+      "Saute par-dessus vers l’autre côté : pied droit sur la caisse, pied gauche au sol, en lançant les bras.",
+      "Continue les allers-retours."
+    ],
+    "m": "time"
+  },
+  "Single-Cone_Sprint_Drill": {
+    "n": "Appuis rapides autour d’un plot",
+    "s": [
+      "Debout à côté d’un plot, un bras devant, un bras derrière.",
+      "Fais des appuis les plus rapides possible en tournant autour du plot, genoux hauts, bras actifs.",
+      "Récupère après trois tours."
+    ]
+  },
+  "Single-Leg_High_Box_Squat": {
+    "n": "Montée sur caisse haute sur une jambe",
+    "s": [
+      "Place une caisse haute (dans un rack si possible) et un élastique ou une corde au-dessus pour l’équilibre.",
+      "Monte sur la caisse sur une jambe jusqu’à être debout, l’autre jambe dans le vide.",
+      "Redescends et remonte sur la même jambe, puis change de côté."
+    ]
+  },
+  "Single-Leg_Hop_Progression": {
+    "n": "Sauts sur une jambe par-dessus des plots",
+    "s": [
+      "Aligne des plots devant toi. Debout sur une jambe, l’autre genou levé.",
+      "Saute vers l’avant par-dessus le plot et atterris sur la même jambe.",
+      "Enchaîne de plot en plot, puis reviens sur l’autre jambe."
+    ]
+  },
+  "Single-Leg_Lateral_Hop": {
+    "n": "Sauts latéraux sur une jambe",
+    "s": [
+      "Debout sur une jambe à côté d’un plot, genou légèrement fléchi.",
+      "Saute sur le côté par-dessus le plot.",
+      "Atterris sur la même jambe et rebondis aussitôt pour revenir.",
+      "Continue les allers-retours, puis change de jambe."
+    ]
+  },
+  "Single-Leg_Stride_Jump": {
+    "n": "Saut sur une jambe depuis une caisse",
+    "s": [
+      "Debout à côté d’une caisse, pied intérieur posé dessus près du bord.",
+      "Lance les bras vers le haut et pousse sur la jambe du dessus pour sauter le plus haut possible, genou opposé monté.",
+      "Retombe dans la même position en freinant avec la jambe sur la caisse."
+    ]
+  },
+  "Single_Leg_Push-off": {
+    "n": "Poussée sur une jambe depuis une caisse",
+    "s": [
+      "Debout, un pied posé sur la caisse, talon près du bord.",
+      "Pousse sur ce pied pour monter le plus haut possible en tendant hanche et genou.",
+      "Retombe avec le même pied sur la caisse, l’autre pied revenant au sol."
+    ]
+  },
+  "Skating": {
+    "n": "Roller",
+    "s": [
+      "Apprends d’abord les bases (tourner, freiner) et porte des protections.",
+      "Patine à allure confortable pendant le temps prévu.",
+      "Pour plus d’intensité, accélère 2 minutes toutes les 5 minutes et récupère les 3 autres."
+    ]
+  },
+  "Sled_Drag_-_Harness": {
+    "n": "Traîneau tiré au harnais",
+    "s": [
+      "Charge le traîneau et attache la sangle de traction à des poignées, un harnais ou une ceinture.",
+      "En avant ou en arrière, penche-toi dans le sens de la marche et avance en poussant avec hanches et genoux."
+    ],
+    "m": "time"
+  },
+  "Sled_Overhead_Backward_Walk": {
+    "n": "Marche arrière au traîneau, bras en l’air",
+    "s": [
+      "Attache deux poignées au traîneau légèrement chargé avec une corde.",
+      "Face au traîneau, recule jusqu’à tendre la corde, mains au-dessus de la tête, bras tendus.",
+      "Marche en arrière en gardant les bras levés, sans à-coups."
+    ]
+  },
+  "Sled_Overhead_Triceps_Extension": {
+    "n": "Extension des triceps au traîneau",
+    "s": [
+      "Attache deux poignées au traîneau avec une corde.",
+      "Dos au traîneau, avance jusqu’à tendre la corde ; mains jointes au-dessus de la tête, coudes pliés vers le haut.",
+      "Tends les bras sans bouger le haut des bras.",
+      "Avance d’un pas pour retendre la corde et recommence."
+    ]
+  },
+  "Sled_Push": {
+    "n": "Poussée de traîneau",
+    "s": [
+      "Charge le traîneau.",
+      "Penche-toi dedans, bras tendus sur les poignées.",
+      "Pousse le plus vite possible en tendant hanches et genoux."
+    ],
+    "m": "time"
+  },
+  "Sled_Reverse_Flye": {
+    "n": "Oiseau au traîneau",
+    "s": [
+      "Attache deux poignées au traîneau légèrement chargé.",
+      "Face au traîneau, recule jusqu’à tendre la corde ; poignées à hauteur de taille, bras tendus, genoux fléchis, poitrine haute.",
+      "Sans plier les coudes, tire les poignées vers le haut en écartant les bras, paumes vers l’avant.",
+      "Reviens, recule d’un ou deux pas pour retendre la corde et recommence."
+    ]
+  },
+  "Sled_Row": {
+    "n": "Rowing au traîneau",
+    "s": [
+      "Attache deux poignées au traîneau. Face à lui, recule jusqu’à tendre la corde.",
+      "Une poignée dans chaque main, genoux fléchis, tête et poitrine hautes, bras tendus.",
+      "Plie les coudes en serrant les omoplates pour tirer le traîneau vers toi.",
+      "Recule d’un ou deux pas et recommence."
+    ]
+  },
+  "Sledgehammer_Swings": {
+    "n": "Frappes de masse sur un pneu",
+    "s": [
+      "Debout à 60 cm d’un pneu, pieds décalés, masse en main.",
+      "Main faible en bas du manche, main forte près de la tête de la masse.",
+      "Monte la masse (la main forte glisse vers la tête), puis frappe le pneu le plus fort possible en faisant glisser la main forte vers l’autre. Contrôle le rebond.",
+      "Change de côté."
+    ]
+  },
+  "Standing_Biceps_Stretch": {
+    "n": "Étirement des biceps debout",
+    "s": [
+      "Croise les mains dans le dos, paumes l’une contre l’autre, tends les bras puis tourne les paumes vers le sol.",
+      "Monte les bras jusqu’à sentir l’étirement des biceps et tiens."
+    ]
+  },
+  "Standing_Elevated_Quad_Stretch": {
+    "n": "Étirement des quadriceps, pied sur un banc",
+    "s": [
+      "Debout dos à un banc ou une marche, à 60–90 cm.",
+      "Pose un pied derrière toi sur le banc (dessus du pied ou avant du pied).",
+      "Garde le genou d’appui légèrement fléchi, sans dépasser les orteils. Tiens puis change de côté."
+    ],
+    "u": true
+  },
+  "Standing_Hamstring_and_Calf_Stretch": {
+    "n": "Étirement des ischios et du mollet debout avec sangle",
+    "s": [
+      "Passe une sangle autour d’un pied et avance ce pied.",
+      "Plie la jambe arrière, jambe avant tendue ; relève les orteils avant et penche-toi en avant.",
+      "Tire sur la sangle pour accentuer l’étirement du mollet. Tiens 10 à 20 secondes puis change de pied."
+    ],
+    "u": true
+  },
+  "Standing_Olympic_Plate_Hand_Squeeze": {
+    "n": "Serrage de disques (poigne)",
+    "s": [
+      "Debout, un disque dans chaque main tenu par le rebord, bras le long du corps.",
+      "Laisse descendre les disques en ouvrant les doigts, sans les lâcher, en inspirant.",
+      "Referme les mains pour remonter les disques en expirant."
+    ]
+  },
+  "Stride_Jump_Crossover": {
+    "n": "Saut croisé par-dessus une caisse",
+    "s": [
+      "Debout à côté d’une caisse, pied intérieur posé dessus près du bord.",
+      "Lance les bras et pousse sur la jambe du dessus pour sauter le plus haut possible, genou opposé monté.",
+      "Retombe de l’autre côté de la caisse : l’autre pied sur la caisse, le premier au sol.",
+      "Recroise dans l’autre sens et continue."
+    ]
+  },
+  "Suspended_Fallout": {
+    "n": "Fallout aux sangles",
+    "s": [
+      "Règle les sangles avec les poignées sous la taille.",
+      "Debout, poignées en main, penche-toi en avant en position de pompe inclinée.",
+      "Bras tendus, laisse le corps descendre vers le sol en montant les bras au-dessus de la tête ; seules les épaules bougent.",
+      "Marque une pause puis reviens, dos neutre et corps gainé."
+    ]
+  },
+  "Suspended_Push-Up": {
+    "n": "Pompes aux sangles",
+    "s": [
+      "Accroche solidement les sangles en hauteur.",
+      "Une poignée dans chaque main, penche-toi en position de pompe, aussi près de l’horizontale que possible, bras tendus.",
+      "Corps gainé, descends lentement en pliant les coudes un peu au-delà de 90°.",
+      "Marque une pause puis pousse pour remonter."
+    ]
+  },
+  "Suspended_Reverse_Crunch": {
+    "n": "Ramené de genoux aux sangles",
+    "s": [
+      "Règle les poignées à 30 cm du sol. En planche bras tendus dos aux sangles, place les pieds dans les poignées.",
+      "Corps droit, sans laisser tomber les hanches.",
+      "Ramène les genoux vers la poitrine en enroulant le bassin.",
+      "Reviens en planche en contrôlant."
+    ]
+  },
+  "Suspended_Row": {
+    "n": "Rowing aux sangles",
+    "s": [
+      "Sangles à hauteur de poitrine, une poignée dans chaque main, penche-toi en arrière, corps droit, bras tendus.",
+      "Plie les coudes et serre les omoplates pour te tirer vers les poignées.",
+      "Marque une pause puis redescends."
+    ]
+  },
+  "Suspended_Split_Squat": {
+    "n": "Fente bulgare aux sangles",
+    "s": [
+      "Règle les poignées à 45–75 cm du sol.",
+      "Dos aux sangles, place le pied arrière dans la poignée ; regard devant, poitrine haute, genou avant légèrement fléchi.",
+      "Descends en pliant genou et hanche, poids sur le talon avant.",
+      "Remonte en poussant dans le talon. Termine la série puis change de jambe."
+    ],
+    "u": true
+  },
+  "Svend_Press": {
+    "n": "Svend press (disques pressés)",
+    "s": [
+      "Debout, presse deux disques légers entre tes paumes contre la poitrine, doigts vers l’avant.",
+      "Serre fort les disques et tends les bras devant toi lentement.",
+      "Marque une pause puis ramène-les contre la poitrine sans relâcher la pression."
+    ]
+  },
+  "Tire_Flip": {
+    "n": "Retournement de pneu",
+    "s": [
+      "Saisis le bas du pneu, pieds un peu reculés, poitrine appuyée contre le pneu.",
+      "Pousse sur hanches, genoux et chevilles pour le soulever en poussant dedans.",
+      "Quand il arrive à 45°, avance, donne un coup de genou dedans, change de prise vers le haut et pousse fort pour le faire basculer."
+    ]
+  },
+  "Trap_Bar_Deadlift": {
+    "n": "Soulevé de terre à la barre hexagonale",
+    "s": [
+      "Place-toi au centre de la barre hexagonale chargée et saisis les deux poignées.",
+      "Descends les hanches, regard devant, poitrine haute.",
+      "Pousse dans les talons en tendant hanches et genoux, sans jamais arrondir le dos.",
+      "Redescends la charge au sol en contrôlant."
+    ]
+  },
+  "Weighted_Bench_Dip": {
+    "n": "Dips entre deux bancs lestés",
+    "s": [
+      "Mains au bord d’un banc derrière toi, largeur d’épaules, bras tendus ; pieds sur un second banc devant toi, jambes tendues.",
+      "Un partenaire pose une charge sur tes cuisses.",
+      "Descends en pliant les coudes jusqu’à un peu moins de 90°, coudes serrés, en inspirant.",
+      "Remonte avec les triceps en expirant."
+    ],
+    "e": [["bench", "dumbbells"], ["bench", "plates"]]
+  },
+  "Weighted_Pull_Ups": {
+    "n": "Tractions lestées",
+    "s": [
+      "Fixe une charge à une ceinture de lest (ou porte un gilet lesté). Prends la barre en pronation, mains largeur d’épaules.",
+      "Penche le buste d’environ 30° en arrière, poitrine sortie.",
+      "Tire jusqu’à avoir la tête au-dessus des mains en serrant les omoplates vers le bas et l’arrière.",
+      "Marque un temps puis redescends lentement jusqu’aux bras tendus."
+    ]
+  },
+  "Weighted_Sit-Ups_-_With_Bands": {
+    "n": "Relevés de buste sur banc décliné avec élastiques",
+    "s": [
+      "Fixe des élastiques à la base d’un banc décliné, poignées accessibles une fois allongé.",
+      "Jambes bloquées, prends les poignées et tiens-les près des clavicules, bras immobiles.",
+      "Monte le buste jusqu’à la verticale en expirant, tiens une seconde.",
+      "Redescends lentement en inspirant."
+    ]
+  },
+  "Weighted_Squat": {
+    "n": "Squat avec ceinture de lest entre deux bancs",
+    "s": [
+      "Debout sur deux bancs écartés, une ceinture de lest autour de la taille, la charge pendant entre les jambes, pointes de pieds vers l’extérieur.",
+      "Bras tendus le long du corps.",
+      "Descends en pliant les genoux, buste droit, jusqu’à passer légèrement sous la parallèle, en inspirant.",
+      "Remonte en poussant dans les pieds en expirant."
+    ],
+    "e": [["bench", "other"]]
+  },
+  "Wrist_Roller": {
+    "n": "Rouleau de poignets",
+    "s": [
+      "Debout, tiens le rouleau en pronation, pieds largeur d’épaules.",
+      "Monte les bras tendus devant toi à l’horizontale, corde déroulée.",
+      "Tourne les poignets l’un après l’autre pour enrouler la corde et monter la charge jusqu’au rouleau.",
+      "Redescends lentement la charge en déroulant."
+    ],
+    "t": ["Très bon pour les avant-bras des grimpeurs."]
+  },
+  "Yoke_Walk": {
+    "n": "Marche au joug (yoke)",
+    "s": [
+      "Place le joug sur le haut du dos, regard devant, dos cambré.",
+      "Soulève-le en poussant dans les talons.",
+      "Marche le plus vite possible à petits pas rapides, mains sur les montants pour le stabiliser, sur 20 à 30 m."
+    ]
+  }
+}
