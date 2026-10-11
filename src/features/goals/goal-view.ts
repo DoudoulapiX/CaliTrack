@@ -22,9 +22,17 @@ export function goalPath(id: string): string {
   return `/goals/${id}`
 }
 
+/**
+ * Pourcentage arrondi à l'unité inférieure, sans les erreurs d'arrondi des nombres décimaux : de 75 à
+ * 72 kg, à 73,2 kg, on est à 60 % (et pas 59 %, car 75 − 73,2 donne 1,7999…).
+ */
+export function floorPercent(ratio: number): number {
+  return Math.floor(ratio * 100 + 1e-6)
+}
+
 /** Pourcentage affiché : 100 seulement une fois l'objectif atteint. */
 export function percentOf(progress: Pick<GoalProgress, 'ratio' | 'achieved'>): number {
-  return progress.achieved ? 100 : Math.min(99, Math.floor(progress.ratio * 100))
+  return progress.achieved ? 100 : Math.min(99, floorPercent(progress.ratio))
 }
 
 /** « 37 % ». */

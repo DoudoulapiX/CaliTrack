@@ -7,14 +7,10 @@ import { saveGoal } from '@/db/goals'
 import { updateProfile } from '@/db/settings'
 import { climbSession } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
+import { expectFrenchSpacing } from '@/test/typography'
 
 // Les horloges de la séance en direct ne tournent pas pendant les tests.
 vi.mock('@/features/workout/useNow', () => ({ useNow: () => Date.now() }))
-
-/** Le texte affiché garde une espace insécable avant « : ; ! ? % » (jamais de signe seul en début de ligne). */
-function expectFrenchSpacing() {
-  expect(document.body.textContent).not.toMatch(/ [:;!?%»]/)
-}
 
 /** La valeur d'une tuile de chiffres. */
 function tile(label: string): string | null | undefined {
@@ -232,7 +228,9 @@ describe('escalade', () => {
     expect(await screen.findByRole('heading', { name: 'Séances d’escalade' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Octobre 2026' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Septembre 2026' })).toBeInTheDocument()
-    await user.click(screen.getByRole('link', { name: /^Samedi 17Vertical’Art · 1 h 30 · 2 blocs réussis$/ }))
+    await user.click(
+      screen.getByRole('link', { name: /^Samedi 17Vertical’Art · 1\sh\s30 · 2 blocs réussis$/ }),
+    )
 
     expect(await screen.findByText('Samedi 17 octobre · 18:00 – 19:30')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/climbing/history/a')

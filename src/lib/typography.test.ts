@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { frenchSpacing, joinFrench, lowerFirst } from './typography'
+import { frenchSpacing, joinFrench, keepTogether, lowerFirst } from './typography'
 
 describe('frenchSpacing', () => {
   it('remplace l’espace avant la ponctuation haute par une espace insécable', () => {
@@ -43,5 +43,13 @@ describe('lowerFirst', () => {
     expect(lowerFirst('HSPU au mur')).toBe('HSPU au mur')
     expect(lowerFirst('V')).toBe('V')
     expect(lowerFirst('')).toBe('')
+  })
+})
+
+describe('keepTogether', () => {
+  it('rend insécables les espaces d’un groupe de mots', () => {
+    expect(keepTogether('1 h 30')).toBe('1\u00a0h\u00a030')
+    expect(keepTogether('À fond')).toBe('À\u00a0fond')
+    expect(keepTogether('Dur')).toBe('Dur')
   })
 })

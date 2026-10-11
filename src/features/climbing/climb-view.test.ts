@@ -1,9 +1,11 @@
 import { summarize } from '@/content/climbing/stats'
 import { builtInScale, VERTICAL_ART_SCALE_ID } from '@/content/grades'
+import { keepTogether } from '@/lib/typography'
 import { climbSession } from '@/test/fixtures'
 import {
   climbDateLine,
   climbPath,
+  climbRecordLine,
   climbSubtitle,
   climbTiles,
   formatMinutes,
@@ -17,6 +19,20 @@ import {
 const VA = builtInScale(VERTICAL_ART_SCALE_ID) ?? null
 
 describe('textes de l’escalade', () => {
+  it('écrit un record, sans couper la cotation à ses espaces', () => {
+    const grade = (key: string) => {
+      const found = VA?.grades.find((g) => g.key === key)
+      if (!found) throw new Error(`Niveau ${key} absent`)
+      return found
+    }
+    expect(climbRecordLine({ kind: 'hardestFlash', grade: grade('rouge'), previous: grade('bleu') })).toBe(
+      `Rouge ${keepTogether('(6B+ – 6C+)')} · avant\u00a0: bleu`,
+    )
+    expect(climbRecordLine({ kind: 'hardest', grade: grade('bleu'), previous: null })).toBe(
+      `Bleu ${keepTogether('(6A – 6B)')}`,
+    )
+  })
+
   it('écrit les durées, les pourcentages et les blocs réussis', () => {
     expect(formatMinutes(52)).toBe('52 min')
     expect(formatMinutes(92)).toBe('1 h 32')
@@ -39,9 +55,12 @@ describe('textes de l’escalade', () => {
       ],
       { rpe: 8 },
     )
-    expect(climbSubtitle(done)).toBe('Vertical’Art · 1 h 30 · 1 réussi sur 2 · Dur')
+    expect(climbSubtitle(done)).toBe(`Vertical’Art · ${keepTogether('1 h 30')} · 1 réussi sur 2 · Dur`)
     expect(climbSubtitle({ ...done, gym: '', durationMin: null, rpe: null })).toBe('1 réussi sur 2')
-    expect(climbSubtitle(done, false)).toBe('1 h 30 · 1 réussi sur 2 · Dur')
+    expect(climbSubtitle(done, false)).toBe(`${keepTogether('1 h 30')} · 1 réussi sur 2 · Dur`)
+    expect(climbSubtitle({ ...done, rpe: 10 }, false)).toBe(
+      `${keepTogether('1 h 30')} · 1 réussi sur 2 · ${keepTogether('À fond')}`,
+    )
     const live = { ...done, status: 'active' as const, endedAt: null }
     expect(climbSubtitle(live)).toBe('Vertical’Art · En cours · 2 blocs notés')
     expect(climbSubtitle({ ...live, boulders: [] })).toBe('Vertical’Art · En cours · 0 bloc noté')

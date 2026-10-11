@@ -10,6 +10,7 @@ import {
   restoreBackup,
   restoreSnapshot,
   serializeBackup,
+  stampBackup,
   summarizeBackup,
 } from './backup'
 import { db } from './db'
@@ -30,6 +31,15 @@ describe('sauvegardes', () => {
   beforeEach(async () => {
     await resetDb()
     await ensureSeeded()
+  })
+
+  it('date la sauvegarde, aussi dans ses réglages', async () => {
+    const backup = stampBackup(await collectBackup(), '2026-10-21T08:00:00.000Z')
+    expect(backup.exportedAt).toBe('2026-10-21T08:00:00.000Z')
+    expect(backup.tables.settings.map((row) => row.lastBackupAt)).toEqual(['2026-10-21T08:00:00.000Z'])
+    // Une fois restaurée, l'appli sait de quand date la sauvegarde.
+    await restoreBackup(backup)
+    expect((await db.settings.get('app'))?.lastBackupAt).toBe('2026-10-21T08:00:00.000Z')
   })
 
   it('exporte puis réimporte toutes les données à l’identique', async () => {

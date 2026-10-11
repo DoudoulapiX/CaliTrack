@@ -124,3 +124,30 @@ export function recordsBeaten(workout: Workout, others: readonly Workout[]): Rec
   }
   return hits
 }
+
+/**
+ * Records battus depuis un jour donné (compris), de la séance la plus récente à la plus ancienne :
+ * pour chaque exercice et sorte de record, le dernier battu seulement, comparé au record d'avant lui.
+ */
+export function recordHitsSince(workouts: readonly Workout[], from: ISODate): RecordHit[] {
+  const held = new Map<string, Record<RecordKind, RecordEntry | null>>()
+  const latest = new Map<string, { hit: RecordHit; order: number }>()
+  chronological(workouts).forEach((workout, order) => {
+    for (const [exerciseId, best] of bestOf(workout)) {
+      const current = held.get(exerciseId) ?? { reps: null, hold: null, load: null }
+      for (const kind of KINDS) {
+        const entry = best[kind]
+        const previous = current[kind]
+        if (!entry || (previous && entry.value <= previous.value)) continue
+        // Une première fois n'est pas un record : il faut battre une série déjà faite.
+        if (previous && workout.date >= from) {
+          latest.set(`${exerciseId}|${kind}`, { hit: { exerciseId, kind, entry, previous }, order })
+        }
+        current[kind] = entry
+      }
+      held.set(exerciseId, current)
+    }
+  })
+  // Tri stable : dans une même séance, les records restent dans l'ordre des exercices.
+  return [...latest.values()].sort((a, b) => b.order - a.order).map(({ hit }) => hit)
+}

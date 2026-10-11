@@ -1,6 +1,7 @@
 import { completeSet, workoutFromSession } from '@/content/workouts/workout'
 import { exerciseRecords } from '@/content/workouts/records'
 import type { ProgramSession, Workout } from '@/db/types'
+import { keepTogether } from '@/lib/typography'
 import { sequentialIds } from '@/test/fixtures'
 import {
   blockFor,
@@ -152,7 +153,7 @@ describe('écrans de séance', () => {
     }
     const [, firstPullups] = done.exercises
     const finished = completeSet(done, firstPullups!.id, firstPullups!.sets[0]!.id, { reps: 8 }, NOW)
-    expect(workoutSubtitle(finished)).toBe('52 min · 1 série · Dur')
+    expect(workoutSubtitle(finished)).toBe(`${keepTogether('52 min')} · ${keepTogether('1 série')} · Dur`)
   })
 
   it('convertit les charges saisies en kilos ou en livres, sans dériver', () => {

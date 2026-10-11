@@ -1,4 +1,5 @@
-import { summarize, type SessionSummary } from '@/content/climbing/stats'
+import { fontOf } from '@/content/climbing/labels'
+import { summarize, type ClimbRecord, type SessionSummary } from '@/content/climbing/stats'
 import { findGrade } from '@/content/grades'
 import type { ClimbingSession, Grade, GradeScale } from '@/db/types'
 import {
@@ -10,7 +11,7 @@ import {
   formatTimeOf,
   type ISODate,
 } from '@/lib/dates'
-import { NBSP } from '@/lib/typography'
+import { frenchSpacing, keepTogether, lowerFirst, NBSP } from '@/lib/typography'
 import type { StatTile } from '@/features/workout/StatTiles'
 import { rpeLabel } from '@/features/workout/workout-view'
 
@@ -75,22 +76,39 @@ export function climbTiles(summary: SessionSummary, durationMin: number | null):
   return tiles
 }
 
-/** « Vertical’Art · 1 h 32 · 7 réussis sur 9 · Dur » : une séance en une ligne. */
+/**
+ * « Vertical’Art · 1 h 32 · 7 réussis sur 9 · Dur » : une séance en une ligne (la durée et le ressenti
+ * ne se coupent pas en fin de ligne).
+ */
 export function climbSubtitle(session: ClimbingSession, withGym = true): string {
   const counts = summarize(session.boulders, null)
   const gym = withGym && session.gym !== '' ? session.gym : null
+  const feeling = rpeLabel(session.rpe)
   if (session.status === 'active') {
     const noted = `${String(counts.boulders)} bloc${counts.boulders > 1 ? 's' : ''} noté${counts.boulders > 1 ? 's' : ''}`
     return [gym, 'En cours', noted].filter(Boolean).join(' · ')
   }
   return [
     gym,
-    session.durationMin ? formatMinutes(session.durationMin) : null,
+    session.durationMin ? keepTogether(formatMinutes(session.durationMin)) : null,
     sendsLine(counts),
-    rpeLabel(session.rpe),
+    feeling && keepTogether(feeling),
   ]
     .filter(Boolean)
     .join(' · ')
+}
+
+/** Nom d'un record d'escalade : « Niveau le plus dur réussi », « Premier flash »… */
+export function climbRecordTitle(record: ClimbRecord): string {
+  if (record.kind === 'hardest') return record.previous ? 'Niveau le plus dur réussi' : 'Premier bloc réussi'
+  return record.previous ? 'Flash le plus dur' : 'Premier flash'
+}
+
+/** « Rouge (6B+ – 6C+) · avant : bleu » (en fin de ligne, la cotation ne se coupe qu'après son tiret). */
+export function climbRecordLine(record: ClimbRecord): string {
+  const font = fontOf(record.grade)
+  const grade = font ? `${record.grade.label} ${keepTogether(`(${font})`)}` : record.grade.label
+  return record.previous ? frenchSpacing(`${grade} · avant : ${lowerFirst(record.previous.label)}`) : grade
 }
 
 /** Séance suivie en direct (début et fin connus), pas notée après coup. */

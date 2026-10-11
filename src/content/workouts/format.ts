@@ -1,7 +1,8 @@
 import type { ExerciseMeasure, WorkoutExercise, WorkoutSet } from '@/db/types'
 import { formatDuration } from '@/lib/dates'
+import { frenchSpacing } from '@/lib/typography'
 import { formatNumber, formatWeight, type WeightUnit } from '@/lib/units'
-import type { RecordEntry, RecordKind } from './records'
+import type { RecordEntry, RecordHit, RecordKind } from './records'
 import { setValue } from './workout'
 
 /** « 8 rép. », « 45 s », « 8 rép. · 10 kg ». */
@@ -54,4 +55,11 @@ export function formatRecord(kind: RecordKind, entry: RecordEntry, unit: WeightU
         ? ` · ${formatDuration(entry.durationSec)}`
         : ''
   return `${formatWeight(entry.value, unit)}${detail}`
+}
+
+/** « Plus de répétitions : 12 rép. (avant : 10 rép.) ». */
+export function formatRecordHit(hit: RecordHit, unit: WeightUnit): string {
+  const now = formatRecord(hit.kind, hit.entry, unit)
+  const before = formatRecord(hit.kind, hit.previous, unit)
+  return frenchSpacing(`${RECORD_LABEL[hit.kind]} : ${now} (avant : ${before})`)
 }

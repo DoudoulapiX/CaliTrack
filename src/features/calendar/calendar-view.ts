@@ -7,6 +7,9 @@ import { formatNumber } from '@/lib/units'
 import { climbSubtitle } from '@/features/climbing/climb-view'
 import { workoutSubtitle } from '@/features/workout/workout-view'
 
+/** Initiales des jours, du lundi au dimanche. */
+export const WEEKDAY_INITIALS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const
+
 /** Couleurs de chaque genre (classes écrites en entier pour que Tailwind les garde). */
 export const KIND_STYLE: Record<EventKind, { dot: string; ring: string; icon: string; soft: string }> = {
   program: { dot: 'bg-accent', ring: 'ring-accent', icon: 'text-accent-text', soft: 'bg-accent-soft' },

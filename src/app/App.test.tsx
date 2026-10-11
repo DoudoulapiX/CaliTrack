@@ -7,7 +7,7 @@ import { App } from './App'
 describe('App', () => {
   beforeEach(async () => {
     await resetDb()
-    window.history.replaceState(null, '', `${BASENAME}/`)
+    window.history.replaceState(null, '', BASENAME)
   })
 
   it('accueille au premier lancement puis ouvre l’appli', async () => {
@@ -21,6 +21,7 @@ describe('App', () => {
     }
     await user.click(await screen.findByRole('button', { name: 'Terminer' }))
     expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument()
-    expect(window.location.pathname).toBe(`${BASENAME}/`)
+    expect(window.location.pathname).toBe(BASENAME)
+    expect(BASENAME).toMatch(/\/$/)
   })
 })

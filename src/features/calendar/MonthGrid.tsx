@@ -2,10 +2,8 @@ import { useEffect, useRef } from 'react'
 import { itemKind, type Agenda } from '@/content/calendar/agenda'
 import { cn } from '@/lib/cn'
 import { addDaysISO, type ISODate } from '@/lib/dates'
-import { dayLabel, dotItems, KIND_STYLE } from './calendar-view'
+import { dayLabel, dotItems, KIND_STYLE, WEEKDAY_INITIALS } from './calendar-view'
 
-/** Initiales des jours, du lundi au dimanche. */
-const WEEKDAY_INITIALS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const
 const MAX_DOTS = 3
 /** Glissement horizontal minimal (en pixels) pour changer de mois. */
 const SWIPE_PX = 50

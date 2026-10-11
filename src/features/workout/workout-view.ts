@@ -6,6 +6,7 @@ import { workoutDurationSec, workoutStats } from '@/content/workouts/stats'
 import { measureOf, nextPendingSet, suggestedValue, type PendingSet } from '@/content/workouts/workout'
 import type { BlockKind, Exercise, ExerciseMeasure, Workout, WorkoutExercise } from '@/db/types'
 import { capitalize, formatDuration, formatMonth } from '@/lib/dates'
+import { keepTogether } from '@/lib/typography'
 import { formatNumber, formatWeight, kgToUnit, unitToKg, type WeightUnit } from '@/lib/units'
 
 /* Textes et regroupements des écrans de séance (séance en cours, bilan, historique, records). */
@@ -177,13 +178,17 @@ export function rpeLabel(rpe: number | null): string | null {
   return best.label
 }
 
-/** « 52 min · 14 séries · Dur » : une séance de l'historique en une ligne. */
+/**
+ * « 52 min · 14 séries · Dur » : une séance de l'historique en une ligne (chaque morceau reste sur une
+ * même ligne).
+ */
 export function workoutSubtitle(workout: Workout): string {
   const { setsDone } = workoutStats(workout)
+  const feeling = rpeLabel(workout.rpe)
   return [
-    formatWorkoutDuration(workoutDurationSec(workout)),
-    `${String(setsDone)} série${setsDone > 1 ? 's' : ''}`,
-    rpeLabel(workout.rpe),
+    keepTogether(formatWorkoutDuration(workoutDurationSec(workout))),
+    keepTogether(`${String(setsDone)} série${setsDone > 1 ? 's' : ''}`),
+    feeling && keepTogether(feeling),
   ]
     .filter(Boolean)
     .join(' · ')

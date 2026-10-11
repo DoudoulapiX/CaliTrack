@@ -1,5 +1,12 @@
-import type { CalendarEvent, EventSeries, Program, ProgramSession, Workout } from '@/db/types'
-import { climbSession, profile } from '@/test/fixtures'
+import type { ProgramSession, Workout } from '@/db/types'
+import {
+  calendarEvent as event,
+  climbSession,
+  eventSeries as series,
+  profile,
+  programSession as session,
+  testProgram as program,
+} from '@/test/fixtures'
 import {
   buildAgenda,
   climbingDaysSeries,
@@ -13,34 +20,6 @@ import {
   type AgendaItem,
   type AgendaSources,
 } from './agenda'
-
-const session = (id: string, weekdays: ProgramSession['weekdays']): ProgramSession => ({
-  id,
-  name: `Séance ${id}`,
-  emphasis: 'full',
-  weekdays,
-  blocks: [],
-})
-
-function program(patch: Partial<Program> = {}): Program {
-  return {
-    id: 'p1',
-    name: 'Force',
-    active: true,
-    source: 'generated',
-    focuses: ['strength'],
-    locationId: null,
-    // A le lundi et le jeudi, B le mercredi ; le programme commence le mercredi 14 octobre 2026.
-    sessions: [session('A', [1, 4]), session('B', [3])],
-    startDate: '2026-10-14',
-    deloadEveryWeeks: null,
-    rationale: [],
-    notes: '',
-    createdAt: '2026-10-10T08:00:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
-    ...patch,
-  }
-}
 
 function workout(id: string, date: string, sessionId: string | null, patch: Partial<Workout> = {}): Workout {
   return {
@@ -59,47 +38,6 @@ function workout(id: string, date: string, sessionId: string | null, patch: Part
     status: 'done',
     deload: false,
     progression: [],
-    ...patch,
-  }
-}
-
-function event(id: string, date: string, patch: Partial<CalendarEvent> = {}): CalendarEvent {
-  return {
-    id,
-    date,
-    time: null,
-    kind: 'cardio',
-    title: 'Course à pied',
-    durationMin: null,
-    programId: null,
-    programSessionId: null,
-    seriesId: null,
-    status: 'planned',
-    workoutId: null,
-    climbingSessionId: null,
-    energyKcal: null,
-    distanceKm: null,
-    notes: '',
-    createdAt: '2026-10-10T08:00:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
-    ...patch,
-  }
-}
-
-function series(id: string, patch: Partial<EventSeries> = {}): EventSeries {
-  return {
-    id,
-    kind: 'custom',
-    title: 'Yoga',
-    weekdays: [2],
-    intervalWeeks: 1,
-    startDate: '2026-10-13',
-    endDate: null,
-    time: null,
-    durationMin: 45,
-    notes: '',
-    createdAt: '2026-10-10T08:00:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
     ...patch,
   }
 }

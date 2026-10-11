@@ -43,11 +43,24 @@ export function GoalBar({
   )
 }
 
-/** Un objectif dans une liste : titre, où il en est et sa barre. */
-export function GoalRow({ goal, progress, line }: { goal: Goal; progress: GoalProgress; line: string }) {
+/**
+ * Un objectif dans une liste : titre, où il en est et sa barre. Une épingle signale ceux affichés sur
+ * l'accueil, sauf sur l'accueil lui-même (`pinMark` à false).
+ */
+export function GoalRow({
+  goal,
+  progress,
+  line,
+  pinMark = true,
+}: {
+  goal: Goal
+  progress: GoalProgress
+  line: string
+  pinMark?: boolean
+}) {
   const percent = percentLabel(progress)
   // Un objectif archivé ne s'affiche plus sur l'accueil, même épinglé.
-  const onHome = goal.pinned && !goal.archived
+  const onHome = pinMark && goal.pinned && !goal.archived
   return (
     <li>
       <Link

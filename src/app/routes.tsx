@@ -169,6 +169,20 @@ export const appRoutes: RouteObject[] = [
             lazy: async () => ({ Component: (await import('@/features/more/MorePage')).MorePage }),
           },
           {
+            path: 'more/settings',
+            lazy: async () => ({
+              Component: (await import('@/features/settings/SettingsPage')).SettingsPage,
+            }),
+          },
+          {
+            path: 'more/backup',
+            lazy: async () => ({ Component: (await import('@/features/backup/BackupPage')).BackupPage }),
+          },
+          {
+            path: 'more/about',
+            lazy: async () => ({ Component: (await import('@/features/more/AboutPage')).AboutPage }),
+          },
+          {
             path: 'more/profile',
             handle: fullScreen,
             lazy: async () => ({ Component: (await import('@/features/profile/ProfilePage')).ProfilePage }),

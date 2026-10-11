@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Check, Pencil, Trash2, Trophy } from 'lucide-react'
 import { useGoBack } from '@/app/useGoBack'
-import { fontOf } from '@/content/climbing/labels'
-import { recordsBeaten, summarize, type ClimbRecord } from '@/content/climbing/stats'
+import { recordsBeaten, summarize } from '@/content/climbing/stats'
 import { deleteClimb } from '@/db/climbing'
 import type { ClimbingSession, GradeScale } from '@/db/types'
 import { userMessage } from '@/lib/errors'
-import { frenchSpacing, lowerFirst } from '@/lib/typography'
+import { frenchSpacing } from '@/lib/typography'
 import { Button, IconButton } from '@/ui/Button'
 import { ListGroup, ListRow } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
@@ -19,19 +18,8 @@ import { StatTiles } from '@/features/workout/StatTiles'
 import { rpeLabel } from '@/features/workout/workout-view'
 import { BoulderLog } from './BoulderLog'
 import { ClimbInfoSheet } from './ClimbInfoSheet'
-import { climbDateLine, climbTiles } from './climb-view'
+import { climbDateLine, climbRecordLine, climbRecordTitle, climbTiles } from './climb-view'
 import { useClimbs, useGradeScales } from './useClimbing'
-
-function recordTitle(record: ClimbRecord): string {
-  if (record.kind === 'hardest') return record.previous ? 'Niveau le plus dur réussi' : 'Premier bloc réussi'
-  return record.previous ? 'Flash le plus dur' : 'Premier flash'
-}
-
-function recordLine(record: ClimbRecord): string {
-  const font = fontOf(record.grade)
-  const grade = font ? `${record.grade.label} (${font})` : record.grade.label
-  return record.previous ? frenchSpacing(`${grade} · avant : ${lowerFirst(record.previous.label)}`) : grade
-}
 
 interface ContentProps {
   session: ClimbingSession
@@ -59,8 +47,8 @@ function SummaryContent({ session, scale, climbs, scales, editable }: ContentPro
               <ListRow
                 key={record.kind}
                 leading={<Trophy size={20} className="text-warning" aria-hidden />}
-                title={recordTitle(record)}
-                subtitle={recordLine(record)}
+                title={climbRecordTitle(record)}
+                subtitle={climbRecordLine(record)}
               />
             ))}
           </ListGroup>

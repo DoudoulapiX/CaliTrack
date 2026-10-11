@@ -6,6 +6,14 @@ export function frenchSpacing(text: string): string {
   return text.replace(/ ([:;!?%»])/g, `${NBSP}$1`).replace(/« /g, `«${NBSP}`)
 }
 
+/**
+ * Garde un groupe de mots sur une même ligne (« 1 h 30 », « À fond ») : ses espaces deviennent
+ * insécables (un tiret reste, lui, un endroit où la ligne peut se couper).
+ */
+export function keepTogether(text: string): string {
+  return text.replace(/ /g, NBSP)
+}
+
 /** Énumération à la française : « a », « a et b », « a, b et c ». */
 export function joinFrench(items: readonly string[]): string {
   if (items.length <= 1) return items[0] ?? ''

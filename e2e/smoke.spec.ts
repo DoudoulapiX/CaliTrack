@@ -390,3 +390,116 @@ test('escalade : blocs notés par couleur, séance gardée au rechargement, bila
   await expect(page.getByRole('button', { name: /^Blanc/ })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchargée et restaurée', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  // Un mercredi matin.
+  await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+  // Sans feuille de partage (comme sur un ordinateur), la sauvegarde se télécharge.
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, 'canShare', { configurable: true, value: undefined })
+    Object.defineProperty(Navigator.prototype, 'share', { configurable: true, value: undefined })
+  })
+
+  // Accueil : 80 kg, le muscle-up visé (par défaut), 10 tractions au test de niveau.
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Commencer' }).click()
+  await page.getByLabel('Poids').fill('80')
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+  await page.getByLabel('Tractions').fill('10')
+  await page.getByRole('button', { name: 'Terminer' }).click()
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' })
+  await expect(nav).toBeVisible()
+
+  // L'écran Aujourd'hui et ses six cartes, dans l'ordre par défaut.
+  await expect(page.getByRole('heading', { name: 'Aujourd’hui', level: 1 })).toBeVisible()
+  await expect(page.getByText('Mercredi 21 octobre')).toBeVisible()
+  const titles = page.getByRole('heading', { level: 2 })
+  await expect(titles).toHaveText([
+    'Au programme',
+    'Ma semaine',
+    'Objectifs',
+    'Escalade',
+    'Poids',
+    'Records récents',
+  ])
+  await expect(page.getByRole('link', { name: /^Muscle-up\s:\s/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Mercredi 21 octobre, aujourd’hui/ })).toHaveAttribute(
+    'aria-current',
+    'date',
+  )
+
+  // Une pesée depuis la carte du poids.
+  const weight = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Poids', level: 2 }) })
+  await expect(weight).toContainText('80 kg')
+  await weight.getByRole('button', { name: 'Noter mon poids' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Noter mon poids' })
+  await sheet.getByLabel('Poids').fill('79,5')
+  await sheet.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(weight).toContainText('79,5 kg')
+  await expect(weight).toContainText(/Dernière pesée\s:\saujourd’hui/)
+
+  // Réglages : sans la carte du poids, les objectifs en premier, sans escalade, en thème clair.
+  await page.getByRole('link', { name: 'Personnaliser l’accueil' }).click()
+  await expect(page.getByRole('heading', { name: 'Réglages', level: 1 })).toBeVisible()
+  const cards = page.getByRole('list', { name: 'Cartes de l’accueil' })
+  await cards.getByRole('switch', { name: 'Poids' }).click()
+  await cards.getByRole('button', { name: 'Objectifs épinglés : monter' }).click()
+  await cards.getByRole('button', { name: 'Objectifs épinglés : monter' }).click()
+  await page.getByRole('switch', { name: 'Module escalade' }).click()
+  await expect(page.getByText('Escalade masquée')).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Escalade' })).toHaveCount(0)
+  await page.getByRole('radiogroup', { name: 'Thème' }).getByRole('radio', { name: 'Clair' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await nav.getByRole('link', { name: 'Aujourd’hui' }).click()
+  // L'accueil garde la barre finale de l'adresse (/CaliTrack/) : il se recharge sans erreur.
+  await expect(page).toHaveURL(/\/CaliTrack\/$/)
+  const shown = ['Objectifs', 'Au programme', 'Ma semaine', 'Records récents']
+  await expect(titles).toHaveText(shown)
+  await page.reload()
+  await expect(titles).toHaveText(shown)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+  // La sauvegarde, téléchargée et notée.
+  await page.goto('more/backup')
+  await expect(page.getByText('0 séance, 0 séance d’escalade, 1 objectif')).toBeVisible()
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Enregistrer dans Fichiers' }).click(),
+  ])
+  expect(download.suggestedFilename()).toBe('calitrack-sauvegarde-2026-10-21.json')
+  const file = await download.path()
+  await expect(page.getByText('Sauvegarde téléchargée')).toBeVisible()
+  await expect(page.getByText('Aujourd’hui à 10:00')).toBeVisible()
+
+  // Tout effacer ramène au premier lancement, d'où la sauvegarde se restaure.
+  await page.getByRole('button', { name: 'Tout effacer' }).click()
+  await page
+    .getByRole('dialog', { name: /^Tout effacer/ })
+    .getByRole('button', { name: 'Tout effacer' })
+    .click()
+  await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'light')
+  await page.getByLabel('Restaurer une sauvegarde').setInputFiles(file)
+  const restore = page.getByRole('dialog', { name: /^Restaurer cette sauvegarde/ })
+  await expect(restore).toContainText(
+    /Sauvegarde du 21 octobre 2026\s:\s0\sséance, 0\sséance d’escalade, 1\sobjectif\./,
+  )
+  await restore.getByRole('button', { name: 'Restaurer' }).click()
+  await expect(nav).toBeVisible()
+  await expect(titles).toHaveText(shown)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+  // Tout est revenu : la pesée, et la date de la sauvegarde.
+  await page.goto('more/backup')
+  await expect(page.getByText('Aujourd’hui à 10:00')).toBeVisible()
+  await page.goto('more/settings')
+  await page.getByRole('list', { name: 'Cartes de l’accueil' }).getByRole('switch', { name: 'Poids' }).click()
+  await nav.getByRole('link', { name: 'Aujourd’hui' }).click()
+  await expect(weight).toContainText('79,5 kg')
+  expect(errors).toEqual([])
+})

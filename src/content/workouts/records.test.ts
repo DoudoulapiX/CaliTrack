@@ -1,6 +1,6 @@
 import type { BlockKind, Workout, WorkoutSet } from '@/db/types'
 import { formatDoneSets, formatRecord, formatSetResult } from './format'
-import { exerciseRecords, recordsBeaten } from './records'
+import { exerciseRecords, recordHitsSince, recordsBeaten } from './records'
 
 function set(values: Partial<WorkoutSet>, done = true): WorkoutSet {
   return {
@@ -92,6 +92,44 @@ describe('records', () => {
     const later = workout('w5', '2026-10-14', [{ exerciseId: 'pullup', sets: [set({ reps: 15 })] }])
     expect(recordsBeaten(today, [...history, today, later])).toHaveLength(2)
     expect(recordsBeaten(later, [...history, today, later]).map((h) => h.previous.value)).toEqual([9])
+  })
+
+  it('liste les derniers records battus d’une période, le plus récent d’abord', () => {
+    const w4 = workout('w4', '2026-10-12', [
+      { exerciseId: 'pullup', sets: [set({ reps: 9 })] },
+      { exerciseId: 'plank', block: 'core', sets: [set({ durationSec: 70 })] },
+    ])
+    const w5 = workout('w5', '2026-10-14', [
+      { exerciseId: 'pullup', sets: [set({ reps: 11 }), set({ reps: 4, loadKg: 10 })] },
+      { exerciseId: 'dip', sets: [set({ reps: 10 })] },
+    ])
+    const all = [w5, ...history, w4]
+    const line = (from: string) =>
+      recordHitsSince(all, from).map((h) => [
+        h.exerciseId,
+        h.kind,
+        h.previous.value,
+        h.entry.value,
+        h.entry.date,
+      ])
+
+    // Les tractions battues deux fois : seul le dernier record compte, comparé à celui d'avant.
+    expect(line('2026-10-01')).toEqual([
+      ['pullup', 'reps', 9, 11, '2026-10-14'],
+      ['pullup', 'load', 5, 10, '2026-10-14'],
+      ['plank', 'hold', 60, 70, '2026-10-12'],
+    ])
+    expect(line('2026-10-13')).toEqual([
+      ['pullup', 'reps', 9, 11, '2026-10-14'],
+      ['pullup', 'load', 5, 10, '2026-10-14'],
+    ])
+    expect(line('2026-10-15')).toEqual([])
+
+    // Même résultat que séance par séance.
+    expect(recordsBeaten(w5, all).map((h) => [h.exerciseId, h.kind])).toEqual([
+      ['pullup', 'reps'],
+      ['pullup', 'load'],
+    ])
   })
 
   it('écrit les séries et les records', () => {

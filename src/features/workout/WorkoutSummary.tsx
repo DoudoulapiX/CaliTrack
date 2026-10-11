@@ -4,7 +4,7 @@ import { Check, Trash2, TrendingDown, TrendingUp, Trophy } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { useGoBack } from '@/app/useGoBack'
 import { describeChange } from '@/content/programs/format'
-import { formatDoneSets, formatRecord, RECORD_LABEL } from '@/content/workouts/format'
+import { formatDoneSets, formatRecordHit } from '@/content/workouts/format'
 import { recordsBeaten } from '@/content/workouts/records'
 import { workoutDurationSec } from '@/content/workouts/stats'
 import { measureOf } from '@/content/workouts/workout'
@@ -56,10 +56,7 @@ function SummaryContent({ workout }: { workout: Workout }) {
                 key={`${hit.exerciseId}-${hit.kind}`}
                 leading={<Trophy size={20} className="text-warning" aria-hidden />}
                 title={nameOf(hit.exerciseId)}
-                subtitle={frenchSpacing(
-                  `${RECORD_LABEL[hit.kind]} : ${formatRecord(hit.kind, hit.entry, unit)} ` +
-                    `(avant : ${formatRecord(hit.kind, hit.previous, unit)})`,
-                )}
+                subtitle={formatRecordHit(hit, unit)}
               />
             ))}
           </ListGroup>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowDown, ArrowUp, Check, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import {
   findGrade,
   GRADE_COLORS,
@@ -16,11 +16,10 @@ import {
 } from '@/content/grades'
 import { gradeUsage, saveGradeScale } from '@/db/climbing'
 import type { GradeScale } from '@/db/types'
-import { cn } from '@/lib/cn'
-import { readableOn } from '@/lib/color'
 import { userMessage } from '@/lib/errors'
 import { frenchSpacing } from '@/lib/typography'
 import { Button } from '@/ui/Button'
+import { ColorPicker } from '@/ui/ColorPicker'
 import { TextField } from '@/ui/Field'
 import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
@@ -52,7 +51,6 @@ export function GradeSheet({ scale, gradeKey, onClose }: GradeSheetProps) {
     [scale.id, gradeKey],
   )
   const index = gradeKey === null ? -1 : gradeIndex(scale, gradeKey)
-  const custom = !GRADE_COLORS.some((c) => c.color === draft.color.toLowerCase())
 
   const update = (patch: Partial<GradeDraft>) => {
     setDraft((current) => ({ ...current, ...patch }))
@@ -161,48 +159,14 @@ export function GradeSheet({ scale, gradeKey, onClose }: GradeSheetProps) {
           }}
         />
 
-        <div className="flex flex-col gap-2">
-          <span className="px-1 text-[13px] font-medium text-ink-2">Couleur</span>
-          <div role="radiogroup" aria-label="Couleur" className="flex flex-wrap gap-2.5">
-            {GRADE_COLORS.map((option) => {
-              const selected = draft.color.toLowerCase() === option.color
-              return (
-                <button
-                  key={option.color}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  aria-label={option.name}
-                  title={option.name}
-                  onClick={() => {
-                    update({ color: option.color })
-                  }}
-                  className={cn(
-                    'flex size-10 items-center justify-center rounded-full ring-1 ring-ink/25 ring-inset',
-                    selected && 'outline-2 outline-offset-2 outline-accent outline-solid',
-                  )}
-                  style={{ backgroundColor: option.color }}
-                >
-                  {selected && <Check size={18} style={{ color: readableOn(option.color) }} aria-hidden />}
-                </button>
-              )
-            })}
-          </div>
-          <label className="flex items-center gap-3 self-start px-1 py-1 text-[15px] text-ink-2">
-            <input
-              type="color"
-              value={draft.color}
-              onChange={(e) => {
-                update({ color: e.target.value })
-              }}
-              className={cn(
-                'size-10 cursor-pointer rounded-full border-0 bg-transparent p-0',
-                custom && 'outline-2 outline-offset-2 outline-accent outline-solid',
-              )}
-            />
-            Autre couleur
-          </label>
-        </div>
+        <ColorPicker
+          label="Couleur"
+          value={draft.color}
+          options={GRADE_COLORS}
+          onChange={(color) => {
+            update({ color })
+          }}
+        />
 
         <TextField
           label="Équivalence Fontainebleau (facultatif)"

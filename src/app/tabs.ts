@@ -40,3 +40,36 @@ export function visibleTabs(settings: Pick<AppSettings, 'tabs' | 'hiddenModules'
     .map((key) => TAB_DEFS[key])
   return [...tabs, MORE_TAB]
 }
+
+/** Partie de l'appli à laquelle appartient une adresse (null : aucune, l'accueil par exemple). */
+export function sectionOf(pathname: string): TabDef['key'] | null {
+  switch (pathname.split('/')[1] ?? '') {
+    case '':
+      return 'today'
+    case 'calendar':
+      return 'calendar'
+    case 'training':
+    case 'workout':
+      return 'training'
+    case 'climbing':
+      return 'climbing'
+    case 'goals':
+      return 'goals'
+    case 'library':
+      return 'library'
+    case 'more':
+      return 'more'
+    default:
+      return null
+  }
+}
+
+/**
+ * Onglet mis en avant pour une adresse : celui de sa partie de l'appli, ou « Plus » quand cette
+ * partie n'a pas d'onglet dans la barre (on y arrive par « Plus »).
+ */
+export function activeTab(pathname: string, tabs: readonly TabDef[]): TabDef['key'] | null {
+  const section = sectionOf(pathname)
+  if (section === null) return null
+  return tabs.some((tab) => tab.key === section) ? section : MORE_TAB.key
+}

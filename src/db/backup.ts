@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { formatDay, formatTimeOf, localDateOf, nowISO, today } from '@/lib/dates'
 import { newId } from '@/lib/ids'
-import { frenchSpacing } from '@/lib/typography'
+import { frenchSpacing, keepTogether } from '@/lib/typography'
 import { DATA_TABLES, DB_VERSION, db as defaultDb, type CaliTrackDB, type DataTableName } from './db'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
@@ -66,6 +66,21 @@ export async function collectBackup(database: CaliTrackDB = defaultDb): Promise<
     exportedAt: nowISO(),
     dbVersion: DB_VERSION,
     tables: tables as BackupTables,
+  }
+}
+
+/**
+ * La sauvegarde prête à enregistrer à cette heure-là : sa date, notée aussi comme dernière sauvegarde
+ * dans ses réglages (une fois restaurée, l'appli sait de quand date la sauvegarde).
+ */
+export function stampBackup(backup: BackupFile, exportedAt: string): BackupFile {
+  return {
+    ...backup,
+    exportedAt,
+    tables: {
+      ...backup.tables,
+      settings: backup.tables.settings.map((row) => ({ ...row, lastBackupAt: exportedAt })),
+    },
   }
 }
 
@@ -204,5 +219,7 @@ export async function resetAllData(database: CaliTrackDB = defaultDb): Promise<v
 
 export function describeSnapshot(snapshot: Snapshot): string {
   const reason = snapshot.reason === 'before-import' ? 'Avant restauration' : 'Copie manuelle'
-  return `${reason} · ${formatDay(localDateOf(snapshot.createdAt), 'd MMM yyyy')} à ${formatTimeOf(snapshot.createdAt)}`
+  // La date et l'heure restent ensemble en fin de ligne.
+  const when = `${formatDay(localDateOf(snapshot.createdAt), 'd MMM yyyy')} à ${formatTimeOf(snapshot.createdAt)}`
+  return `${reason} · ${keepTogether(when)}`
 }

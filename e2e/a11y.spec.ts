@@ -383,5 +383,57 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await expect(page.getByRole('dialog', { name: 'Nouvelle échelle' })).toBeVisible()
       await expectAccessible(page, 'nouvelle échelle')
     })
+
+    test('accueil, réglages et sauvegarde accessibles', async ({ page }) => {
+      test.slow()
+      // Un mercredi matin.
+      await page.clock.setFixedTime(new Date('2026-10-21T10:00:00+02:00'))
+      await page.goto('./')
+      await page.getByRole('button', { name: 'Commencer' }).click()
+      await page.getByLabel('Poids').fill('80')
+      for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Continuer' }).click()
+      await page.getByLabel('Tractions').fill('10')
+      await page.getByRole('button', { name: 'Terminer' }).click()
+
+      // L'écran Aujourd'hui, puis une pesée notée depuis sa carte.
+      await expect(page.getByRole('heading', { name: 'Aujourd’hui', level: 1 })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Records récents', level: 2 })).toBeVisible()
+      await expectAccessible(page, 'aujourd’hui')
+      await page.getByRole('button', { name: 'Noter mon poids' }).click()
+      const sheet = page.getByRole('dialog', { name: 'Noter mon poids' })
+      await expect(sheet).toBeVisible()
+      await expectAccessible(page, 'noter mon poids')
+      await sheet.getByLabel('Poids').fill('79,5')
+      await sheet.getByRole('button', { name: 'Enregistrer' }).click()
+      await expect(page.getByText('79,5 kg')).toBeVisible()
+
+      // Neuf jours plus tard : le rappel de sauvegarde en haut de l'accueil.
+      await page.clock.setFixedTime(new Date('2026-10-30T10:00:00+01:00'))
+      await page.reload()
+      await expect(page.getByText('Pense à sauvegarder')).toBeVisible()
+      await expectAccessible(page, 'aujourd’hui avec le rappel')
+
+      for (const [path, heading] of [
+        ['more/settings', 'Réglages'],
+        ['more/backup', 'Sauvegarde'],
+        ['more/about', 'À propos'],
+      ] as const) {
+        await page.goto(path)
+        await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible()
+        await expectAccessible(page, path)
+      }
+
+      // Sauvegarde : une copie de sécurité, puis les deux confirmations.
+      await page.goto('more/backup')
+      await page.getByRole('button', { name: 'Faire une copie maintenant' }).click()
+      await page.getByRole('button', { name: /^Copie manuelle/ }).click()
+      await expect(page.getByRole('dialog', { name: /^Revenir à cette copie/ })).toBeVisible()
+      await expectAccessible(page, 'revenir à une copie')
+      await page.getByRole('button', { name: 'Annuler' }).click()
+      await page.getByRole('button', { name: 'Tout effacer' }).click()
+      await expect(page.getByRole('dialog', { name: /^Tout effacer/ })).toBeVisible()
+      await expectAccessible(page, 'tout effacer')
+      await page.getByRole('button', { name: 'Annuler' }).click()
+    })
   })
 }

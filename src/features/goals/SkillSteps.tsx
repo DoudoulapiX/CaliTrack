@@ -16,7 +16,7 @@ import { Sheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import { ExerciseMedia } from '@/features/library/ExerciseMedia'
 import { useCatalog } from '@/features/library/catalog-context'
-import { shortDate, stepName, stepReachedLine, stepTarget } from './goal-view'
+import { floorPercent, shortDate, stepName, stepReachedLine, stepTarget } from './goal-view'
 
 const STATUS_LABEL: Record<StepStatus, string> = {
   done: 'franchie',
@@ -109,7 +109,7 @@ export function SkillSteps({ goal, progress }: { goal: Goal; progress: SkillProg
                   {line && <span className="mt-0.5 block text-[13px] text-ink-3">{line}</span>}
                   {step.status === 'current' && criterion && (
                     <ProgressBar
-                      value={Math.floor(step.ratio * 100)}
+                      value={floorPercent(step.ratio)}
                       label={`Étape en cours : ${name}`}
                       size="sm"
                       className="mt-2 mb-1"
