@@ -136,7 +136,7 @@ export function AiSettingsPage() {
       <Section title="Clé Claude">
         {apiKey === undefined ? <PageSpinner /> : apiKey ? <SavedKey apiKey={apiKey} /> : <KeyForm />}
         <Note>
-          Crée ta clé sur console.anthropic.com, rubrique API Keys. Elle reste sur cet iPhone, hors des
+          Crée ta clé sur platform.claude.com, rubrique API Keys. Elle reste sur cet iPhone, hors des
           sauvegardes, et n’est envoyée qu’à Anthropic.
         </Note>
       </Section>

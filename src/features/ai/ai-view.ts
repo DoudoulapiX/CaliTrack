@@ -10,7 +10,7 @@ export const AI_PROBLEM_TEXT: Record<AiProblem, string> = {
   invalidKey: frenchSpacing(
     'Ta clé Claude est refusée : vérifie-la ou remplace-la dans les réglages de l’IA.',
   ),
-  noCredit: frenchSpacing('Ton compte Claude n’a plus de crédit : recharge-le sur console.anthropic.com.'),
+  noCredit: frenchSpacing('Ton compte Claude n’a plus de crédit : recharge-le sur platform.claude.com.'),
   busy: frenchSpacing('Claude est très demandé en ce moment : réessaie dans un instant.'),
   model: frenchSpacing(
     'Ce modèle n’est pas ouvert à ta clé : choisis-en un autre dans les réglages de l’IA.',

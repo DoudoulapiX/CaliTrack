@@ -17,7 +17,7 @@ describe('textes de l’IA', () => {
     for (const problem of PROBLEMS) {
       expect(AI_PROBLEM_TEXT[problem]).not.toMatch(/ [:;!?]/)
     }
-    expect(AI_PROBLEM_TEXT.noCredit).toContain('console.anthropic.com')
+    expect(AI_PROBLEM_TEXT.noCredit).toContain('platform.claude.com')
   })
 
   it('disent quoi faire ensuite', () => {
