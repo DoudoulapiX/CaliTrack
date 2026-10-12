@@ -2,7 +2,14 @@ import { z } from 'zod'
 import { formatDay, formatTimeOf, localDateOf, nowISO, today } from '@/lib/dates'
 import { newId } from '@/lib/ids'
 import { frenchSpacing, keepTogether } from '@/lib/typography'
-import { DATA_TABLES, DB_VERSION, db as defaultDb, type CaliTrackDB, type DataTableName } from './db'
+import {
+  DATA_TABLES,
+  DB_VERSION,
+  DEVICE_TABLES,
+  db as defaultDb,
+  type CaliTrackDB,
+  type DataTableName,
+} from './db'
 import { settingsV1toV2 } from './migrations'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
@@ -12,8 +19,9 @@ export const BACKUP_APP = 'CaliTrack'
 /**
  * Version du format de fichier. À augmenter (avec une conversion dans upgradeTables) si le format change.
  * 1 : étape 1 (entraînement). 2 : nutrition et Oura (réglages complétés, nouvelles tables).
+ * 3 : tables du coach IA (coachDays, bodyReviews, pantryItems, coachMessages).
  */
-export const BACKUP_FORMAT = 2
+export const BACKUP_FORMAT = 3
 /** Nombre de copies de sécurité internes conservées. */
 export const MAX_SNAPSHOTS = 3
 
@@ -46,6 +54,10 @@ export const TABLE_LABEL: Record<DataTableName, string> = {
   foodEntries: 'repas',
   nutritionGoals: 'objectifs caloriques',
   ouraDays: 'données Oura',
+  coachDays: 'conseils du coach',
+  bodyReviews: 'analyses physiques',
+  pantryItems: 'frigo et placards',
+  coachMessages: 'discussion avec le coach',
 }
 
 export interface BackupSummary {
@@ -122,9 +134,8 @@ const headerSchema = z.object({
   tables: z.record(z.string(), z.unknown()),
 })
 
-/** Met les tables d'un fichier d'une version antérieure au format actuel (avant leur vérification). */
-export function upgradeTables(format: number, tables: Record<string, unknown>): Record<string, unknown> {
-  if (format >= 2) return tables
+/** 1 → 2 : réglages complétés (modèle d'IA, Oura) et nouveaux onglets et cartes. */
+function settingsTableV1toV2(tables: Record<string, unknown>): Record<string, unknown> {
   const settings = tables.settings
   return {
     ...tables,
@@ -134,6 +145,17 @@ export function upgradeTables(format: number, tables: Record<string, unknown>): 
         )
       : settings,
   }
+}
+
+/**
+ * Met les tables d'un fichier d'une version antérieure au format actuel (avant leur vérification). Les
+ * étapes s'enchaînent : un fichier du format 1 passe par toutes.
+ */
+export function upgradeTables(format: number, tables: Record<string, unknown>): Record<string, unknown> {
+  let upgraded = tables
+  if (format < 2) upgraded = settingsTableV1toV2(upgraded)
+  // 2 → 3 : quatre tables du coach, absentes des fichiers plus anciens (lues comme vides).
+  return upgraded
 }
 
 export type ParseBackupResult = { ok: true; backup: BackupFile } | { ok: false; error: string }
@@ -235,11 +257,11 @@ export async function restoreSnapshot(id: string, database: CaliTrackDB = defaul
 }
 
 /**
- * Efface toutes les données (les copies de sécurité internes, la clé d'IA et le jeton Oura compris) et
- * repart de zéro.
+ * Efface toutes les données (les tables de l'appareil comprises : copies de sécurité internes, clé d'IA,
+ * jeton Oura, compteur des demandes à Claude) et repart de zéro.
  */
 export async function resetAllData(database: CaliTrackDB = defaultDb): Promise<void> {
-  const tables = [...dataTables(database), database.snapshots, database.secrets]
+  const tables = [...dataTables(database), ...DEVICE_TABLES.map((name) => database.table(name))]
   await database.transaction('rw', tables, async () => {
     for (const table of tables) await table.clear()
   })

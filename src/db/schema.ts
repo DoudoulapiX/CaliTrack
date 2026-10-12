@@ -1,10 +1,14 @@
 import { z } from 'zod'
 import { isISODate } from '@/lib/dates'
 import type {
+  AiUsageRow,
   AppSettings,
   BodyMetric,
+  BodyReview,
   CalendarEvent,
   ClimbingSession,
+  CoachDay,
+  CoachMessage,
   EquipmentItem,
   EventSeries,
   Exercise,
@@ -16,6 +20,7 @@ import type {
   Location,
   NutritionGoals,
   OuraDay,
+  PantryItem,
   Profile,
   Program,
   Workout,
@@ -520,6 +525,101 @@ export const ouraDaySchema = z.object({
   syncedAt: timestamp,
 })
 
+/*
+ * Coach IA. Ces schémas décrivent nos propres données : z.enum y est permis. Les réponses de Claude sont
+ * lues avec des schémas plus lâches, puis nettoyées avant d'arriver ici.
+ */
+
+const coachChange = z.object({
+  slotId: z.string().min(1),
+  plannedExerciseId: z.string().min(1),
+  action: z.enum(['lighter', 'swap', 'skip']),
+  exerciseId: z.string().min(1),
+  sets: z.number().int().min(1).max(20),
+  target: slotTarget,
+  loadKg: z.number().nullable(),
+  reason: z.string().max(160),
+})
+
+export const coachDaySchema = z.object({
+  date: isoDate,
+  // Jamais z.enum : une sauvegarde faite avec un ancien modèle doit rester lisible.
+  model: z.string(),
+  checkIn: z.object({
+    sleep: z.enum(['bad', 'ok', 'good']).nullable(),
+    energy: z.enum(['low', 'ok', 'high']),
+    soreness: z.enum(['none', 'light', 'strong']),
+    zones: z.array(z.enum(['back', 'chest', 'shoulders', 'arms', 'forearms', 'core', 'legs'])),
+    note: z.string().max(300),
+  }),
+  basis: z.object({
+    readinessScore: z.number().nullable(),
+    sleepScore: z.number().nullable(),
+    sleepMin: z.number().min(0).nullable(),
+    yesterdayKcal: z.number().min(0).nullable(),
+  }),
+  programId: z.string().nullable(),
+  programSessionId: z.string().nullable(),
+  decision: z.enum(['asPlanned', 'lighter', 'rest']).nullable(),
+  changes: z.array(coachChange),
+  headline: z.string().max(80),
+  summary: z.string().max(600),
+  tips: z.array(z.string().max(200)).max(4),
+  ignored: z.boolean(),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+const nutritionPhase = z.enum(['cut', 'maintain', 'bulk'])
+const bodyFatPct = z.number().min(3).max(60)
+
+export const bodyReviewSchema = z.object({
+  date: isoDate,
+  model: z.string(),
+  suggestedPhase: nutritionPhase,
+  phase: nutritionPhase,
+  bodyFat: z.object({ low: bodyFatPct, high: bodyFatPct }).nullable(),
+  weightKg: z.number().positive(),
+  targets: z.object({ kcal: z.number().int().positive(), proteinG: grams, carbsG: grams, fatG: grams }),
+  summary: z.string().max(600),
+  observations: z.array(z.string().max(200)).max(4),
+  advice: z.array(z.string().max(200)).max(4),
+  appliedAt: timestamp.nullable(),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+export const pantryItemSchema = z.object({
+  id: z.string().min(1),
+  place: z.enum(['fridge', 'freezer', 'cupboard']),
+  name: named.max(60),
+  quantity: z.string().max(40),
+  source: z.enum(['manual', 'photo']),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+})
+
+export const coachMessageSchema = z.object({
+  id: z.string().min(1),
+  seq: z.number().int().min(0),
+  role: z.enum(['user', 'assistant']),
+  text: named.max(20000),
+  model: z.string().nullable(),
+  createdAt: timestamp,
+})
+
+/** Compteur des demandes à Claude, par mois : il reste sur l'appareil (hors des sauvegardes). */
+export const aiUsageSchema = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+  calls: z.number().int().min(0),
+  inputTokens: z.number().int().min(0),
+  outputTokens: z.number().int().min(0),
+  cacheReadTokens: z.number().int().min(0),
+  cacheWriteTokens: z.number().int().min(0),
+  costUsd: z.number().min(0),
+  updatedAt: timestamp,
+})
+
 /* Vérification de compilation : chaque schéma correspond exactement à son type (une différence casse `tsc`). */
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false
 type Expect<T extends true> = T
@@ -542,9 +642,14 @@ export type SchemaMatchesTypes = [
   Expect<Same<z.infer<typeof foodEntrySchema>, FoodEntry>>,
   Expect<Same<z.infer<typeof nutritionGoalsSchema>, NutritionGoals>>,
   Expect<Same<z.infer<typeof ouraDaySchema>, OuraDay>>,
+  Expect<Same<z.infer<typeof coachDaySchema>, CoachDay>>,
+  Expect<Same<z.infer<typeof bodyReviewSchema>, BodyReview>>,
+  Expect<Same<z.infer<typeof pantryItemSchema>, PantryItem>>,
+  Expect<Same<z.infer<typeof coachMessageSchema>, CoachMessage>>,
+  Expect<Same<z.infer<typeof aiUsageSchema>, AiUsageRow>>,
 ]
 
-/** Schéma de chaque table exportée dans une sauvegarde. */
+/** Schéma de chaque table exportée dans une sauvegarde (aiUsage reste sur l'appareil : pas ici). */
 export const TABLE_SCHEMAS = {
   settings: settingsSchema,
   profile: profileSchema,
@@ -564,4 +669,8 @@ export const TABLE_SCHEMAS = {
   foodEntries: foodEntrySchema,
   nutritionGoals: nutritionGoalsSchema,
   ouraDays: ouraDaySchema,
+  coachDays: coachDaySchema,
+  bodyReviews: bodyReviewSchema,
+  pantryItems: pantryItemSchema,
+  coachMessages: coachMessageSchema,
 } as const
