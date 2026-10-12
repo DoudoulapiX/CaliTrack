@@ -121,6 +121,22 @@ describe('photo du repas', () => {
     expectFrenchSpacing()
   })
 
+  it('compte chaque analyse facturée dans le coût du mois', async () => {
+    stubFetch(errorResponse(429, 'rate_limit_error'), messageResponse(PLATE_ESTIMATE))
+    const { user } = await renderApp(PHOTO_PAGE, { setup: withKey })
+    await choosePhoto(user)
+    await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
+    expect(await screen.findByText(/^Claude est très demandé/)).toBeInTheDocument()
+    // Une erreur de l'API n'est pas facturée.
+    expect(await db.aiUsage.count()).toBe(0)
+
+    await user.click(screen.getByRole('button', { name: 'Réessayer' }))
+    expect(await screen.findByRole('list', { name: 'Aliments reconnus' })).toBeInTheDocument()
+    const row = await db.aiUsage.get('2026-10')
+    expect(row).toMatchObject({ calls: 1, inputTokens: 1850, outputTokens: 420 })
+    expect(row?.costUsd).toBeCloseTo((1850 * 0.1 + 420 * 0.5) / 1e6, 12)
+  })
+
   it('propose de réessayer sans connexion', async () => {
     stubFetch(new TypeError('Load failed'), new TypeError('Load failed'), messageResponse(PLATE_ESTIMATE))
     const { user } = await renderApp(PHOTO_PAGE, { setup: withKey })

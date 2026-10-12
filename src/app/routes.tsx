@@ -279,6 +279,43 @@ export const appRoutes: RouteObject[] = [
               Component: (await import('@/features/equipment/EquipmentItemPage')).EquipmentItemPage,
             }),
           },
+          // Coach IA
+          {
+            path: 'training/coach',
+            lazy: async () => ({
+              Component: (await import('@/features/coach/CoachTodayPage')).CoachTodayPage,
+            }),
+          },
+          {
+            path: 'nutrition/body',
+            lazy: async () => ({
+              Component: (await import('@/features/coach/BodyCoachPage')).BodyCoachPage,
+            }),
+          },
+          {
+            path: 'nutrition/kitchen',
+            lazy: async () => ({ Component: (await import('@/features/coach/KitchenPage')).KitchenPage }),
+          },
+          {
+            path: 'nutrition/kitchen/photo',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/coach/KitchenPhotoPage')).KitchenPhotoPage,
+            }),
+          },
+          {
+            path: 'nutrition/kitchen/ideas',
+            lazy: async () => ({
+              Component: (await import('@/features/coach/KitchenIdeasPage')).KitchenIdeasPage,
+            }),
+          },
+          {
+            path: 'more/coach',
+            handle: fullScreen,
+            lazy: async () => ({
+              Component: (await import('@/features/coach/CoachChatPage')).CoachChatPage,
+            }),
+          },
           { path: '*', Component: NotFound },
         ],
       },

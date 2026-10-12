@@ -1,5 +1,7 @@
+import Anthropic from '@anthropic-ai/sdk'
+import type { ErrorType } from '@anthropic-ai/sdk/resources/shared'
 import { errorResponse, fakeAnthropicFetch } from '@/test/anthropic'
-import { checkApiKey, looksLikeApiKey } from './client'
+import { aiProblem, checkApiKey, looksLikeApiKey } from './client'
 import { AI_MODEL_OPTIONS, aiModelOption } from './models'
 
 const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
@@ -39,5 +41,22 @@ describe('clé de l’API Claude', () => {
       'claude-haiku-5-5',
     ])
     expect(aiModelOption('claude-haiku-5-5').label).toBe('Haiku 5.5')
+  })
+
+  it('distingue une réponse trop lente d’une absence de réseau', () => {
+    expect(aiProblem(new Anthropic.APIConnectionTimeoutError())).toBe('busy')
+    expect(aiProblem(new Anthropic.APIConnectionError({ message: 'fetch failed' }))).toBe('offline')
+    expect(aiProblem(new Anthropic.APIUserAbortError())).toBe('cancelled')
+  })
+
+  it('reconnaît une erreur envoyée au milieu d’une réponse en flux', () => {
+    // Sans code HTTP : l'API envoie « event: error » avec seulement le type de l'erreur.
+    const midStream = (type: ErrorType) =>
+      new Anthropic.APIError(undefined, { type: 'error', error: { type } }, undefined, new Headers(), type)
+    expect(aiProblem(midStream('overloaded_error'))).toBe('busy')
+    expect(aiProblem(midStream('rate_limit_error'))).toBe('busy')
+    expect(aiProblem(midStream('api_error'))).toBe('busy')
+    expect(aiProblem(midStream('invalid_request_error'))).toBe('failed')
+    expect(aiProblem(new Error('autre chose'))).toBe('failed')
   })
 })

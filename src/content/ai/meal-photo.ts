@@ -1,8 +1,8 @@
-import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
-import type { AiModel, Nutrients } from '@/db/types'
+import type { AiModel, AiUsage, Nutrients } from '@/db/types'
 import { roundNutrients } from '@/content/nutrition/nutrients'
-import { aiProblem, createClient, type AiProblem } from './client'
+import type { AiProblem } from './client'
+import { askStructured } from './structured'
 
 /** Ce que Claude renvoie pour une photo de repas (contrôlé par l'API, puis par zod). */
 export const mealPhotoSchema = z.object({
@@ -33,8 +33,8 @@ priment sur la photo. Si la photo ne montre pas de nourriture, ou est trop floue
 mets isMeal à faux et explique pourquoi dans problem.`
 
 /** Valeurs maximales retenues, pour écarter une estimation aberrante. */
-const MAX_ITEMS = 20
-const MAX_GRAMS = 3000
+export const MAX_ITEMS = 20
+export const MAX_GRAMS = 3000
 
 export interface EstimatedItem {
   name: string
@@ -42,10 +42,11 @@ export interface EstimatedItem {
   nutrients: Nutrients
 }
 
+/** Le résultat de l'analyse, avec les jetons facturés (null : aucune réponse n'est revenue). */
 export type MealPhotoResult =
-  | { status: 'ok'; items: EstimatedItem[] }
-  | { status: 'notMeal'; reason: string }
-  | { status: 'error'; problem: AiProblem }
+  | { status: 'ok'; items: EstimatedItem[]; usage: AiUsage }
+  | { status: 'notMeal'; reason: string; usage: AiUsage }
+  | { status: 'error'; problem: AiProblem; usage: AiUsage | null }
 
 export interface MealPhotoRequest {
   apiKey: string
@@ -57,6 +58,8 @@ export interface MealPhotoRequest {
   signal?: AbortSignal
   fetchImpl?: typeof fetch
 }
+
+const NO_FOOD = 'Aucun aliment reconnu sur cette photo.'
 
 const finite = (value: number) => (Number.isFinite(value) && value > 0 ? value : 0)
 
@@ -84,42 +87,26 @@ export function cleanItems(items: z.infer<typeof mealPhotoSchema>['items']): Est
 /** Demande à Claude les aliments d'une photo de repas et leurs valeurs nutritionnelles. */
 export async function estimateMealPhoto(request: MealPhotoRequest): Promise<MealPhotoResult> {
   const note = request.note.trim()
-  try {
-    const response = await createClient(request.apiKey, request.fetchImpl).messages.parse(
-      {
-        model: request.model,
-        max_tokens: 8000,
-        // Peu de réflexion suffit : la précision vient de l'image, et chaque photo coûte moins cher.
-        output_config: { effort: 'low', format: zodOutputFormat(mealPhotoSchema) },
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: 'image/jpeg', data: request.imageBase64 },
-              },
-              {
-                type: 'text',
-                text: note === '' ? 'Estime ce repas.' : `Estime ce repas. Précisions : ${note}`,
-              },
-            ],
-          },
-        ],
-      },
-      { signal: request.signal },
-    )
-    if (response.stop_reason === 'refusal') return { status: 'error', problem: 'refused' }
-    const parsed = response.parsed_output
-    if (response.stop_reason !== 'end_turn' || !parsed) return { status: 'error', problem: 'failed' }
-    if (!parsed.isMeal) {
-      return { status: 'notMeal', reason: parsed.problem.trim() || 'Aucun aliment reconnu sur cette photo.' }
-    }
-    const items = cleanItems(parsed.items)
-    if (items.length === 0) return { status: 'notMeal', reason: 'Aucun aliment reconnu sur cette photo.' }
-    return { status: 'ok', items }
-  } catch (error) {
-    return { status: 'error', problem: aiProblem(error) }
+  const result = await askStructured({
+    apiKey: request.apiKey,
+    model: request.model,
+    system: SYSTEM_PROMPT,
+    content: [
+      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: request.imageBase64 } },
+      { type: 'text', text: note === '' ? 'Estime ce repas.' : `Estime ce repas. Précisions : ${note}` },
+    ],
+    schema: mealPhotoSchema,
+    // Peu de réflexion suffit : la précision vient de l'image, et chaque photo coûte moins cher.
+    effort: 'low',
+    signal: request.signal,
+    fetchImpl: request.fetchImpl,
+  })
+  if (!result.ok) return { status: 'error', problem: result.problem, usage: result.usage }
+  const { value, usage } = result
+  if (!value.isMeal) {
+    return { status: 'notMeal', reason: value.problem.trim() || NO_FOOD, usage }
   }
+  const items = cleanItems(value.items)
+  if (items.length === 0) return { status: 'notMeal', reason: NO_FOOD, usage }
+  return { status: 'ok', items, usage }
 }

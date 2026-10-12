@@ -1,7 +1,16 @@
-import { errorResponse, fakeAnthropicFetch, messageResponse, PLATE_ESTIMATE } from '@/test/anthropic'
+import {
+  errorResponse,
+  fakeAnthropicFetch,
+  messageResponse,
+  PLATE_ESTIMATE,
+  streamResponse,
+} from '@/test/anthropic'
 import { cleanItems, estimateMealPhoto, type MealPhotoRequest } from './meal-photo'
 
 const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+
+/** Les jetons facturés d'une réponse enregistrée (messageResponse). */
+const USAGE = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
 
 function request(fetchImpl: typeof fetch, patch: Partial<MealPhotoRequest> = {}): MealPhotoRequest {
   return { apiKey: KEY, model: 'claude-sonnet-5-5', imageBase64: 'SU1BR0U=', note: '', fetchImpl, ...patch }
@@ -32,6 +41,7 @@ describe('photo de repas', () => {
         expect.objectContaining({ name: 'Riz blanc cuit', grams: 180 }),
         expect.objectContaining({ name: 'Haricots verts', grams: 100 }),
       ],
+      usage: USAGE,
     })
     expect(requests).toHaveLength(1)
     const [sent] = requests
@@ -62,8 +72,9 @@ describe('photo de repas', () => {
     expect(await estimateMealPhoto(request(fetchImpl))).toEqual({
       status: 'notMeal',
       reason: 'La photo est trop sombre.',
+      usage: USAGE,
     })
-    const fallback = { status: 'notMeal', reason: 'Aucun aliment reconnu sur cette photo.' }
+    const fallback = { status: 'notMeal', reason: 'Aucun aliment reconnu sur cette photo.', usage: USAGE }
     expect(await estimateMealPhoto(request(fetchImpl))).toEqual(fallback)
     expect(await estimateMealPhoto(request(fetchImpl))).toEqual(fallback)
   })
@@ -83,8 +94,14 @@ describe('photo de repas', () => {
       [messageResponse({ réponse: 'pas le bon format' }), 'failed'],
     ]
     for (const [answer, problem] of cases) {
+      // Une réponse revenue (code 200) est facturée, même inutilisable ; une erreur de l'API ne l'est pas.
+      const usage = answer.status === 200 ? USAGE : null
       const { fetchImpl } = fakeAnthropicFetch(answer)
-      expect(await estimateMealPhoto(request(fetchImpl)), problem).toEqual({ status: 'error', problem })
+      expect(await estimateMealPhoto(request(fetchImpl)), problem).toEqual({
+        status: 'error',
+        problem,
+        usage,
+      })
     }
   })
 
@@ -93,7 +110,11 @@ describe('photo de repas', () => {
       new TypeError('Load failed'),
       new TypeError('Load failed'),
     )
-    expect(await estimateMealPhoto(request(fetchImpl))).toEqual({ status: 'error', problem: 'offline' })
+    expect(await estimateMealPhoto(request(fetchImpl))).toEqual({
+      status: 'error',
+      problem: 'offline',
+      usage: null,
+    })
     expect(requests).toHaveLength(2)
   })
 
@@ -107,7 +128,38 @@ describe('photo de repas', () => {
       })) as typeof fetch
     const pending = estimateMealPhoto(request(fetchImpl, { signal: controller.signal }))
     controller.abort()
-    expect(await pending).toEqual({ status: 'error', problem: 'cancelled' })
+    expect(await pending).toEqual({ status: 'error', problem: 'cancelled', usage: null })
+  })
+
+  it('demande la réponse en flux, au format JSON simple', async () => {
+    const { fetchImpl, requests } = fakeAnthropicFetch(messageResponse(PLATE_ESTIMATE))
+    await estimateMealPhoto(request(fetchImpl))
+    const body = requests[0]?.body as {
+      stream: boolean
+      max_tokens: number
+      output_config: { format: object }
+    }
+    expect(body.stream).toBe(true)
+    expect(body.max_tokens).toBe(8000)
+    expect(Object.keys(body.output_config.format).sort()).toEqual(['schema', 'type'])
+  })
+
+  it('rend les jetons facturés, réflexion comprise', async () => {
+    const { fetchImpl } = fakeAnthropicFetch(
+      streamResponse(PLATE_ESTIMATE, 'end_turn', { usage: { cache_read_input_tokens: 300 } }),
+    )
+    const result = await estimateMealPhoto(request(fetchImpl))
+    expect(result.status).toBe('ok')
+    expect(result.usage).toEqual({ ...USAGE, cacheReadTokens: 300 })
+  })
+
+  it('dit quand Claude refuse d’analyser la photo, sans le confondre avec un échec', async () => {
+    const { fetchImpl } = fakeAnthropicFetch(streamResponse(null, 'refusal'))
+    expect(await estimateMealPhoto(request(fetchImpl))).toEqual({
+      status: 'error',
+      problem: 'refused',
+      usage: USAGE,
+    })
   })
 
   it('écarte les estimations aberrantes et arrondit les valeurs', () => {
