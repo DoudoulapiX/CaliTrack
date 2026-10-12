@@ -30,10 +30,11 @@ describe('réglages', () => {
     const colors = screen.getByRole('radiogroup', { name: 'Couleur de l’appli' })
     expect(within(colors).getByRole('radio', { name: 'Orange' })).toHaveAttribute('aria-checked', 'true')
     await user.click(within(colors).getByRole('radio', { name: 'Bleu' }))
+    // La pastille cochée vient du rendu, la couleur de la page d'un effet qui suit : attendre les deux.
     await waitFor(() => {
       expect(within(colors).getByRole('radio', { name: 'Bleu' })).toHaveAttribute('aria-checked', 'true')
+      expect(document.documentElement.style.getPropertyValue('--ct-accent')).toBe('#2563eb')
     })
-    expect(document.documentElement.style.getPropertyValue('--ct-accent')).toBe('#2563eb')
 
     fireEvent.change(screen.getByLabelText('Autre couleur'), { target: { value: '#123456' } })
     // Une couleur à soi : enregistrée, puis plus aucune pastille cochée (une fois l'écran à jour).
