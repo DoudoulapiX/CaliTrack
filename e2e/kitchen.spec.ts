@@ -58,11 +58,13 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
   // Le mercredi 21 octobre 2026 à 12 h 30 : l'heure du déjeuner.
   await page.clock.setFixedTime(new Date('2026-10-21T12:30:00+02:00'))
   const sent = await fakeClaude(page, { fridge: FRIDGE_ITEMS, ideas: IDEAS })
-  // Rien d'autre ne sort de l'appli que les demandes à l'API Claude (simulée).
+  // Rien d'autre ne sort de l'appli que les demandes à l'API Claude (simulée). WebKit signale aussi
+  // l'aperçu de la photo (adresse blob:), qui reste sur le téléphone : seuls http et https comptent.
   const outside: string[] = []
   context.on('request', (request) => {
-    const host = new URL(request.url()).hostname
-    if (host !== 'localhost' && host !== 'api.anthropic.com') outside.push(request.url())
+    const url = new URL(request.url())
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return
+    if (url.hostname !== 'localhost' && url.hostname !== 'api.anthropic.com') outside.push(request.url())
   })
   await onboard(page)
 
