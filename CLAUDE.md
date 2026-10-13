@@ -14,8 +14,11 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
 
 - `src/content/` : logique sans interface (programmes, progression, records, agenda, objectifs,
   escalade, nutrition, IA, Oura), testée seule.
+- `src/content/coach/` : le coach IA (conseil du jour, coach physique, frigo, discussion), son contexte
+  (`context.ts`) et ses prompts (`prompt.ts`) ; les appels à Claude sont dans `src/content/ai/`.
 - `src/db/` : base Dexie, schémas zod (`schema.ts`), écritures et sauvegardes (`backup.ts`).
 - `src/features/<écran>/` : écrans ; la mise en forme des textes est dans `*-view.ts`, testée à part.
+  Les écrans du coach IA sont dans `src/features/coach/`.
 - `src/ui/` : composants communs. `src/lib/` : dates, unités, typographie, couleurs.
 - `src/test/` : base de test, `renderApp`, jeux de données (`fixtures.ts`).
 
@@ -38,11 +41,22 @@ jamais par une modification de `SCHEMA_V1`. Les fichiers de sauvegarde déjà fa
 restaurables : si leur format change, augmenter la version du format dans `src/db/backup.ts` et convertir
 les anciens fichiers.
 
+Avant de changer une valeur par défaut des réglages (`DEFAULT_TABS`, `DEFAULT_DASHBOARD_CARDS`,
+`DEFAULT_AI_MODEL`), figer d'abord ses valeurs actuelles en constantes `V2_…` dans `src/db/migrations.ts`,
+comme les `V1_…` : la conversion depuis la version 1 doit toujours donner les réglages de la version 2.
+
 ## Services extérieurs
 
 - Clé Claude et accès Oura : table `secrets`, sur l'appareil seulement, jamais dans les sauvegardes ni
   dans le dépôt.
-- Claude (photos des repas) : SDK officiel appelé depuis le navigateur avec la clé de l'utilisateur.
+- Claude (photos des repas, coach IA) : SDK officiel appelé depuis le navigateur avec la clé de
+  l'utilisateur.
+  - Aucun appel à Claude sans geste de l'utilisateur (testé écran par écran).
+  - Schémas de sortie lâches (`z.string()` puis `choice()`, jamais `z.enum`) ; `stop_reason` vérifié
+    avant `JSON.parse`.
+  - Pas d'espace insécable dans les prompts : les textes envoyés passent par `promptText`.
+  - `aiUsage` (compteur des demandes) reste sur l'appareil, avec `secrets` et `snapshots`
+    (`DEVICE_TABLES`) : jamais dans les sauvegardes.
 - Open Food Facts : lecture seule des produits scannés, gardés ensuite dans `foods`.
 - Oura : accès par OAuth implicite (30 jours), lectures par le relais Cloudflare dont le code est produit
   par `src/content/oura/relay.ts`. Changer ce code oblige chaque utilisateur à le recopier dans son
@@ -58,7 +72,10 @@ les anciens fichiers.
   les noms accessibles : dans une expression régulière sur un `name`, écrire `\s`.
 - La navigation entre écrans est asynchrone (routes chargées à la demande) : attendre avec `waitFor` ou
   `findBy…`.
-- Playwright simule un iPhone 13 : Chromium en local, Chromium et WebKit en CI.
+- Claude simulé (`src/test/anthropic.ts`, `fakeClaude` dans `e2e/nutrition-helpers.ts`) : les faux
+  répondent en SSE quand la requête demande un flux (`stream: true`), en JSON sinon.
+- Playwright simule un iPhone 13 : Chromium en local, Chromium et WebKit en CI. `E2E_PORT` change son
+  port (4173 par défaut) : deux copies du dépôt peuvent lancer leurs tests en même temps.
 - Un test qui simule un service extérieur avec `page.route` bloque le service worker
   (`test.use({ serviceWorkers: 'block' })`) : sous WebKit, les requêtes d'une page qu'il contrôle échappent
   à `page.route` et partent sur le vrai réseau.

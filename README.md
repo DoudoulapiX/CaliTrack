@@ -17,8 +17,9 @@ une mise à jour).
 ## Tes données
 
 Les données sont gardées dans l'appli, sur l'iPhone. Rien ne part ailleurs, sauf quand tu te sers de ces
-fonctions : la photo d'un repas (envoyée à Anthropic avec ta clé Claude), un code-barres scanné (cherché
-sur Open Food Facts) et la lecture de ta bague (demandée à Oura par ton relais). Pour ne rien perdre :
+fonctions : la photo d'un repas (envoyée à Anthropic avec ta clé Claude), les demandes au coach IA et
+leurs photos (envoyées à Anthropic de la même façon), un code-barres scanné (cherché sur Open Food Facts)
+et la lecture de ta bague (demandée à Oura par ton relais). Pour ne rien perdre :
 
 - **Plus → Sauvegarde → Enregistrer dans Fichiers** crée un fichier avec toutes tes données (de
   préférence dans iCloud Drive). Un rappel s'affiche sur l'accueil quand la dernière sauvegarde date.
@@ -67,8 +68,46 @@ L'accès dure 30 jours ; l'appli prévient quand il faut le renouveler. Si le re
 Safari au lieu de l'appli, la page affichée donne un lien à copier puis à coller dans **Plus → Bague
 Oura**.
 
-Les étapes suivantes ajoutent le coach sèche ou prise de masse, les idées de repas d'après le frigo, le
-programme du jour d'après la bague Oura et le comptage des répétitions à la caméra.
+## Coach IA
+
+La troisième étape ajoute un coach qui passe par Claude, avec ta propre clé (**Plus → Intelligence
+artificielle**). Ses quatre parties sont dans **Plus → Coach IA**. Rien n'est demandé à Claude tant que
+tu ne touches pas le bouton qui lance la demande.
+
+- **Coach du jour** (aussi sur la carte de la séance du jour : « Ajuster avec le coach ») : tu dis
+  comment tu te sens (énergie, courbatures, et sommeil quand la bague Oura ne l'a pas mesuré). D'après
+  ta forme, ta nuit, tes dernières séances et ton programme, le coach valide la séance prévue, l'allège
+  (moins de séries, charge plus légère, variante plus facile, exercice sauté) ou conseille le repos. Un
+  exercice modifié par le coach ne compte pas pour la progression. Sans séance prévue, il donne des
+  conseils pour la journée.
+- **Coach physique** (aussi depuis les objectifs caloriques) : une à trois photos (de face, de profil,
+  de dos). Le coach estime ta masse grasse et conseille une phase : sèche, maintien ou prise de masse.
+  CaliTrack la ramène au maintien quand elle ne convient pas à ta corpulence (pas de sèche si tu es déjà
+  mince ou sec, pas de prise de masse en obésité), puis calcule elle-même les calories et les macros :
+  Claude ne fixe jamais ces chiffres. Réservé aux adultes : il faut ton année de naissance et au moins
+  18 ans. C'est une estimation pour guider tes phases, pas un avis médical.
+- **Frigo et placards** : la liste de ce que tu as, tenue à la main ou d'après une photo du frigo (les
+  aliments reconnus sont à vérifier avant l'enregistrement). Le coach en tire des idées de repas pour un
+  jour et un repas, d'après ce qu'il te reste à manger ; celle que tu choisis s'ajoute au journal (aussi
+  depuis l'ajout d'un aliment : « Idées avec mon frigo »).
+- **Discussion avec le coach** : pose tes questions. Le coach connaît ton programme, tes séances, ton
+  sommeil et tes repas. L'appli garde les 200 derniers messages.
+
+Ce qui part vers Anthropic : ta demande, ses photos et les données utiles au coach (profil sans ton
+prénom, programme, séances et escalade récentes, nuits Oura, pesées, repas, frigo). Les photos sont
+réduites avant l'envoi et CaliTrack n'en garde aucune, celles de ton corps pas plus que les autres. Les
+conseils, les analyses (sans les photos), le frigo et la discussion vont dans les sauvegardes ; la clé et
+le compteur des demandes restent sur l'iPhone.
+
+Ce que ça coûte : chaque demande est facturée par Anthropic sur ton compte, en dollars ; son prix
+habituel est affiché sous le bouton qui la lance. Pour un mois d'usage régulier (un conseil et une photo
+de repas par jour, une soixantaine de messages, quelques idées de repas, photos du frigo et analyses du
+coach physique), compte environ 6,72 $ avec Opus 5.5 (le modèle par défaut), 3,39 $ avec Sonnet 5.5 et
+0,17 $ avec Haiku 5.5. **Plus → Intelligence artificielle** affiche ces estimations et le compteur du
+mois : ce qu'ont coûté les demandes faites sur cet iPhone, calculé sur place (ta facture Anthropic fait
+foi).
+
+L'étape suivante ajoute le comptage des répétitions à la caméra.
 
 ## Développement
 
