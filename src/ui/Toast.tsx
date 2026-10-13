@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CircleCheck, Info, TriangleAlert } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
@@ -13,16 +13,29 @@ interface ToastItem {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([])
   const nextId = useRef(1)
+  // Minuteries en cours, arrêtées quand l'appli se ferme : sans cela, un message qui s'efface après
+  // la fermeture met à jour un écran qui n'existe plus.
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>())
+
+  useEffect(() => {
+    const pending = timers.current
+    return () => {
+      pending.forEach(clearTimeout)
+      pending.clear()
+    }
+  }, [])
 
   const show = useCallback<ShowToast>((message, tone = 'success') => {
     const id = nextId.current++
     setItems((current) => [...current.slice(-2), { id, message, tone }])
-    setTimeout(
+    const timer = setTimeout(
       () => {
+        timers.current.delete(timer)
         setItems((current) => current.filter((t) => t.id !== id))
       },
       tone === 'error' ? 5000 : 2800,
     )
+    timers.current.add(timer)
   }, [])
 
   const value = useMemo(() => show, [show])
