@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { PersonStanding } from 'lucide-react'
 import { PROTEIN_PER_KG } from '@/content/nutrition/targets'
 import { updateNutritionGoals, type NutritionGoalsPatch } from '@/db/nutrition'
 import { userMessage } from '@/lib/errors'
@@ -7,6 +8,7 @@ import { formatNumber } from '@/lib/units'
 import { Button } from '@/ui/Button'
 import { ChoiceChips, Segmented } from '@/ui/Controls'
 import { NumberField } from '@/ui/Field'
+import { ListGroup, ListRow } from '@/ui/List'
 import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { useToast } from '@/ui/toast-context'
@@ -63,6 +65,13 @@ export function TargetsPage() {
           />
           <p className="mt-3 px-1 text-[14px] text-ink-2">{PHASE_HINT[goals.phase]}</p>
         </div>
+        <ListGroup className="mt-3">
+          <ListRow
+            leading={<PersonStanding size={22} aria-hidden />}
+            title="Faire le point avec le coach physique"
+            to="/nutrition/body"
+          />
+        </ListGroup>
       </Section>
       <Section title="Activité physique">
         <div className="rounded-2xl bg-surface p-4">

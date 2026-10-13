@@ -163,11 +163,16 @@ export function nutrientsFor(item: Pick<FoodItem, 'per100'>, grams: number | nul
 /* Objectifs caloriques                                                */
 /* ------------------------------------------------------------------ */
 
-export const PHASE_OPTIONS: { value: NutritionPhase; label: string }[] = [
-  { value: 'cut', label: 'Sèche' },
-  { value: 'maintain', label: 'Maintien' },
-  { value: 'bulk', label: 'Prise de masse' },
-]
+/** Le nom de chaque phase (« Sèche »), partagé par les objectifs et le coach physique. */
+export const PHASE_LABEL: Record<NutritionPhase, string> = {
+  cut: 'Sèche',
+  maintain: 'Maintien',
+  bulk: 'Prise de masse',
+}
+
+export const PHASE_OPTIONS: { value: NutritionPhase; label: string }[] = (
+  ['cut', 'maintain', 'bulk'] as const
+).map((value) => ({ value, label: PHASE_LABEL[value] }))
 
 export const PHASE_HINT: Record<NutritionPhase, string> = {
   cut: frenchSpacing('Perdre du gras en gardant le muscle : 20 % de calories en moins, plus de protéines.'),
@@ -193,7 +198,7 @@ export const ACTIVITY_HINT: Record<ActivityLevel, string> = {
 
 /** « Maintien · 2 760 kcal ». */
 export function goalsSummary(phase: NutritionPhase, kcal: number | null): string {
-  const label = PHASE_OPTIONS.find((option) => option.value === phase)?.label ?? ''
+  const label = PHASE_LABEL[phase]
   return kcal === null ? label : `${label} · ${formatKcal(kcal)}`
 }
 
@@ -276,7 +281,7 @@ export function calculationLines(
   const lines: string[] = []
   if (result.bmr !== null && result.computedKcal !== null) {
     const spent = Math.round((result.bmr * ACTIVITY_FACTOR[goals.activity]) / 10) * 10
-    const phase = PHASE_OPTIONS.find((option) => option.value === goals.phase)?.label ?? ''
+    const phase = PHASE_LABEL[goals.phase]
     lines.push(
       `Métabolisme de base : ${formatKcal(result.bmr)}`,
       `Dépense avec ton activité : ${formatKcal(spent)}`,

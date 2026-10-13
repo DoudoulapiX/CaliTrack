@@ -1,4 +1,16 @@
-import { Backpack, HardDriveDownload, HeartPulse, Info, Settings2, Sparkles, UserRound } from 'lucide-react'
+import {
+  Backpack,
+  CalendarCheck,
+  HardDriveDownload,
+  HeartPulse,
+  Info,
+  MessageCircle,
+  PersonStanding,
+  Refrigerator,
+  Settings2,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { ALL_TAB_KEYS, TAB_DEFS, visibleTabs } from '@/app/tabs'
 import { ListGroup, ListRow } from '@/ui/List'
@@ -30,6 +42,34 @@ export function MorePage() {
           </ListGroup>
         </Section>
       )}
+      <Section title="Coach IA">
+        <ListGroup>
+          <ListRow
+            title="Coach du jour"
+            subtitle="Ta séance selon ta forme"
+            to="/training/coach"
+            leading={<CalendarCheck size={22} aria-hidden />}
+          />
+          <ListRow
+            title="Coach physique"
+            subtitle="Photos, phase et objectifs"
+            to="/nutrition/body"
+            leading={<PersonStanding size={22} aria-hidden />}
+          />
+          <ListRow
+            title="Frigo et placards"
+            subtitle="Des idées avec ce que tu as"
+            to="/nutrition/kitchen"
+            leading={<Refrigerator size={22} aria-hidden />}
+          />
+          <ListRow
+            title="Discussion avec le coach"
+            subtitle="Pose tes questions"
+            to="/more/coach"
+            leading={<MessageCircle size={22} aria-hidden />}
+          />
+        </ListGroup>
+      </Section>
       <Section title="Moi">
         <ListGroup>
           <ListRow

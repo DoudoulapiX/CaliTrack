@@ -1,10 +1,14 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { settingsV1toV2 } from './migrations'
 import type {
+  AiUsageRow,
   AppSettings,
   BodyMetric,
+  BodyReview,
   CalendarEvent,
   ClimbingSession,
+  CoachDay,
+  CoachMessage,
   EquipmentItem,
   EventSeries,
   Exercise,
@@ -16,6 +20,7 @@ import type {
   Location,
   NutritionGoals,
   OuraDay,
+  PantryItem,
   Profile,
   Program,
   Secret,
@@ -44,11 +49,16 @@ export type CaliTrackDB = Dexie & {
   nutritionGoals: EntityTable<NutritionGoals, 'id'>
   ouraDays: EntityTable<OuraDay, 'date'>
   secrets: EntityTable<Secret, 'id'>
+  coachDays: EntityTable<CoachDay, 'date'>
+  bodyReviews: EntityTable<BodyReview, 'date'>
+  pantryItems: EntityTable<PantryItem, 'id'>
+  coachMessages: EntityTable<CoachMessage, 'id'>
+  aiUsage: EntityTable<AiUsageRow, 'month'>
 }
 
 /**
  * Schéma de la base locale. Toute évolution ajoute une nouvelle version avec sa migration
- * (et un test dans db.test.ts) : on ne modifie jamais une version déjà publiée.
+ * (et un test dans migrations.test.ts) : on ne modifie jamais une version déjà publiée.
  */
 export const SCHEMA_V1 = {
   settings: 'id',
@@ -77,11 +87,23 @@ export const SCHEMA_V2 = {
   secrets: 'id',
 } as const
 
-export const DB_VERSION = 2
+/**
+ * Version 3 : coach IA (conseils du jour, analyses physiques, frigo et placards, discussion) et compteur
+ * des demandes à Claude. Rien à convertir : seulement de nouvelles tables, vides au départ.
+ */
+export const SCHEMA_V3 = {
+  coachDays: 'date',
+  bodyReviews: 'date',
+  pantryItems: 'id, place',
+  coachMessages: 'id, seq',
+  aiUsage: 'month',
+} as const
+
+export const DB_VERSION = 3
 
 /**
- * Toutes les tables qui contiennent des données de l'utilisateur (exportées dans les sauvegardes). Les
- * secrets (clé d'IA, jeton Oura) restent hors des sauvegardes, comme les copies de sécurité.
+ * Toutes les tables qui contiennent des données de l'utilisateur (exportées dans les sauvegardes et
+ * remplacées par une restauration). Une nouvelle table va à la fin de cette liste, ou dans DEVICE_TABLES.
  */
 export const DATA_TABLES = [
   'settings',
@@ -102,9 +124,19 @@ export const DATA_TABLES = [
   'foodEntries',
   'nutritionGoals',
   'ouraDays',
+  'coachDays',
+  'bodyReviews',
+  'pantryItems',
+  'coachMessages',
 ] as const
 
 export type DataTableName = (typeof DATA_TABLES)[number]
+
+/**
+ * Tables propres à cet appareil, jamais dans les sauvegardes et gardées par une restauration : copies de
+ * sécurité, secrets (clé d'IA, jeton Oura) et compteur des demandes à Claude. « Tout effacer » les vide.
+ */
+export const DEVICE_TABLES = ['snapshots', 'secrets', 'aiUsage'] as const
 
 export function createDb(name = 'calitrack'): CaliTrackDB {
   const instance = new Dexie(name) as CaliTrackDB
@@ -120,6 +152,7 @@ export function createDb(name = 'calitrack'): CaliTrackDB {
           Object.assign(row, settingsV1toV2(row))
         })
     })
+  instance.version(3).stores(SCHEMA_V3)
   return instance
 }
 

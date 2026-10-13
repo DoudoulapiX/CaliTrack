@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 import { FAKE_CAMERA_FILE } from './e2e/fake-camera'
 
-const port = 4173
+// E2E_PORT : un autre port, pour lancer deux copies du dépôt en même temps.
+const port = Number(process.env.E2E_PORT ?? 4173)
 const base = process.env.VITE_BASE ?? '/CaliTrack/'
 const isCI = Boolean(process.env.CI)
 
@@ -56,7 +57,7 @@ export default defineConfig({
       : []),
   ],
   webServer: {
-    command: 'npm run preview',
+    command: `npx vite preview --port ${port} --strictPort`,
     url: `http://localhost:${port}${base}`,
     reuseExistingServer: !isCI,
     timeout: 60_000,

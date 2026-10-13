@@ -24,6 +24,8 @@ import {
   nutrientsFor,
   nutrientTiles,
   per100Line,
+  PHASE_LABEL,
+  PHASE_OPTIONS,
   quantityOptions,
   remainingLine,
   scanProblemText,
@@ -200,6 +202,15 @@ describe('textes de la nutrition', () => {
 })
 
 describe('textes des objectifs caloriques', () => {
+  it('nomme chaque phase, pour les objectifs comme pour le coach physique', () => {
+    expect(PHASE_LABEL).toEqual({ cut: 'Sèche', maintain: 'Maintien', bulk: 'Prise de masse' })
+    expect(PHASE_OPTIONS).toEqual([
+      { value: 'cut', label: 'Sèche' },
+      { value: 'maintain', label: 'Maintien' },
+      { value: 'bulk', label: 'Prise de masse' },
+    ])
+  })
+
   it('résume la phase et l’énergie visée', () => {
     expect(goalsSummary('maintain', 2760)).toBe(`Maintien · 2${THIN}760${NB}kcal`)
     expect(goalsSummary('cut', null)).toBe('Sèche')

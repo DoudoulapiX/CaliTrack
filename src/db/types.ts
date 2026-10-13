@@ -634,6 +634,144 @@ export interface OuraDay {
 }
 
 /* ------------------------------------------------------------------ */
+/* Coach IA                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Ce que le coach change à un exercice de la séance : moins lourd, plus facile ou retiré. */
+export type CoachAction = 'lighter' | 'swap' | 'skip'
+
+/** Un exercice de la séance prévue, ajusté par le coach. */
+export interface CoachChange {
+  slotId: string
+  /** Exercice prévu dans ce créneau quand le conseil a été donné (revérifié au moment de commencer). */
+  plannedExerciseId: string
+  action: CoachAction
+  /** L'exercice prévu (allégé ou retiré), ou l'étape plus facile de sa progression (remplacé). */
+  exerciseId: string
+  /** Nombre de séries à faire (déjà réduit en semaine de décharge). */
+  sets: number
+  target: SlotTarget
+  loadKg: number | null
+  reason: string
+}
+
+/** Ce que l'on dit au coach avant sa séance. */
+export interface CoachCheckIn {
+  /** null quand la bague Oura a noté la nuit. */
+  sleep: 'bad' | 'ok' | 'good' | null
+  energy: 'low' | 'ok' | 'high'
+  soreness: 'none' | 'light' | 'strong'
+  zones: ('back' | 'chest' | 'shoulders' | 'arms' | 'forearms' | 'core' | 'legs')[]
+  note: string
+}
+
+/** Les mesures sur lesquelles le coach s'est appuyé ; null : donnée absente. */
+export interface CoachBasis {
+  /** Récupération et sommeil de la journée Oura du jour (la nuit qui s'est finie ce matin). */
+  readinessScore: number | null
+  sleepScore: number | null
+  sleepMin: number | null
+  /** Énergie dépensée la veille (journée complète), en kcal. */
+  yesterdayKcal: number | null
+}
+
+export type CoachDecision = 'asPlanned' | 'lighter' | 'rest'
+
+/** Le conseil du coach pour une journée (un par jour : redemander le remplace). */
+export interface CoachDay {
+  date: ISODate
+  /** Modèle Claude qui a répondu (jamais limité à la liste actuelle : un ancien modèle reste lisible). */
+  model: string
+  checkIn: CoachCheckIn
+  basis: CoachBasis
+  /** null : pas de séance prévue, le coach donne des conseils pour la journée. */
+  programId: string | null
+  programSessionId: string | null
+  /** null quand aucune séance n'était prévue. */
+  decision: CoachDecision | null
+  /** Exercices changés, seulement pour une séance allégée. */
+  changes: CoachChange[]
+  headline: string
+  summary: string
+  tips: string[]
+  /** « Revenir à la séance prévue » : l'accueil ne tient plus compte du conseil. */
+  ignored: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** L'analyse du coach physique (une par jour : la dernière l'emporte). Les photos ne sont jamais gardées. */
+export interface BodyReview {
+  date: ISODate
+  model: string
+  /** Phase proposée par Claude. */
+  suggestedPhase: NutritionPhase
+  /** Phase conseillée par CaliTrack (une sèche ou une prise de masse peut être ramenée au maintien). */
+  phase: NutritionPhase
+  /** Masse grasse estimée, en % ; null si Claude ne l'a pas estimée. */
+  bodyFat: { low: number; high: number } | null
+  weightKg: number
+  /** Objectifs calculés par CaliTrack pour cette phase (jamais par Claude). */
+  targets: { kcal: number; proteinG: number; carbsG: number; fatG: number }
+  summary: string
+  observations: string[]
+  advice: string[]
+  /** Quand la phase a été appliquée aux objectifs caloriques ; null : pas encore. */
+  appliedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type PantryPlace = 'fridge' | 'freezer' | 'cupboard'
+
+/** Un aliment du frigo, du congélateur ou des placards. */
+export interface PantryItem {
+  id: string
+  place: PantryPlace
+  name: string
+  /** Quantité en texte libre (« 2 », « un demi-paquet ») ; '' : inconnue. */
+  quantity: string
+  /** Ajouté à la main ou trouvé sur une photo. */
+  source: 'manual' | 'photo'
+  createdAt: string
+  updatedAt: string
+}
+
+/** Un message de la discussion avec le coach (le texte seul, rejoué tel quel dans les demandes suivantes). */
+export interface CoachMessage {
+  id: string
+  /** Ordre des messages, pour l'affichage et pour les rejouer. */
+  seq: number
+  role: 'user' | 'assistant'
+  text: string
+  /** Modèle qui a répondu ; null pour un message de l'utilisateur. */
+  model: string | null
+  createdAt: string
+}
+
+/** Jetons comptés par Anthropic pour une demande (réflexion comprise dans la sortie). */
+export interface AiUsage {
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+  cacheWriteTokens: number
+}
+
+/** Demandes à Claude d'un mois sur cet appareil (jamais dans les sauvegardes). */
+export interface AiUsageRow {
+  /** Mois AAAA-MM. */
+  month: string
+  calls: number
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+  cacheWriteTokens: number
+  /** Coût estimé, en dollars : chaque demande au prix de son modèle. */
+  costUsd: number
+  updatedAt: string
+}
+
+/* ------------------------------------------------------------------ */
 /* Secrets (jamais exportés dans les sauvegardes)                      */
 /* ------------------------------------------------------------------ */
 

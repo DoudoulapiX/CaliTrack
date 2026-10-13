@@ -1,4 +1,14 @@
-import { clamp, formatBodyWeight, formatNumber, formatWeight, kgToUnit, parseNumber, unitToKg } from './units'
+import { NBSP } from './typography'
+import {
+  clamp,
+  formatBodyWeight,
+  formatDollars,
+  formatNumber,
+  formatWeight,
+  kgToUnit,
+  parseNumber,
+  unitToKg,
+} from './units'
 
 describe('unités', () => {
   it('convertit kg et lb dans les deux sens', () => {
@@ -15,6 +25,14 @@ describe('unités', () => {
     expect(formatBodyWeight(75, 'kg')).toBe('75 kg')
     expect(formatBodyWeight(80, 'lb')).toBe('176,4 lb')
     expect(formatNumber(1250)).toMatch(/^1\s?250$/)
+  })
+
+  it('formate les dollars au centime, à la française', () => {
+    expect(formatDollars(6.722)).toBe(`6,72${NBSP}$`)
+    expect(formatDollars(6.7)).toBe(`6,70${NBSP}$`)
+    expect(formatDollars(0.16955)).toBe(`0,17${NBSP}$`)
+    expect(formatDollars(0)).toBe(`0,00${NBSP}$`)
+    expect(formatDollars(1234.5)).toMatch(/^1\s?234,50\u00a0\$$/)
   })
 
   it('lit les nombres saisis avec une virgule ou un point', () => {

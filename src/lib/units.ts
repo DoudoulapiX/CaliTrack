@@ -1,3 +1,5 @@
+import { NBSP } from './typography'
+
 export type WeightUnit = 'kg' | 'lb'
 
 const LB_PER_KG = 2.2046226218
@@ -29,6 +31,13 @@ export function formatBodyWeight(kg: number, unit: WeightUnit): string {
 /** Nombre au format français, sans zéros inutiles : 12,5 / 3 / 1 250. */
 export function formatNumber(value: number, maxFractionDigits = 2): string {
   return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: maxFractionDigits }).format(value)
+}
+
+const DOLLARS = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+/** Une somme en dollars, au centime près, à la française : « 6,72 $ » (espace insécable). */
+export function formatDollars(amount: number): string {
+  return `${DOLLARS.format(amount)}${NBSP}$`
 }
 
 /** Lit un nombre saisi à la française (virgule ou point). Renvoie null si invalide. */

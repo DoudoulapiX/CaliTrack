@@ -1,3 +1,4 @@
+import { workoutFromCoachPlan, type CoachPlan } from '@/content/coach/today'
 import { isDeloadWeek } from '@/content/programs/schedule'
 import { workoutFromSession } from '@/content/workouts/workout'
 import type { Program, ProgramSession, Workout } from '@/db/types'
@@ -23,6 +24,31 @@ export function programSessionBuilder(
       deload: isDeloadWeek(program, date),
       newId,
       plannedFor,
+    })
+  }
+}
+
+/**
+ * Prépare la séance du programme ajustée par le coach du jour (voir workoutFromCoachPlan) : les
+ * exercices changés ne comptent pas pour la progression, les autres progressent comme d'habitude.
+ */
+export function coachSessionBuilder(
+  program: Program,
+  session: ProgramSession,
+  plannedFor: ISODate | null,
+  plan: Pick<CoachPlan, 'changes'>,
+): () => Workout {
+  return () => {
+    const date = today()
+    return workoutFromCoachPlan({
+      programId: program.id,
+      session,
+      date,
+      now: nowISO(),
+      deload: isDeloadWeek(program, date),
+      newId,
+      plannedFor,
+      plan,
     })
   }
 }

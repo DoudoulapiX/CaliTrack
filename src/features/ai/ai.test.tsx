@@ -1,6 +1,7 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import { db } from '@/db/db'
 import { errorResponse, fakeAnthropicFetch } from '@/test/anthropic'
+import { aiUsageRow } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 
@@ -20,6 +21,7 @@ function stubFetch(...answers: (Response | Error)[]) {
 describe('réglages de l’IA', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.useRealTimers()
   })
 
   it('s’ouvrent depuis « Plus »', async () => {
@@ -72,6 +74,11 @@ describe('réglages de l’IA', () => {
 
     await user.click(screen.getByRole('button', { name: 'Supprimer la clé' }))
     const confirm = await screen.findByRole('dialog', { name: /^Supprimer la clé\s\?$/ })
+    expect(
+      within(confirm).getByText(
+        'Le coach et l’analyse des photos ne marcheront plus tant que tu n’en colles pas une autre.',
+      ),
+    ).toBeInTheDocument()
     expectFrenchSpacing()
     await user.click(within(confirm).getByRole('button', { name: 'Supprimer' }))
     expect(await screen.findByLabelText('Clé API Claude')).toHaveValue('')
@@ -84,5 +91,35 @@ describe('réglages de l’IA', () => {
     await user.click(screen.getByRole('radio', { name: 'Haiku 5.5' }))
     expect(await screen.findByText('Le moins cher, un peu moins précis.')).toBeInTheDocument()
     expect((await db.settings.get('app'))?.aiModel).toBe('claude-haiku-5-5')
+  })
+
+  it('estiment le coût d’un mois avec chaque modèle et comptent les demandes du mois', async () => {
+    vi.setSystemTime(new Date(2026, 9, 21, 11, 0))
+    const { user } = await renderApp('/more/ai', {
+      // Le mois dernier ne compte pas.
+      setup: () => db.aiUsage.put(aiUsageRow({ month: '2026-09', calls: 12, costUsd: 0.9 })),
+    })
+    expect(await screen.findByText('Aucune demande ce mois-ci.')).toBeInTheDocument()
+    expect(
+      screen.getByText(/^Chaque demande au coach et chaque analyse de photo est facturée/),
+    ).toHaveTextContent(/CaliTrack ne garde pas les photos\.$/)
+    expect(screen.getByText('Opus 5.5 : environ 6,72 $ (choisi)')).toBeInTheDocument()
+    expect(screen.getByText('Sonnet 5.5 : environ 3,39 $')).toBeInTheDocument()
+    expect(screen.getByText('Haiku 5.5 : environ 0,17 $')).toBeInTheDocument()
+    expect(
+      screen.getByText('Estimation calculée sur cet iPhone ; ta facture Anthropic fait foi.'),
+    ).toBeInTheDocument()
+    expectFrenchSpacing()
+
+    await act(async () => {
+      await db.aiUsage.put(aiUsageRow({ month: '2026-10', calls: 37, costUsd: 0.42 }))
+    })
+    expect(await screen.findByText('Ce mois-ci sur cet iPhone : 0,42 $ pour 37 demandes')).toBeInTheDocument()
+    expect(screen.queryByText('Aucune demande ce mois-ci.')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Haiku 5.5' }))
+    expect(await screen.findByText('Haiku 5.5 : environ 0,17 $ (choisi)')).toBeInTheDocument()
+    expect(screen.getByText('Opus 5.5 : environ 6,72 $')).toBeInTheDocument()
+    expectFrenchSpacing()
   })
 })

@@ -10,6 +10,7 @@ import { today as todayISO } from '@/lib/dates'
 import { userMessage } from '@/lib/errors'
 import { frenchSpacing } from '@/lib/typography'
 import { AI_PROBLEM_TEXT, AI_SETTINGS_PATH, canRetry, needsAiSettings } from '@/features/ai/ai-view'
+import { recordCallUsage } from '@/features/ai/ai-usage'
 import { useAiKey } from '@/features/ai/useAiKey'
 import { Button, ButtonLink } from '@/ui/Button'
 import { EmptyState } from '@/ui/Controls'
@@ -107,6 +108,8 @@ export function PhotoPage() {
       note,
       signal: controller.signal,
     })
+    // Compté avant d'afficher le résultat, même si l'analyse est annulée ou inutilisable : elle est facturée.
+    await recordCallUsage(result.usage, settings.aiModel)
     if (controller.signal.aborted) return
     if (result.status === 'ok') setPhase({ kind: 'result', items: photoItems(result.items) })
     else if (result.status === 'notMeal') {

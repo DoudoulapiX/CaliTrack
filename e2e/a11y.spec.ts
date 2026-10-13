@@ -1,33 +1,7 @@
-import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+import { expectAccessible } from './a11y-helpers'
 import { CLAUDE_KEY, fakeClaude, onboard, solidPng } from './nutrition-helpers'
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
-
-/**
- * Attend la fin des transitions et animations en cours (pas de celles qui tournent sans fin). Une pastille
- * qu'on vient de toucher passe du gris à l'orange en 150 ms : ses couleurs intermédiaires, que personne
- * ne lit, ne doivent pas être mesurées.
- */
-async function animationsDone(page: Page) {
-  await page.waitForFunction(() =>
-    document
-      .getAnimations()
-      .every(
-        (animation) =>
-          animation.playState !== 'running' || animation.effect?.getComputedTiming().endTime === Infinity,
-      ),
-  )
-}
-
-/** Aucun défaut d'accessibilité détecté par axe sur l'écran affiché, une fois immobile. */
-async function expectAccessible(page: Page, screen: string) {
-  await animationsDone(page)
-  const { violations } = await new AxeBuilder({ page }).analyze()
-  const summary = violations.flatMap((v) =>
-    v.nodes.map((node) => `${screen} : ${v.id} : ${node.target.join(' ')}\n${node.failureSummary ?? ''}`),
-  )
-  expect(summary).toEqual([])
-}
 
 for (const colorScheme of ['dark', 'light'] as const) {
   test.describe(`thème ${colorScheme === 'dark' ? 'sombre' : 'clair'}`, () => {
@@ -524,6 +498,31 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
         await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
         await expectAccessible(page, 'clé enregistrée')
+
+        // Les écrans du coach IA, la clé enregistrée (sans elle, ils renvoient aux réglages de l'IA), chacun
+        // mesuré une fois prêt à servir.
+        for (const [path, heading, ready] of [
+          ['training/coach', 'Coach du jour', page.getByRole('button', { name: 'Demander au coach' })],
+          ['nutrition/body', 'Coach physique', page.getByRole('button', { name: 'Analyser mes photos' })],
+          [
+            'nutrition/kitchen',
+            'Frigo et placards',
+            page.getByRole('link', { name: 'Photographier mon frigo' }),
+          ],
+          [
+            'nutrition/kitchen/ideas',
+            'Idées de repas',
+            page.getByRole('button', { name: 'Proposer des idées' }),
+          ],
+          ['more/coach', 'Discussion avec le coach', page.getByLabel('Ton message')],
+        ] as const) {
+          await page.goto(path)
+          await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible()
+          await expect(ready).toBeVisible()
+          await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+          await expectAccessible(page, path)
+        }
+
         await page.goto('nutrition/photo?meal=lunch')
         await page.getByLabel('Prendre ou choisir une photo').setInputFiles({
           name: 'IMG_0002.png',

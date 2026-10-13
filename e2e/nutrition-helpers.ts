@@ -32,30 +32,141 @@ const CLAUDE_CORS = {
   'access-control-allow-methods': 'GET, POST, OPTIONS',
 }
 
-/** L'API Claude simulée : la clé est acceptée, l'assiette reconnue. Note chaque demande. */
-export async function fakeClaude(page: Page) {
-  const sent: { url: string; key: string | null; body: unknown }[] = []
+/** Les demandes faites à Claude par l'appli, reconnues à la forme de réponse demandée. */
+export type ClaudeTask = 'meal' | 'daily' | 'body' | 'fridge' | 'ideas' | 'chat'
+
+/** Une demande envoyée à l'API simulée. */
+export interface SentToClaude {
+  url: string
+  key: string | null
+  body: unknown
+  /** La demande reconnue ; null pour la liste des modèles ou une demande inconnue. */
+  task: ClaudeTask | null
+}
+
+/** Une erreur de l'API à renvoyer à la place d'une réponse (voir claudeError). */
+interface ClaudeError {
+  claudeError: { status: number; type: string }
+}
+
+/**
+ * La réponse de l'API simulée pour une demande : un objet (sortie structurée, envoyé en JSON), un texte
+ * (discussion), une erreur (claudeError), ou une fonction qui la calcule d'après la demande reçue.
+ */
+export type ClaudeAnswer = unknown
+
+/** Une erreur de l'API (`overloaded_error`, `authentication_error`…), sans nouvel essai. */
+export function claudeError(status: number, type: string): ClaudeError {
+  return { claudeError: { status, type } }
+}
+
+const isClaudeError = (answer: unknown): answer is ClaudeError =>
+  typeof answer === 'object' && answer !== null && 'claudeError' in answer
+
+/** La demande faite, d'après les champs de la réponse structurée demandée (sans format : la discussion). */
+export function claudeTaskOf(body: unknown): ClaudeTask | null {
+  const request = body as { output_config?: { format?: { schema?: { properties?: object } } } } | null
+  const format = request?.output_config?.format
+  if (!format) return 'chat'
+  const keys = Object.keys(format.schema?.properties ?? {})
+  if (keys.includes('isMeal')) return 'meal'
+  if (keys.includes('decision')) return 'daily'
+  if (keys.includes('bodyFatLow')) return 'body'
+  if (keys.includes('ideas')) return 'ideas'
+  if (keys.includes('readable') && keys.includes('items')) return 'fridge'
+  return null
+}
+
+const USAGE = {
+  input_tokens: 1900,
+  output_tokens: 400,
+  cache_read_input_tokens: 0,
+  cache_creation_input_tokens: 0,
+}
+
+/** Le message complet de l'API dont le texte est `text`. */
+function claudeMessage(text: string) {
+  return {
+    id: 'msg_e2e',
+    type: 'message',
+    role: 'assistant',
+    model: 'claude-opus-5-5',
+    content: [{ type: 'text', text }],
+    stop_reason: 'end_turn',
+    stop_sequence: null,
+    usage: USAGE,
+  }
+}
+
+/** Le même message en flux (server-sent events), envoyé d'un bloc : le texte arrive en trois morceaux. */
+export function sseBody(text: string): string {
+  const size = Math.max(1, Math.ceil(text.length / 3))
+  const pieces = [0, 1, 2].map((i) => text.slice(i * size, (i + 1) * size)).filter((piece) => piece !== '')
+  const events: { type: string; [key: string]: unknown }[] = [
+    {
+      type: 'message_start',
+      message: {
+        ...claudeMessage(''),
+        content: [],
+        stop_reason: null,
+        usage: { ...USAGE, output_tokens: 1 },
+      },
+    },
+    { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+    ...pieces.map((piece) => ({
+      type: 'content_block_delta',
+      index: 0,
+      delta: { type: 'text_delta', text: piece },
+    })),
+    { type: 'content_block_stop', index: 0 },
+    { type: 'message_delta', delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: USAGE },
+    { type: 'message_stop' },
+  ]
+  return events.map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join('')
+}
+
+/**
+ * L'API Claude simulée : la clé est acceptée, chaque demande reçoit la réponse prévue pour elle (l'assiette
+ * de PLATE_ESTIMATE pour une photo de repas, sauf autre réponse donnée), en flux quand l'appli le demande.
+ * Une demande sans réponse prévue reçoit une erreur 400. Note chaque demande.
+ */
+export async function fakeClaude(page: Page, answers: Partial<Record<ClaudeTask, ClaudeAnswer>> = {}) {
+  const planned: Partial<Record<ClaudeTask, ClaudeAnswer>> = { meal: PLATE_ESTIMATE, ...answers }
+  const sent: SentToClaude[] = []
   await page.route('https://api.anthropic.com/**', async (route: Route) => {
     const request = route.request()
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CLAUDE_CORS })
-    sent.push({
-      url: request.url(),
-      key: request.headers()['x-api-key'] ?? null,
-      body: request.postDataJSON(),
-    })
-    const body = request.url().includes('/v1/models')
-      ? { data: [], has_more: false, first_id: null, last_id: null }
-      : {
-          id: 'msg_e2e',
-          type: 'message',
-          role: 'assistant',
-          model: 'claude-opus-5-5',
-          content: [{ type: 'text', text: JSON.stringify(PLATE_ESTIMATE) }],
-          stop_reason: 'end_turn',
-          stop_sequence: null,
-          usage: { input_tokens: 1900, output_tokens: 400 },
-        }
-    return route.fulfill({ json: body, headers: CLAUDE_CORS })
+    const body: unknown = request.postDataJSON()
+    const isModels = request.url().includes('/v1/models')
+    const task = isModels ? null : claudeTaskOf(body)
+    sent.push({ url: request.url(), key: request.headers()['x-api-key'] ?? null, body, task })
+    if (isModels) {
+      return route.fulfill({
+        json: { data: [], has_more: false, first_id: null, last_id: null },
+        headers: CLAUDE_CORS,
+      })
+    }
+    const plan = task === null ? undefined : planned[task]
+    const answer: unknown = typeof plan === 'function' ? (plan as (body: unknown) => unknown)(body) : plan
+    if (answer === undefined || isClaudeError(answer)) {
+      const error = isClaudeError(answer)
+        ? answer.claudeError
+        : { status: 400, type: 'invalid_request_error' }
+      return route.fulfill({
+        status: error.status,
+        json: { type: 'error', error: { type: error.type, message: 'Erreur simulée' } },
+        headers: { ...CLAUDE_CORS, 'x-should-retry': 'false' },
+      })
+    }
+    const text = typeof answer === 'string' ? answer : JSON.stringify(answer)
+    if ((body as { stream?: unknown } | null)?.stream === true) {
+      return route.fulfill({
+        status: 200,
+        headers: { ...CLAUDE_CORS, 'content-type': 'text/event-stream' },
+        body: sseBody(text),
+      })
+    }
+    return route.fulfill({ json: claudeMessage(text), headers: CLAUDE_CORS })
   })
   return sent
 }

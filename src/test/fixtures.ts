@@ -2,13 +2,19 @@ import { buildCatalog, loadFedbExercises, type Catalog } from '@/content/exercis
 import { defaultProfile, defaultSettings } from '@/db/defaults'
 import { V1_DEFAULT_DASHBOARD_CARDS, V1_DEFAULT_TABS } from '@/db/migrations'
 import type {
+  AiUsageRow,
+  BodyReview,
   BoulderResult,
   CalendarEvent,
   ClimbingSession,
   ClimbStyle,
+  CoachChange,
+  CoachDay,
+  CoachMessage,
   EquipmentItem,
   EquipmentKind,
   EventSeries,
+  PantryItem,
   Profile,
   Program,
   ProgramSession,
@@ -221,6 +227,118 @@ export function v1Settings(patch: Record<string, unknown> = {}): Record<string, 
     ...settings,
     tabs: [...V1_DEFAULT_TABS],
     dashboardCards: [...V1_DEFAULT_DASHBOARD_CARDS],
+    ...patch,
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Coach IA                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Un exercice allégé par le coach : 3 séries de tractions au lieu de 4, sans charge. */
+export function coachChange(patch: Partial<CoachChange> = {}): CoachChange {
+  return {
+    slotId: 'slot-1',
+    plannedExerciseId: 'pull-up',
+    action: 'lighter',
+    exerciseId: 'pull-up',
+    sets: 3,
+    target: { kind: 'reps', min: 5, max: 8 },
+    loadKg: null,
+    reason: 'Nuit courte : une série de moins.',
+    ...patch,
+  }
+}
+
+/**
+ * Le conseil du coach pour le mercredi 21 octobre 2026 : la séance B du programme de testProgram()
+ * validée telle quelle, d'après une bonne nuit notée par la bague.
+ */
+export function coachDay(patch: Partial<CoachDay> = {}): CoachDay {
+  return {
+    date: '2026-10-21',
+    model: 'claude-opus-5-5',
+    checkIn: { sleep: null, energy: 'ok', soreness: 'none', zones: [], note: '' },
+    basis: { readinessScore: 82, sleepScore: 78, sleepMin: 430, yesterdayKcal: 2650 },
+    programId: 'p1',
+    programSessionId: 'B',
+    decision: 'asPlanned',
+    changes: [],
+    headline: 'Séance prévue validée',
+    summary: 'Tu as bien récupéré : fais ta séance comme prévu.',
+    tips: ['Bois un grand verre d’eau avant de commencer.'],
+    ignored: false,
+    createdAt: '2026-10-21T09:00:00.000Z',
+    updatedAt: '2026-10-21T09:00:00.000Z',
+    ...patch,
+  }
+}
+
+/** L'analyse physique du 21 octobre 2026 : une sèche conseillée, 80 kg, 15 à 19 % de masse grasse. */
+export function bodyReview(patch: Partial<BodyReview> = {}): BodyReview {
+  return {
+    date: '2026-10-21',
+    model: 'claude-opus-5-5',
+    suggestedPhase: 'cut',
+    phase: 'cut',
+    bodyFat: { low: 15, high: 19 },
+    weightKg: 80,
+    targets: { kcal: 2210, proteinG: 175, carbsG: 245, fatG: 60 },
+    summary: 'Une sèche courte t’aiderait à affiner la taille.',
+    observations: ['Bonne base musculaire au dos et aux épaules.'],
+    advice: ['Garde tes protéines hautes pendant la sèche.'],
+    appliedAt: null,
+    createdAt: '2026-10-21T09:00:00.000Z',
+    updatedAt: '2026-10-21T09:00:00.000Z',
+    ...patch,
+  }
+}
+
+/** Un aliment du frigo, ajouté à la main (des œufs par défaut). */
+export function pantryItem(patch: Partial<PantryItem> = {}): PantryItem {
+  return {
+    id: 'pantry-1',
+    place: 'fridge',
+    name: 'Œufs',
+    quantity: '6',
+    source: 'manual',
+    createdAt: '2026-10-21T09:00:00.000Z',
+    updatedAt: '2026-10-21T09:00:00.000Z',
+    ...patch,
+  }
+}
+
+/**
+ * Un message de la discussion, numéroté : questions aux numéros pairs et réponses aux impairs par défaut,
+ * une minute après l'autre à partir du 21 octobre 2026 à 10 h (heure de Paris).
+ */
+export function coachMessage(
+  seq: number,
+  role: CoachMessage['role'] = seq % 2 === 0 ? 'user' : 'assistant',
+  patch: Partial<CoachMessage> = {},
+): CoachMessage {
+  return {
+    id: `msg-${String(seq)}`,
+    seq,
+    role,
+    text: role === 'user' ? `Question ${String(seq)}` : `Réponse ${String(seq)}`,
+    model: role === 'user' ? null : 'claude-opus-5-5',
+    createdAt: new Date(Date.UTC(2026, 9, 21, 8, seq)).toISOString(),
+    ...patch,
+  }
+}
+
+/** Le compteur des demandes à Claude d'octobre 2026 sur cet appareil. */
+export function aiUsageRow(patch: Partial<AiUsageRow> = {}): AiUsageRow {
+  return {
+    month: '2026-10',
+    calls: 3,
+    inputTokens: 12000,
+    outputTokens: 5000,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    costUsd: 0.148,
+    updatedAt: '2026-10-21T09:00:00.000Z',
     ...patch,
   }
 }
