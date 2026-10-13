@@ -27,6 +27,7 @@ import { PageSpinner } from '@/ui/PageSpinner'
 import { ConfirmSheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
 import {
+  CHAT_PRIVACY_TEXT,
   CHAT_SUGGESTIONS,
   COACH_TYPING,
   chatDayLabel,
@@ -261,9 +262,7 @@ export function CoachChatPage() {
             <EmptyState
               icon={<MessageCircle size={36} aria-hidden />}
               title="Pose ta question au coach"
-              text={frenchSpacing(
-                'Il connaît ton programme, tes séances, ton sommeil et tes repas : ces données partent avec chaque question vers Anthropic, avec ta clé.',
-              )}
+              text={CHAT_PRIVACY_TEXT}
             />
             <Section title="Pour commencer">
               <ul className="flex flex-col gap-2">

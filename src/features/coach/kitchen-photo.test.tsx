@@ -69,6 +69,23 @@ describe('photo du frigo', () => {
     })
   })
 
+  it('ramène à l’écran d’où elle s’ouvre, sous son nom', async () => {
+    const { user, router } = await renderApp('/nutrition/kitchen/ideas', { setup: withKey })
+    await user.click(await screen.findByRole('link', { name: 'Mettre à jour mon frigo' }))
+    expect(await screen.findByRole('heading', { name: 'Photo du frigo', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Frigo' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Idées' }))
+    expect(await screen.findByRole('heading', { name: 'Idées de repas', level: 1 })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/nutrition/kitchen/ideas')
+
+    await act(() => router.navigate('/nutrition/kitchen'))
+    await user.click(await screen.findByRole('link', { name: 'Photographier mon frigo' }))
+    expect(await screen.findByRole('heading', { name: 'Photo du frigo', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Idées' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Frigo' }))
+    expect(await screen.findByRole('heading', { name: 'Frigo et placards', level: 1 })).toBeInTheDocument()
+  })
+
   it('fait vérifier les aliments vus, puis les ajoute au frigo sans doublon', async () => {
     const { requests } = stubFetch(streamResponse(FRIDGE_ITEMS))
     const { user, router } = await renderApp(PAGE, {
@@ -228,8 +245,13 @@ describe('photo du frigo', () => {
     await choosePhoto(user)
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
     expect(await screen.findByText('Claude regarde ta photo…')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(pending).toHaveBeenCalledTimes(1)
+    })
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(await screen.findByRole('button', { name: 'Analyser la photo' })).toBeInTheDocument()
+    // La demande est vraiment coupée : sa réponse ne remplacera pas la photo.
+    expect(pending.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
     expect(screen.queryByText('Claude regarde ta photo…')).not.toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(await db.pantryItems.count()).toBe(0)

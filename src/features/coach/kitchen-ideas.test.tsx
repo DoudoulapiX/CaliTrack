@@ -232,6 +232,30 @@ describe('idées de repas', () => {
     expect(requests).toHaveLength(1)
   })
 
+  it('montre l’idée choisie depuis le haut, puis ramène à sa carte', async () => {
+    stubFetch(streamResponse(IDEAS))
+    const scrollTo = vi.spyOn(window, 'scrollTo')
+    const scrolled: Element[] = []
+    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (this: Element) {
+      scrolled.push(this)
+    })
+    const { user } = await renderApp(PAGE, { setup: withEverything() })
+    await user.click(await screen.findByRole('button', { name: 'Proposer des idées' }))
+    await user.click(await screen.findByRole('button', { name: 'Choisir Poulet, riz et tomates' }))
+    // L'idée choisie remplace la liste, plus longue : elle se montre depuis le haut.
+    expect(
+      await screen.findByRole('heading', { name: 'Poulet, riz et tomates', level: 2 }),
+    ).toBeInTheDocument()
+    expect(scrollTo).toHaveBeenLastCalledWith(0, 0)
+    expect(scrolled).toEqual([])
+
+    // De retour sur la carte de l'idée regardée, plus bas que le formulaire.
+    await user.click(screen.getByRole('button', { name: 'Revenir aux idées' }))
+    expect(await screen.findByRole('button', { name: 'Choisir Omelette aux courgettes' })).toBeInTheDocument()
+    expect(scrolled).toHaveLength(1)
+    expect(scrolled[0]).toHaveTextContent(/^Poulet, riz et tomates/)
+  })
+
   it('reste sur l’idée choisie quand l’ajout au journal échoue', async () => {
     stubFetch(streamResponse(IDEAS))
     const { user, router } = await renderApp(`${PAGE}?day=2026-10-21&meal=lunch`, {
@@ -279,8 +303,13 @@ describe('idées de repas', () => {
     const { user } = await renderApp(PAGE, { setup: withEverything() })
     await user.click(await screen.findByRole('button', { name: 'Proposer des idées' }))
     expect(await screen.findByText('Le coach cherche des idées…')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(pending).toHaveBeenCalledTimes(1)
+    })
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(await screen.findByRole('button', { name: 'Proposer des idées' })).toBeEnabled()
+    // La demande est vraiment coupée : sa réponse ne remplacera pas le formulaire.
+    expect(pending.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
     expect(screen.queryByText('Le coach cherche des idées…')).not.toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })

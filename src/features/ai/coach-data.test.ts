@@ -220,7 +220,16 @@ describe('données du coach', () => {
         { ...set, reps: null, durationSec: 30, done: false },
       ]),
     ).toBe('Gainage : 45 s')
-    expect(workoutExerciseLine('Dips lestés', [{ ...set, loadKg: 10 }])).toBe('Dips lestés : 8 à 10 kg')
+    // Une charge ne se lit pas comme une fourchette (« 6 à 10 rép. » dans le programme).
+    expect(
+      workoutExerciseLine('Dips lestés', [
+        { ...set, loadKg: 10 },
+        { ...set, reps: 6, loadKg: 12.5 },
+      ]),
+    ).toBe('Dips lestés : 8 (10 kg), 6 (12.5 kg)')
+    expect(workoutExerciseLine('Gainage lesté', [{ ...set, reps: null, durationSec: 40, loadKg: 5 }])).toBe(
+      'Gainage lesté : 40 s (5 kg)',
+    )
     expect(workoutExerciseLine('Pompes', [{ ...set, done: false }])).toBeNull()
   })
 })

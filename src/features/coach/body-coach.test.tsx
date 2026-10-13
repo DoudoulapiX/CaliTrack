@@ -452,6 +452,33 @@ describe('coach physique', () => {
     expect(screen.getByText(DISCLAIMER)).toBeInTheDocument()
   })
 
+  it('oublie ce qui a été dit des photos précédentes quand elles changent', async () => {
+    stubFetch(
+      streamResponse({ ...BODY_CUT_LEAN, readable: false, problem: 'Je ne vois qu’un mur blanc.' }),
+      errorResponse(529, 'overloaded_error'),
+    )
+    const { user } = await renderApp(PAGE, { setup: charles })
+    await addPhoto(user, 'De face')
+    await user.click(await screen.findByRole('button', { name: 'Analyser mes photos' }))
+    expect(await screen.findByRole('alert', {}, { timeout: 5000 })).toHaveTextContent(
+      'Je ne vois qu’un mur blanc.',
+    )
+    // Une autre photo : le message sur « ces photos » ne la concerne pas.
+    await addPhoto(user, 'De face', 'face-2.jpg')
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    await user.click(await screen.findByRole('button', { name: 'Analyser mes photos' }))
+    expect(await screen.findByRole('button', { name: 'Réessayer' }, { timeout: 5000 })).toBeInTheDocument()
+    // Plus aucune photo : rien à réessayer.
+    await user.click(screen.getByRole('button', { name: 'Retirer la photo de face' }))
+    expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Analyser mes photos' })).toBeDisabled()
+    expect(await db.bodyReviews.count()).toBe(0)
+  })
+
   it('dit ce qui n’a pas marché, pour chaque problème', async () => {
     const { user } = await renderApp(PAGE, { setup: charles })
     await addPhoto(user, 'De face')

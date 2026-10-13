@@ -63,7 +63,8 @@ export function KitchenPage() {
                   <ListRow
                     key={item.id}
                     title={item.name}
-                    trailing={item.quantity === '' ? undefined : item.quantity}
+                    // Sous le nom : une quantité libre (40 caractères) ne l'écrase pas.
+                    subtitle={item.quantity === '' ? undefined : item.quantity}
                     onClick={() => {
                       setEditing({ item })
                     }}

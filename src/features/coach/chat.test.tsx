@@ -18,7 +18,7 @@ import {
 import { coachMessage } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
-import { CHAT_SUGGESTIONS } from './chat-view'
+import { CHAT_PRIVACY_TEXT, CHAT_SUGGESTIONS } from './chat-view'
 
 const CHAT = '/more/coach'
 const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
@@ -153,6 +153,7 @@ describe('discussion avec le coach', () => {
     const { user } = await openChat()
     expect(screen.getByText('Pose ta question au coach')).toBeInTheDocument()
     // Testing Library lit les espaces insécables comme des espaces simples.
+    expect(screen.getByText(CHAT_PRIVACY_TEXT.replace(/\s/g, ' '))).toBeInTheDocument()
     const price = costHintText(actionCost('chat', MODEL), 'Sonnet 5.5').replace(/\s/g, ' ')
     expect(screen.getByText(price)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Envoyer' })).toBeDisabled()

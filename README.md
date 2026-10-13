@@ -90,14 +90,16 @@ tu ne touches pas le bouton qui lance la demande.
   aliments reconnus sont à vérifier avant l'enregistrement). Le coach en tire des idées de repas pour un
   jour et un repas, d'après ce qu'il te reste à manger ; celle que tu choisis s'ajoute au journal (aussi
   depuis l'ajout d'un aliment : « Idées avec mon frigo »).
-- **Discussion avec le coach** : pose tes questions. Le coach connaît ton programme, tes séances, ton
-  sommeil et tes repas. L'appli garde les 200 derniers messages.
+- **Discussion avec le coach** : pose tes questions. Le coach connaît ton profil, ton programme, tes
+  séances et ton escalade, ton sommeil, tes pesées, tes repas, ton frigo et ta dernière analyse physique.
+  L'appli garde les 200 derniers messages.
 
 Ce qui part vers Anthropic : ta demande, ses photos et les données utiles au coach (profil sans ton
-prénom, programme, séances et escalade récentes, nuits Oura, pesées, repas, frigo). Les photos sont
-réduites avant l'envoi et CaliTrack n'en garde aucune, celles de ton corps pas plus que les autres. Les
-conseils, les analyses (sans les photos), le frigo et la discussion vont dans les sauvegardes ; la clé et
-le compteur des demandes restent sur l'iPhone.
+prénom, programme, séances et escalade récentes, nuits Oura, pesées, repas, frigo, dernière analyse
+physique avec sa phase et sa masse grasse estimée). Les photos sont réduites avant l'envoi et CaliTrack
+n'en garde aucune, celles de ton corps pas plus que les autres. Les conseils, les analyses (sans les
+photos), le frigo et la discussion vont dans les sauvegardes ; la clé et le compteur des demandes restent
+sur l'iPhone.
 
 Ce que ça coûte : chaque demande est facturée par Anthropic sur ton compte, en dollars ; son prix
 habituel est affiché sous le bouton qui la lance. Pour un mois d'usage régulier (un conseil et une photo

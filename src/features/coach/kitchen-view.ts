@@ -31,6 +31,10 @@ const REPLACE_LABEL: Record<PantryPlace, string> = {
 export const EMPTY_PANTRY_TEXT = 'Ton frigo est vide ici. Ajoute ce que tu as, ou prends-le en photo.'
 export const STRICT_EMPTY_TEXT = 'Ajoute d’abord ce que tu as dans ton frigo.'
 
+/** Photo du frigo ouverte depuis les idées de repas : le bouton retour y ramène, sous ce nom. */
+export const FROM_IDEAS = 'idees'
+export const KITCHEN_PHOTO_FROM_IDEAS = `/nutrition/kitchen/photo?depuis=${FROM_IDEAS}`
+
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
 
 /** Les aliments rangés par place (frigo, congélateur, placards), chacun par ordre alphabétique. */

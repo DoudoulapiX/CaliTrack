@@ -10,6 +10,14 @@ export const CHAT_SUGGESTIONS: readonly string[] = [
   frenchSpacing('Ma semaine est-elle trop chargée ?'),
 ]
 
+/**
+ * Ce que le coach reçoit avec chaque question (toutes les parties du contexte, content/coach/context),
+ * dit avant la première.
+ */
+export const CHAT_PRIVACY_TEXT = frenchSpacing(
+  'Il connaît ton profil, ton programme et ton agenda, tes séances et ton escalade, ton sommeil et ta bague, tes pesées, tes repas, ton frigo et ta dernière analyse physique : ces données partent avec chaque question vers Anthropic, avec ta clé.',
+)
+
 /** Annoncé une fois quand le coach commence sa réponse (pas à chaque morceau de texte). */
 export const COACH_TYPING = 'Le coach écrit…'
 

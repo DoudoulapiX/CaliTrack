@@ -5,6 +5,8 @@ import {
   PLATE_ESTIMATE,
   streamResponse,
 } from '@/test/anthropic'
+import { entryFromEstimate } from '@/db/nutrition'
+import { foodEntrySchema } from '@/db/schema'
 import { cleanItems, estimateMealPhoto, type MealPhotoRequest } from './meal-photo'
 
 const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
@@ -203,5 +205,13 @@ describe('photo de repas', () => {
       },
     ])
     expect(cleanItems(Array.from({ length: 30 }, () => item))).toHaveLength(20)
+  })
+
+  it('compte une pincée pour 1 g, que le journal accepte', () => {
+    const pepper = { name: 'Poivre', grams: 0.3, kcal: 1, protein: 0, carbs: 0.2, fat: 0 }
+    const [item] = cleanItems([pepper])
+    expect(item).toMatchObject({ name: 'Poivre', grams: 1, nutrients: { kcal: 1, carbs: 0.2 } })
+    if (!item) throw new Error('Poivre écarté')
+    expect(foodEntrySchema.safeParse(entryFromEstimate(item, '2026-10-21', 'lunch')).success).toBe(true)
   })
 })

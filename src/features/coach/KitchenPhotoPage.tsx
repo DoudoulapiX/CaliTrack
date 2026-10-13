@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Camera, ImageOff, Sparkles } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { useGoBack } from '@/app/useGoBack'
@@ -21,6 +22,7 @@ import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { useToast } from '@/ui/toast-context'
 import {
+  FROM_IDEAS,
   keptNames,
   modeHint,
   pantrySavedText,
@@ -51,7 +53,10 @@ export function KitchenPhotoPage() {
   const settings = useSettings()
   const apiKey = useAiKey()
   const toast = useToast()
-  const goBack = useGoBack('/nutrition/kitchen')
+  const [params] = useSearchParams()
+  // Ouverte depuis les idées de repas : le retour (et l'enregistrement) y ramène.
+  const fromIdeas = params.get('depuis') === FROM_IDEAS
+  const goBack = useGoBack(fromIdeas ? '/nutrition/kitchen/ideas' : '/nutrition/kitchen')
   const { begin, cancel } = useAbortable()
   const inputId = useId()
   const [place, setPlace] = useState<PantryPlace>('fridge')
@@ -135,7 +140,7 @@ export function KitchenPhotoPage() {
     title: 'Photo du frigo',
     back: true,
     onBack: goBack,
-    backLabel: 'Frigo',
+    backLabel: fromIdeas ? 'Idées' : 'Frigo',
     noTabBar: true,
   } as const
 

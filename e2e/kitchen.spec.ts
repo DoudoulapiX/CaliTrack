@@ -116,10 +116,17 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
 
   // L'idée choisie : ses ingrédients, à vérifier, puis ajoutés au déjeuner.
   await ideas.getByRole('button', { name: 'Choisir Poulet, riz et tomates' }).click()
+  // Elle remplace la liste : on la voit depuis son titre, pas depuis le bas.
+  await expect(page.getByRole('heading', { name: 'Poulet, riz et tomates', level: 2 })).toBeInViewport()
   const ingredients = page.getByRole('list', { name: 'Ingrédients' })
   await expect(ingredients.getByRole('checkbox')).toHaveCount(3)
   await expect(ingredients.getByText('à acheter')).toHaveCount(1)
   await expectAccessibleInBothThemes(page, 'idée choisie')
+  // Retour aux idées, sur la carte de celle-ci, puis on la reprend.
+  await page.getByRole('button', { name: 'Revenir aux idées' }).click()
+  await expect(ideas.getByRole('heading', { name: 'Poulet, riz et tomates', level: 3 })).toBeInViewport()
+  await ideas.getByRole('button', { name: 'Choisir Poulet, riz et tomates' }).click()
+  await expect(page.getByRole('heading', { name: 'Poulet, riz et tomates', level: 2 })).toBeInViewport()
   await page.getByRole('button', { name: 'Ajouter 3 aliments au déjeuner' }).click()
 
   await expect(page.getByText('3 aliments ajoutés au déjeuner')).toBeVisible()
@@ -145,5 +152,30 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
     'ideas',
   ])
   expect(outside).toEqual([])
+  expect(errors).toEqual([])
+})
+
+test('frigo : une longue quantité passe sous le nom, sans le chevaucher', async ({ page }) => {
+  const errors = collectErrors(page)
+  await onboard(page)
+  await page.goto('nutrition/kitchen')
+  await page.getByRole('button', { name: 'Ajouter un aliment' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Ajouter un aliment' })
+  await sheet.getByLabel('Nom').fill('Lentilles corail')
+  // 38 caractères : la quantité permise la plus longue, ou presque.
+  await sheet.getByLabel('Quantité (facultatif)').fill('un demi-paquet de lentilles corail bio')
+  await sheet.getByRole('button', { name: 'Ajouter' }).click()
+  await expect(page.getByText('Aliment ajouté')).toBeVisible()
+
+  const row = page.getByRole('button', { name: /^Lentilles corail/ })
+  const name = await row.getByText('Lentilles corail', { exact: true }).boundingBox()
+  const quantity = await row.getByText('un demi-paquet de lentilles corail bio').boundingBox()
+  const box = await row.boundingBox()
+  if (!name || !quantity || !box) throw new Error('Ligne introuvable')
+  // Le nom tient sur une ligne, la quantité en dessous, toutes deux dans la ligne.
+  expect(name.height).toBeLessThan(30)
+  expect(quantity.y).toBeGreaterThanOrEqual(name.y + name.height)
+  expect(quantity.x + quantity.width).toBeLessThanOrEqual(box.x + box.width)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
   expect(errors).toEqual([])
 })

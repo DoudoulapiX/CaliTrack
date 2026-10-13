@@ -63,14 +63,18 @@ const NO_FOOD = 'Aucun aliment reconnu sur cette photo.'
 
 const finite = (value: number) => (Number.isFinite(value) && value > 0 ? value : 0)
 
-/** Garde les aliments plausibles, valeurs arrondies, sans nombres négatifs ni portions démesurées. */
+/**
+ * Garde les aliments plausibles, valeurs arrondies, sans nombres négatifs ni portions démesurées. Une
+ * pincée (moins d'un demi-gramme, comme le poivre d'une recette) compte pour 1 g : le journal n'accepte
+ * pas de portion de 0 g.
+ */
 export function cleanItems(items: z.infer<typeof mealPhotoSchema>['items']): EstimatedItem[] {
   return items
     .filter((item) => item.name.trim() !== '' && finite(item.grams) > 0 && item.grams <= MAX_GRAMS)
     .slice(0, MAX_ITEMS)
     .map((item) => ({
       name: item.name.trim().slice(0, 120),
-      grams: Math.round(item.grams),
+      grams: Math.max(1, Math.round(item.grams)),
       nutrients: roundNutrients({
         kcal: finite(item.kcal),
         protein: finite(item.protein),

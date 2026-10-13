@@ -1,5 +1,7 @@
+import { ALL_SECTIONS, type ContextSection } from '@/content/coach/context'
 import { coachMessage } from '@/test/fixtures'
 import {
+  CHAT_PRIVACY_TEXT,
   CHAT_SUGGESTIONS,
   COACH_TYPING,
   chatDayLabel,
@@ -16,6 +18,24 @@ describe('textes de la discussion', () => {
       'Ma semaine est-elle trop chargée\u00a0?',
     ])
     expect(COACH_TYPING).toBe('Le coach écrit…')
+  })
+
+  it('dit tout ce qui part avec chaque question', () => {
+    // Chaque partie du contexte envoyé (chatSystem) est nommée avant la première question.
+    const named: Record<ContextSection, string> = {
+      profile: 'ton profil',
+      program: 'ton programme',
+      agenda: 'ton agenda',
+      workouts: 'tes séances',
+      climbing: 'ton escalade',
+      oura: 'ta bague',
+      weights: 'tes pesées',
+      nutrition: 'tes repas',
+      body: 'ta dernière analyse physique',
+      pantry: 'ton frigo',
+    }
+    for (const section of ALL_SECTIONS) expect(CHAT_PRIVACY_TEXT, section).toContain(named[section])
+    expect(CHAT_PRIVACY_TEXT).toContain('analyse physique\u00a0: ces données partent avec chaque question')
   })
 
   it('nomme qui parle', () => {

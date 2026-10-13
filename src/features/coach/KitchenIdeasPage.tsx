@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Camera, ChevronRight, Clock, Sparkles } from 'lucide-react'
@@ -42,6 +43,7 @@ import {
   afterIdeaText,
   ideaReviewItems,
   ideaTotal,
+  KITCHEN_PHOTO_FROM_IDEAS,
   minutesText,
   pantryCountText,
   remainingTitle,
@@ -54,9 +56,15 @@ type Phase =
   | { kind: 'form' }
   | { kind: 'asking' }
   | { kind: 'ideas'; ideas: MealIdea[] }
-  /** Une idée choisie, à vérifier avant de l'ajouter au journal ; les autres restent à portée. */
-  | { kind: 'review'; ideas: MealIdea[]; idea: MealIdea; items: IdeaReviewItem[] }
+  /**
+   * Une idée choisie (`index` dans `ideas`), à vérifier avant de l'ajouter au journal ; les autres
+   * restent à portée.
+   */
+  | { kind: 'review'; ideas: MealIdea[]; index: number; idea: MealIdea; items: IdeaReviewItem[] }
   | { kind: 'problem'; problem: AiProblem }
+
+/** L'ancre de la carte d'une idée, pour y revenir après l'avoir choisie. */
+const ideaAnchor = (index: number) => `idee-${String(index)}`
 
 /**
  * Des idées de repas du coach, avec ce qu'il y a dans le frigo et ce qui reste à manger dans la journée.
@@ -241,7 +249,11 @@ export function KitchenIdeasPage() {
           variant="secondary"
           className="mt-6"
           onClick={() => {
-            setPhase({ kind: 'ideas', ideas: phase.ideas })
+            flushSync(() => {
+              setPhase({ kind: 'ideas', ideas: phase.ideas })
+            })
+            // Retour à l'idée regardée, plus bas que le formulaire.
+            document.getElementById(ideaAnchor(phase.index))?.scrollIntoView({ block: 'start' })
           }}
         >
           Revenir aux idées
@@ -333,7 +345,7 @@ export function KitchenIdeasPage() {
             {phase.ideas.map((idea, index) => {
               const after = afterIdeaText(ideaTotal(idea.items), remaining)
               return (
-                <Card key={index}>
+                <Card key={index} id={ideaAnchor(index)} className="scroll-mt-[calc(var(--safe-top)+3.5rem)]">
                   <CardTitle
                     level={3}
                     title={frenchSpacing(idea.title)}
@@ -379,9 +391,12 @@ export function KitchenIdeasPage() {
                       setPhase({
                         kind: 'review',
                         ideas: phase.ideas,
+                        index,
                         idea,
                         items: ideaReviewItems(idea.items),
                       })
+                      // L'idée s'affiche à la place de la liste, plus courte : on la montre depuis le haut.
+                      window.scrollTo(0, 0)
                     }}
                   >
                     Choisir
@@ -393,7 +408,7 @@ export function KitchenIdeasPage() {
         </Section>
       )}
 
-      <ButtonLink to="/nutrition/kitchen/photo" block variant="ghost" icon={<Camera size={18} aria-hidden />}>
+      <ButtonLink to={KITCHEN_PHOTO_FROM_IDEAS} block variant="ghost" icon={<Camera size={18} aria-hidden />}>
         Mettre à jour mon frigo
       </ButtonLink>
     </Page>

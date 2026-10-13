@@ -1,5 +1,7 @@
 import { MAX_GRAMS, MAX_ITEMS } from '@/content/ai/meal-photo'
 import { jsonSchemaOf } from '@/content/ai/structured'
+import { entryFromEstimate } from '@/db/nutrition'
+import { foodEntrySchema } from '@/db/schema'
 import { AI_ERROR_CASES, fakeAnthropicFetch, FRIDGE_ITEMS, IDEAS, streamResponse } from '@/test/anthropic'
 import {
   cleanIdeas,
@@ -152,6 +154,17 @@ describe('frigo et placards', () => {
         { name: 'Pain', grams: 60, nutrients: nutrients(100, 10, 5, 2), fromPantry: false },
       ])
       expect(idea?.items).toHaveLength(MAX_ITEMS)
+    })
+
+    it('gardent une pincée d’assaisonnement à 1 g, ajoutable au journal', () => {
+      const [idea] = cleanIdeas({
+        ideas: [rawIdea('Omelette', [raw('Œufs', 120), { ...raw('Poivre', 0.3), kcal: 1, protein: 0 }])],
+      })
+      const pepper = idea?.items[1]
+      expect(pepper).toMatchObject({ name: 'Poivre', grams: 1, nutrients: { kcal: 1 }, fromPantry: true })
+      for (const item of idea?.items ?? []) {
+        expect(foodEntrySchema.safeParse(entryFromEstimate(item, '2026-10-21', 'dinner')).success).toBe(true)
+      }
     })
 
     it('ont des textes coupés et une durée raisonnable', () => {

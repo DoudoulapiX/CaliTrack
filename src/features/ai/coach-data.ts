@@ -21,11 +21,14 @@ const AGENDA_DAYS = 7
 const PLACE_ORDER: readonly PantryPlace[] = ['fridge', 'freezer', 'cupboard']
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
 
-/** Une série faite, en peu de caractères : « 8 », « 30 s », « 6 à 10 kg ». */
+/**
+ * Une série faite, en peu de caractères : « 8 », « 30 s », « 8 (10 kg) ». La charge va entre parenthèses :
+ * « 8 à 10 kg » se lirait comme une fourchette, la forme des prescriptions du programme.
+ */
 function setText(set: Pick<WorkoutSet, 'reps' | 'durationSec' | 'loadKg'>): string {
   const amount =
     set.reps !== null ? String(set.reps) : set.durationSec !== null ? `${String(set.durationSec)} s` : '?'
-  return set.loadKg === null ? amount : `${amount} à ${String(set.loadKg)} kg`
+  return set.loadKg === null ? amount : `${amount} (${String(set.loadKg)} kg)`
 }
 
 /**

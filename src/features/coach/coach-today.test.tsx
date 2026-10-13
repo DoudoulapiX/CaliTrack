@@ -314,6 +314,37 @@ describe('coach du jour', () => {
     expect(await db.coachDays.get(DATE)).toMatchObject({ decision: 'rest', ignored: false })
   })
 
+  it('repos pris puis conseil redemandé : le repos s’annule toujours d’ici', async () => {
+    const { requests } = stubFetch(streamResponse(DAILY_REST), streamResponse(DAILY_TIPS))
+    const { user } = await renderApp(COACH_PAGE, {
+      setup: async () => {
+        await withProgram()
+        await withOura()
+      },
+    })
+    await user.click(await askButton())
+    await user.click(await screen.findByRole('button', { name: 'Prendre ma journée de repos' }))
+    expect(await screen.findByRole('button', { name: 'Annuler le repos' })).toBeInTheDocument()
+
+    // La séance passée, le coach ne voit plus de séance prévue : il donne des conseils pour la journée.
+    await user.click(screen.getByRole('button', { name: 'Redemander au coach' }))
+    await user.click(await askButton())
+    expect(await screen.findByText('Conseils du jour', { selector: 'span' })).toBeInTheDocument()
+    expect(promptOf(requests[1])).toContain('Séance prévue aujourd’hui : aucune.')
+    expect(screen.getByText('Journée de repos prise')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Prendre ma journée de repos' })).not.toBeInTheDocument()
+    expect(await db.coachDays.get(DATE)).toMatchObject({ decision: null, programSessionId: null })
+
+    await user.click(screen.getByRole('button', { name: 'Annuler le repos' }))
+    expect(await screen.findByText('Séance remise au programme')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Annuler le repos' })).not.toBeInTheDocument()
+    })
+    expect(screen.queryByText('Journée de repos prise')).not.toBeInTheDocument()
+    expect(await db.events.where('date').equals(DATE).count()).toBe(0)
+    expect(requests).toHaveLength(2)
+  })
+
   it('« Revenir à la séance prévue » met le conseil de côté, et le reprend', async () => {
     stubFetch()
     const { user } = await renderApp(COACH_PAGE, {
@@ -342,7 +373,12 @@ describe('coach du jour', () => {
 
   it('annuler la demande : pas d’erreur, rien de gardé', async () => {
     const stream = streamController()
-    const { requests } = stubFetch(stream.answer)
+    // Le signal que le client donne à fetch : « Annuler » doit vraiment couper la demande.
+    let sentSignal: AbortSignal | null | undefined
+    const { requests } = stubFetch((request, init) => {
+      sentSignal = init?.signal
+      return stream.answer(request, init)
+    })
     const { user } = await renderApp(COACH_PAGE, { setup: withProgram })
     await user.click(await askButton())
     expect(await screen.findByText('Le coach regarde ta journée…')).toHaveAttribute('role', 'status')
@@ -352,6 +388,7 @@ describe('coach du jour', () => {
     stream.push('{"decision": "li')
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(await askButton()).toBeInTheDocument()
+    expect(sentSignal?.aborted).toBe(true)
     await new Promise((resolve) => setTimeout(resolve, 50))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Demander au coach' })).toBeInTheDocument()

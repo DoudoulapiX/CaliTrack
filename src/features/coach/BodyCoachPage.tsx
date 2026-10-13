@@ -149,11 +149,16 @@ export function BodyCoachPage() {
   }
   const current = (view: PhotoView, pick: number) =>
     live.current.mounted && live.current.picks.get(view) === pick
+  /** Les photos ont changé : ce qui a été dit des précédentes (problème, photos illisibles) ne vaut plus. */
+  const forgetOutcome = () => {
+    setPhase((p) => (p.kind === 'problem' || p.kind === 'unreadable' ? { kind: 'ready' } : p))
+  }
 
   const choose = async (view: PhotoView, file: File | undefined) => {
     if (!file) return
     const pick = release(view)
     setPhotoError(false)
+    forgetOutcome()
     setSlot(view, { status: 'preparing' })
     try {
       const base64 = await preparePhoto(file, BODY_PHOTO_MAX_SIDE)
@@ -171,6 +176,7 @@ export function BodyCoachPage() {
   const remove = (view: PhotoView) => {
     release(view)
     setSlot(view, { status: 'empty' })
+    forgetOutcome()
   }
 
   const photos: BodyPhoto[] = PHOTO_SLOTS.flatMap(({ view }) => {

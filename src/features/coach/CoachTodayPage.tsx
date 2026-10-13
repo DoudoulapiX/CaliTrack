@@ -121,6 +121,7 @@ export function CoachTodayPage() {
   const day = newestDay(live, saved, date)
   const items = (agenda.get(date) ?? []).filter((item): item is ProgramItem => item.type === 'program')
   const planned = items.find((item) => item.status === 'planned') ?? null
+  const skipped = items.find((item) => item.status === 'skipped') ?? null
   const advised =
     !day || day.programSessionId === null
       ? null
@@ -269,6 +270,7 @@ export function CoachTodayPage() {
           day={day}
           program={program}
           advised={advised}
+          skipped={skipped}
           deload={deload}
           busy={busy}
           onRest={setRest}
@@ -343,6 +345,7 @@ function Result({
   day,
   program,
   advised,
+  skipped,
   deload,
   busy,
   onRest,
@@ -353,6 +356,8 @@ function Result({
   program: Program | null
   /** La séance du jour visée par le conseil ; null s'il n'y en avait pas (ou plus). */
   advised: ProgramItem | null
+  /** La séance du jour passée (repos pris), quel que soit le conseil. */
+  skipped: ProgramItem | null
   deload: boolean
   busy: boolean
   onRest: (item: ProgramItem, skipped: boolean) => void
@@ -366,6 +371,13 @@ function Result({
   const canStart = program !== null && advised !== null && advised.status === 'planned'
   const label = day.decision ? DECISION_LABEL[day.decision] : TIPS_LABEL
   const headline = headlineBesides(day.headline, label)
+  const rest =
+    advised && day.decision === 'rest' && (advised.status === 'planned' || advised.status === 'skipped')
+      ? advised
+      : null
+  // Le repos pris se remet au programme d'ici, même quand le dernier conseil ne vise plus la séance
+  // (redemandé après le repos, il ne voit plus de séance prévue).
+  const undo = rest ? null : skipped
 
   return (
     <Section title="Conseil du coach">
@@ -405,19 +417,22 @@ function Result({
       </Card>
 
       <div className="mt-4 flex flex-col gap-2">
-        {advised &&
-          day.decision === 'rest' &&
-          (advised.status === 'planned' || advised.status === 'skipped') && (
-            <Button
-              block
-              variant={advised.status === 'skipped' ? 'secondary' : 'primary'}
-              disabled={busy}
-              icon={advised.status === 'skipped' ? undefined : <Coffee size={18} aria-hidden />}
-              onClick={() => onRest(advised, advised.status !== 'skipped')}
-            >
-              {restLabel(advised.status === 'skipped')}
-            </Button>
-          )}
+        {rest && (
+          <Button
+            block
+            variant={rest.status === 'skipped' ? 'secondary' : 'primary'}
+            disabled={busy}
+            icon={rest.status === 'skipped' ? undefined : <Coffee size={18} aria-hidden />}
+            onClick={() => onRest(rest, rest.status !== 'skipped')}
+          >
+            {restLabel(rest.status === 'skipped')}
+          </Button>
+        )}
+        {undo && (
+          <Button block variant="secondary" disabled={busy} onClick={() => onRest(undo, false)}>
+            {restLabel(true)}
+          </Button>
+        )}
         {canStart && day.decision !== 'rest' && (
           <StartWorkoutButton
             build={
