@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectAccessible } from './a11y-helpers'
 import { CHAT_ANSWER } from './coach-fixtures'
 import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, type SentToClaude } from './nutrition-helpers'
 
@@ -18,28 +18,6 @@ interface ChatBody {
 
 const chatRequests = (sent: SentToClaude[]) =>
   sent.filter((request) => request.task === 'chat').map((request) => request.body as ChatBody)
-
-/** Attend la fin des transitions en cours (comme e2e/a11y.spec.ts). */
-async function animationsDone(page: Page) {
-  await page.waitForFunction(() =>
-    document
-      .getAnimations()
-      .every(
-        (animation) =>
-          animation.playState !== 'running' || animation.effect?.getComputedTiming().endTime === Infinity,
-      ),
-  )
-}
-
-/** Aucun défaut d'accessibilité détecté par axe sur l'écran affiché, une fois immobile. */
-async function expectAccessible(page: Page, screen: string) {
-  await animationsDone(page)
-  const { violations } = await new AxeBuilder({ page }).analyze()
-  const summary = violations.flatMap((v) =>
-    v.nodes.map((node) => `${screen} : ${v.id} : ${node.target.join(' ')}\n${node.failureSummary ?? ''}`),
-  )
-  expect(summary).toEqual([])
-}
 
 /** Le champ du message touche le bas de l'écran, quelle que soit la longueur de la discussion. */
 async function expectComposerAtBottom(page: Page) {

@@ -35,7 +35,7 @@ const PAGES = [
   { path: '/more/coach', title: 'Discussion avec le coach', back: 'Plus', backTo: '/more', tabBar: false },
 ]
 
-describe('écrans du coach IA', () => {
+describe('écrans du coach IA : adresse, titre, retour et place dans Plus', () => {
   it.each(PAGES)('$path s’ouvre sur « $title »', async ({ path, title, back, backTo, tabBar }) => {
     const { user, router } = await renderApp(path)
     expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument()

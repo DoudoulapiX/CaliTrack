@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectAccessible } from './a11y-helpers'
 import { BODY_CUT_LEAN } from './coach-fixtures'
 import { CLAUDE_KEY, collectErrors, fakeClaude, jpegSize, onboard, solidPng } from './nutrition-helpers'
 
@@ -9,28 +9,6 @@ test.use({ serviceWorkers: 'block' })
 
 /** Un mercredi midi. */
 const NOW = new Date('2026-10-21T12:30:00+02:00')
-
-/** Attend la fin des transitions et animations en cours (pas de celles qui tournent sans fin). */
-async function animationsDone(page: Page) {
-  await page.waitForFunction(() =>
-    document
-      .getAnimations()
-      .every(
-        (animation) =>
-          animation.playState !== 'running' || animation.effect?.getComputedTiming().endTime === Infinity,
-      ),
-  )
-}
-
-/** Aucun défaut d'accessibilité détecté par axe sur l'écran affiché, une fois immobile. */
-async function expectAccessible(page: Page, screen: string) {
-  await animationsDone(page)
-  const { violations } = await new AxeBuilder({ page }).analyze()
-  const summary = violations.flatMap((v) =>
-    v.nodes.map((node) => `${screen} : ${v.id} : ${node.target.join(' ')}\n${node.failureSummary ?? ''}`),
-  )
-  expect(summary).toEqual([])
-}
 
 /** Les requêtes parties ailleurs que vers l'appli ou l'API Claude simulée (il ne doit y en avoir aucune). */
 function outsideRequests(page: Page): string[] {

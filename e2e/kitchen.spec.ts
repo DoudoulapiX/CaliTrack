@@ -1,36 +1,11 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectAccessible } from './a11y-helpers'
 import { FRIDGE_ITEMS, IDEAS } from './coach-fixtures'
 import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, solidPng } from './nutrition-helpers'
 
 // Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
 // services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
 test.use({ serviceWorkers: 'block' })
-
-/**
- * Attend la fin des transitions et animations en cours (pas de celles qui tournent sans fin) : leurs
- * couleurs intermédiaires, que personne ne lit, ne doivent pas être mesurées.
- */
-async function animationsDone(page: Page) {
-  await page.waitForFunction(() =>
-    document
-      .getAnimations()
-      .every(
-        (animation) =>
-          animation.playState !== 'running' || animation.effect?.getComputedTiming().endTime === Infinity,
-      ),
-  )
-}
-
-/** Aucun défaut d'accessibilité détecté par axe sur l'écran affiché, une fois immobile. */
-async function expectAccessible(page: Page, screen: string) {
-  await animationsDone(page)
-  const { violations } = await new AxeBuilder({ page }).analyze()
-  const summary = violations.flatMap((v) =>
-    v.nodes.map((node) => `${screen} : ${v.id} : ${node.target.join(' ')}\n${node.failureSummary ?? ''}`),
-  )
-  expect(summary).toEqual([])
-}
 
 /** La même vérification en thème sombre puis clair (l'appli suit le réglage de l'iPhone). */
 async function expectAccessibleInBothThemes(page: Page, screen: string) {

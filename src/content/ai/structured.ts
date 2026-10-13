@@ -5,6 +5,7 @@ import type { AiUsage } from '@/db/types'
 import { aiClient, aiProblem, type AiProblem } from './client'
 
 export type { AiUsage } from '@/db/types'
+export { choice } from './choice'
 
 /**
  * La réponse structurée de Claude, ou le problème qui l'a empêchée. `usage` est donné dès qu'une réponse
@@ -46,11 +47,6 @@ export function usageOf(usage: Usage): AiUsage {
     cacheReadTokens: usage.cache_read_input_tokens ?? 0,
     cacheWriteTokens: usage.cache_creation_input_tokens ?? 0,
   }
-}
-
-/** La valeur reçue si elle fait partie des choix permis, sinon la valeur de repli. */
-export function choice<T extends string>(value: string, options: readonly T[], fallback: T): T {
-  return (options as readonly string[]).includes(value) ? (value as T) : fallback
 }
 
 /**

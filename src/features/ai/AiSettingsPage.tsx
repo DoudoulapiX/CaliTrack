@@ -1,10 +1,14 @@
 import { useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { KeyRound } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
 import { checkApiKey, looksLikeApiKey } from '@/content/ai/client'
 import { AI_MODEL_OPTIONS, aiModelOption } from '@/content/ai/models'
+import { usageOfMonth } from '@/db/ai-usage'
 import { deleteSecret, saveSecret } from '@/db/secrets'
 import { updateSettings } from '@/db/settings'
+import type { AiModel } from '@/db/types'
+import { today } from '@/lib/dates'
 import { userMessage } from '@/lib/errors'
 import { frenchSpacing } from '@/lib/typography'
 import { Button } from '@/ui/Button'
@@ -14,7 +18,16 @@ import { Page, Section } from '@/ui/Page'
 import { PageSpinner } from '@/ui/PageSpinner'
 import { ConfirmSheet } from '@/ui/Sheet'
 import { useToast } from '@/ui/toast-context'
-import { AI_PROBLEM_TEXT, maskKey } from './ai-view'
+import {
+  AI_PROBLEM_TEXT,
+  COST_PRIVACY_TEXT,
+  DELETE_KEY_TEXT,
+  ESTIMATE_NOTE,
+  maskKey,
+  MONTHLY_PLAN_TEXT,
+  monthlyEstimateLines,
+  monthUsageText,
+} from './ai-view'
 import { useAiKey } from './useAiKey'
 
 function Note({ children }: { children: string }) {
@@ -119,14 +132,39 @@ function SavedKey({ apiKey }: { apiKey: string }) {
           void deleteSecret('anthropic').then(() => toast('Clé supprimée'))
         }}
         title={frenchSpacing('Supprimer la clé ?')}
-        message="Les photos de repas ne pourront plus être analysées tant que tu n’en colles pas une autre."
+        message={DELETE_KEY_TEXT}
         confirmLabel="Supprimer"
       />
     </div>
   )
 }
 
-/** Réglages de l'IA : la clé Claude (gardée sur l'iPhone) et le modèle utilisé. */
+/** Ce que coûte l'IA : un mois d'usage avec chaque modèle, puis les demandes du mois sur cet iPhone. */
+function CostAndPrivacy({ model }: { model: AiModel }) {
+  const month = today().slice(0, 7)
+  // null : aucune demande ce mois-ci ; undefined : lecture en cours.
+  const usage = useLiveQuery(async () => (await usageOfMonth(month)) ?? null, [month])
+
+  return (
+    <Section title="Coût et confidentialité">
+      <p className="rounded-2xl bg-surface p-4 text-[14px] text-ink-2">{COST_PRIVACY_TEXT}</p>
+      <div className="mt-3 rounded-2xl bg-surface p-4 text-[14px] text-ink-2">
+        <p>{MONTHLY_PLAN_TEXT}</p>
+        <ul className="mt-2 flex flex-col gap-1">
+          {monthlyEstimateLines(model).map((line) => (
+            <li key={line.model} className={line.chosen ? 'font-semibold text-ink' : undefined}>
+              {line.text}
+            </li>
+          ))}
+        </ul>
+        {usage !== undefined && <p className="mt-3 border-t border-line pt-3">{monthUsageText(usage)}</p>}
+      </div>
+      <Note>{ESTIMATE_NOTE}</Note>
+    </Section>
+  )
+}
+
+/** Réglages de l'IA : la clé Claude (gardée sur l'iPhone), le modèle utilisé et ce qu'il coûte. */
 export function AiSettingsPage() {
   const settings = useSettings()
   const apiKey = useAiKey()
@@ -149,13 +187,7 @@ export function AiSettingsPage() {
         />
         <Note>{aiModelOption(settings.aiModel).hint}</Note>
       </Section>
-      <Section title="Coût et confidentialité">
-        <p className="rounded-2xl bg-surface p-4 text-[14px] text-ink-2">
-          {frenchSpacing(
-            'Chaque analyse est facturée par Anthropic sur ton compte : quelques centimes au plus par photo. Les photos sont envoyées à Anthropic pour l’analyse ; CaliTrack ne les garde pas.',
-          )}
-        </p>
-      </Section>
+      <CostAndPrivacy model={settings.aiModel} />
     </Page>
   )
 }

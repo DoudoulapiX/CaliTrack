@@ -26,7 +26,6 @@ import {
   dailyAdviceOutput,
   dailyPrompt,
   DEFAULT_REASON,
-  oneOf,
   slotOptions,
   snapLoad,
   workoutFromCoachPlan,
@@ -228,14 +227,6 @@ describe('ce que le coach peut changer', () => {
       swaps: [],
       actions: ['lighter', 'skip'],
     })
-  })
-})
-
-describe('valeur parmi des choix permis', () => {
-  it('garde une valeur permise, sinon la valeur de repli', () => {
-    expect(oneOf('rest', ['asPlanned', 'lighter', 'rest'], 'asPlanned')).toBe('rest')
-    expect(oneOf('REST', ['asPlanned', 'lighter', 'rest'], 'asPlanned')).toBe('asPlanned')
-    expect(oneOf('', ['asPlanned', 'lighter', 'rest'], 'lighter')).toBe('lighter')
   })
 })
 

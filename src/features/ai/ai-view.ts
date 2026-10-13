@@ -1,5 +1,9 @@
 import type { AiProblem } from '@/content/ai/client'
+import { monthlyEstimate } from '@/content/ai/cost'
+import { AI_MODEL_OPTIONS } from '@/content/ai/models'
+import type { AiModel, AiUsageRow } from '@/db/types'
 import { frenchSpacing, keepTogether } from '@/lib/typography'
+import { formatDollars } from '@/lib/units'
 
 /** Où régler l'IA dans l'appli. */
 export const AI_SETTINGS_PATH = '/more/ai'
@@ -67,6 +71,47 @@ export function costHintText(costUsd: number, modelLabel: string): string {
   const rounded = Math.ceil(cents - 1e-9)
   const amount = keepTogether(`${String(rounded)} centime${rounded > 1 ? 's' : ''}`)
   return frenchSpacing(`Environ ${amount} avec ${model}`)
+}
+
+/** Supprimer la clé : ce qui ne marchera plus. */
+export const DELETE_KEY_TEXT =
+  'Le coach et l’analyse des photos ne marcheront plus tant que tu n’en colles pas une autre.'
+
+/** Ce qui est facturé, et ce qui part vers Anthropic. */
+export const COST_PRIVACY_TEXT = frenchSpacing(
+  'Chaque demande au coach et chaque analyse de photo est facturée par Anthropic sur ton compte, en dollars. Tes photos et les données utiles au coach (séances, repas, sommeil, poids) sont envoyées à Anthropic ; CaliTrack ne garde pas les photos.',
+)
+
+/** Le mois d'usage estimé, d'après MONTHLY_PLAN (content/ai/cost). */
+export const MONTHLY_PLAN_TEXT = frenchSpacing(
+  'Pour un mois d’usage régulier (un conseil et une photo de repas par jour, une soixantaine de messages, quelques idées de repas, photos du frigo et analyses du coach physique) :',
+)
+
+/** Le compteur n'est qu'une estimation. */
+export const ESTIMATE_NOTE = frenchSpacing(
+  'Estimation calculée sur cet iPhone ; ta facture Anthropic fait foi.',
+)
+
+/** Le coût d'un mois d'usage avec chaque modèle : « Opus 5.5 : environ 6,72 $ (choisi) ». */
+export function monthlyEstimateLines(chosen: AiModel): { model: AiModel; text: string; chosen: boolean }[] {
+  return AI_MODEL_OPTIONS.map((option) => {
+    const isChosen = option.id === chosen
+    const amount = formatDollars(monthlyEstimate(option.id))
+    const text = `${keepTogether(option.label)} : environ ${amount}${isChosen ? ' (choisi)' : ''}`
+    return { model: option.id, text: frenchSpacing(text), chosen: isChosen }
+  })
+}
+
+/**
+ * Les demandes du mois sur cet appareil (null : aucune) : « Ce mois-ci sur cet iPhone : 0,42 $ pour
+ * 37 demandes ».
+ */
+export function monthUsageText(row: AiUsageRow | null): string {
+  if (row === null || row.calls === 0) return 'Aucune demande ce mois-ci.'
+  // Sous le demi-centime, « 0,00 $ » laisserait croire que rien n'est facturé.
+  const amount = row.costUsd < 0.005 ? 'moins d’un centime' : formatDollars(row.costUsd)
+  const calls = keepTogether(`${String(row.calls)} demande${row.calls > 1 ? 's' : ''}`)
+  return frenchSpacing(`Ce mois-ci sur cet iPhone : ${amount} pour ${calls}`)
 }
 
 /** Les problèmes qui se règlent dans les réglages de l'IA. */

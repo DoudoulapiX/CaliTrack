@@ -146,6 +146,12 @@ describe('écran À propos', () => {
       'https://world.openfoodfacts.org',
     )
     expect(screen.getByText(/la photo d’un repas \(vers Anthropic, avec ta clé\)/)).toBeInTheDocument()
+    // Le coach IA : ses demandes et leurs photos partent aussi vers Anthropic, sans qu'aucune photo soit gardée.
+    expect(
+      screen.getByText(/les demandes au coach IA et leurs photos \(aussi vers Anthropic\)/),
+    ).toHaveTextContent(
+      /CaliTrack ne garde aucune de ces photos, pas même celles de ton corps pour le coach physique\./,
+    )
     expectFrenchSpacing()
     // Dans Safari, pas encore sur l'écran d'accueil : les étapes pour l'y mettre.
     expect(screen.getByText(/Sur l’écran d’accueil\s»/)).toBeInTheDocument()

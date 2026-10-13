@@ -1,5 +1,7 @@
 import type { TextBlockParam } from '@anthropic-ai/sdk/resources/messages'
 import { z } from 'zod'
+// Pas content/ai/structured : ce module sert aussi la carte de l'accueil, qui ne doit pas charger le SDK.
+import { choice } from '@/content/ai/choice'
 import { BLOCK_TITLE, blockUsesLadder, targetForExercise } from '@/content/programs/edit'
 import { formatTarget } from '@/content/programs/format'
 import { ladderFor } from '@/content/programs/ladders'
@@ -184,15 +186,6 @@ export interface DailyAdvice {
 export const DECISIONS: readonly CoachDecision[] = ['asPlanned', 'lighter', 'rest']
 const CHANGE_ACTIONS = ['keep', 'lighter', 'swap', 'skip'] as const
 
-/**
- * La valeur reçue si elle fait partie des choix permis, sinon la valeur de repli. Même règle que
- * `choice` de content/ai/structured, recopiée ici : ce module sert aussi la carte de l'accueil, qui ne
- * doit pas charger le SDK de Claude (importé par structured).
- */
-export function oneOf<T extends string>(value: string, options: readonly T[], fallback: T): T {
-  return (options as readonly string[]).includes(value) ? (value as T) : fallback
-}
-
 export const HEADLINE_MAX = 80
 export const SUMMARY_MAX = 600
 export const TIP_MAX = 200
@@ -230,7 +223,7 @@ const clampSets = (sets: number, max: number) => Math.min(max, Math.max(1, Math.
 
 /** Un changement proposé par Claude, s'il est permis ; null sinon (ou s'il ne change rien). */
 function cleanChange(raw: DailyAdviceOutput['changes'][number], option: SlotOption): CoachChange | null {
-  const action = oneOf(raw.action, CHANGE_ACTIONS, 'keep')
+  const action = choice(raw.action, CHANGE_ACTIONS, 'keep')
   if (action === 'keep' || !option.actions.includes(action)) return null
   const base = {
     slotId: option.slotId,
@@ -278,7 +271,7 @@ export function cleanDailyAdvice(
   }
   if (!hasSession) return { decision: null, changes: [], ...texts }
 
-  const decision = oneOf(raw.decision, DECISIONS, 'asPlanned')
+  const decision = choice(raw.decision, DECISIONS, 'asPlanned')
   if (decision !== 'lighter') return { decision, changes: [], ...texts }
 
   const seen = new Set<string>()
