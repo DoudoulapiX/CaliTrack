@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import { Camera, PenLine, Plus, ScanBarcode, SearchX } from 'lucide-react'
+import { Camera, PenLine, Plus, Refrigerator, ScanBarcode, SearchX } from 'lucide-react'
 import { foodItem, searchFoods, type FoodItem } from '@/content/nutrition/foods'
 import { isMealKey, mealAt } from '@/content/nutrition/meals'
 import type { MealKey } from '@/db/types'
@@ -20,19 +20,27 @@ import { useCiqual, useFoods, useRecentFoods } from './useNutrition'
 /** Résultats montrés pour une recherche. */
 const RESULT_LIMIT = 50
 
+const SHORTCUT_CLASS =
+  'flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl bg-surface px-2 py-3 text-center text-[14px] font-medium text-ink active:bg-surface-2'
+/** La même tuile, sur toute la largeur de la grille. */
+const WIDE_SHORTCUT_CLASS =
+  'col-span-2 flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl bg-surface px-2 py-3 text-center text-[14px] font-medium text-ink active:bg-surface-2'
+
 function Shortcut({
   to,
   onClick,
   icon,
   label,
+  wide = false,
 }: {
   to?: string
   onClick?: () => void
   icon: ReactNode
   label: string
+  /** Sur toute la largeur de la grille. */
+  wide?: boolean
 }) {
-  const className =
-    'flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl bg-surface px-2 py-3 text-center text-[14px] font-medium text-ink active:bg-surface-2'
+  const className = wide ? WIDE_SHORTCUT_CLASS : SHORTCUT_CLASS
   const content = (
     <>
       <span className="text-accent-text">{icon}</span>
@@ -149,6 +157,12 @@ export function AddFoodPage() {
               to={newFoodPath({ day, meal })}
               icon={<Plus size={24} aria-hidden />}
               label="Créer un aliment"
+            />
+            <Shortcut
+              wide
+              to={`/nutrition/kitchen/ideas?day=${day}&meal=${meal}`}
+              icon={<Refrigerator size={24} aria-hidden />}
+              label="Idées avec mon frigo"
             />
           </div>
           {recents && recents.length > 0 ? (
