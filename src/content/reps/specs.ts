@@ -69,6 +69,11 @@ export interface MovementSpec {
   readonly anchor: ContactPoint
   /** Déplacement maximal du point d'appui pendant une répétition, en longueurs de buste. */
   readonly maxAnchorDrift: number
+  /**
+   * Barres : les mains à plus de tant de longueurs de buste de leur place au départ veulent dire que la personne
+   * a lâché les barres (position quittée, fin de série) ; null pour les autres mouvements.
+   */
+  readonly leaveAnchor: number | null
   readonly mover: MovingPoint
   /** Course minimale, en hauteur, de la partie qui bouge, en longueurs de buste. */
   readonly minTravel: number
@@ -93,6 +98,7 @@ const COMMON = {
   minBodyLine: null,
   bodyLine: 'ankle',
   maxUpperArmTilt: null,
+  leaveAnchor: null,
   bothArms: false,
 } as const
 
@@ -157,6 +163,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     handsMargin: 0.1,
     anchor: 'wrists',
     maxAnchorDrift: 0.3,
+    leaveAnchor: 0.5,
     mover: 'shoulders',
     minTravel: 0.15,
     upright: true,
@@ -178,6 +185,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     maxTorsoTilt: 40,
     anchor: 'wrists',
     maxAnchorDrift: 0.3,
+    leaveAnchor: 0.5,
     mover: 'shoulders',
     minTravel: 0.3,
     upright: true,

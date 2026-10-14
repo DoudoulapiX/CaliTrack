@@ -426,15 +426,26 @@ function moverHeight(movement: CountedMovement, body: Skeleton): number {
 
 /**
  * La personne a quitté la position : debout, bras le long du corps, hanches à la hauteur du départ (tractions :
- * descendue de la barre, épaules 30 cm sous la position suspendue).
+ * descendue de la barre, épaules 30 cm sous la position suspendue ; dips : descendue des barres, hanches 30 cm
+ * plus bas).
  */
 function leavingPose(movement: CountedMovement, start: Skeleton): Skeleton {
   const body = standing()
   const lift =
     movement === 'pullup'
       ? height(start, SHOULDER) - 0.3 - height(body, SHOULDER)
-      : height(start, HIP) - height(body, HIP)
+      : movement === 'dip'
+        ? height(start, HIP) - 0.3 - height(body, HIP)
+        : height(start, HIP) - height(body, HIP)
   return new Map([...body].map(([joint, point]) => [joint, add(point, [0, lift, 0])]))
+}
+
+/** Temps pour quitter la position (descendre de la barre, se relever). */
+const LEAVE_MS = 800
+
+/** Entre deux positions : `k` de 0 (la première) à 1 (la seconde). */
+function blend(from: Skeleton, to: Skeleton, k: number): Skeleton {
+  return new Map([...from].map(([joint, point]) => [joint, add(point, scale(sub(to.get(joint)!, point), k))]))
 }
 
 /** Une série complète, image par image (temps entiers, comme dans les fichiers de points). */
@@ -493,7 +504,10 @@ export function synthSet(options: SynthSetOptions): PoseFrame[] {
       const arm = current.rep.arm
       angles = arm === undefined ? [angle, angle] : arm === 0 ? [angle, top] : [top, angle]
     }
-    let body = done && after === 'leave' ? leaving : synthPose(movement, angles, { kneeling })
+    let body =
+      done && after === 'leave'
+        ? blend(start, leaving, Math.min(1, (elapsed - at) / LEAVE_MS))
+        : synthPose(movement, angles, { kneeling })
     if (pinned === 'mover' && !(done && after === 'leave')) {
       const lift = reference - moverHeight(movement, body)
       body = new Map([...body].map(([joint, point]) => [joint, add(point, [0, lift, 0])]))

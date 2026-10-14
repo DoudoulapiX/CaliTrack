@@ -24,6 +24,13 @@ describe('seuils des mouvements', () => {
     expect(SPECS.curl).toMatchObject({ flexed: 80, extended: 130, sides: 'perArm', maxUpperArmTilt: 60 })
     // Tractions filmées de dos : pas de nez.
     expect(SPECS.pullup.need).toEqual([11, 12, 13, 14, 15, 16])
+    // Lâcher les barres termine la série ; ailleurs, seule la position compte.
+    expect(COUNTED_MOVEMENTS.filter((movement) => SPECS[movement].leaveAnchor !== null)).toEqual([
+      'dip',
+      'pullup',
+    ])
+    expect(SPECS.dip.leaveAnchor).toBeGreaterThan(SPECS.dip.maxAnchorDrift)
+    expect(SPECS.pullup.leaveAnchor).toBeGreaterThan(SPECS.pullup.maxAnchorDrift)
   })
 
   it('ont des seuils communs cohérents', () => {
