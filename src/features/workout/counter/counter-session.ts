@@ -205,6 +205,16 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
   }
 }
 
+/**
+ * Le compte retenu pour la série (fichier de points exporté) : enregistré, en cours d'enregistrement ou
+ * vérifié ; sinon celui d'où repart le compteur.
+ */
+export function expectedReps(state: SessionState): number {
+  const { view } = state
+  if (view.kind === 'saved' || view.kind === 'saving' || view.kind === 'review') return view.reps
+  return state.offset
+}
+
 /** La série comptée à l'ouverture : la première à faire, sinon la dernière. */
 export function firstPendingIndex(exercise: Pick<WorkoutExercise, 'sets'>): number {
   const pending = exercise.sets.findIndex((set) => !set.done)

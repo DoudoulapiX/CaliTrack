@@ -5,6 +5,7 @@ import { counterResult, counterSnapshot } from '@/test/pose'
 import {
   cueFor,
   displayChanged,
+  expectedReps,
   firstPendingIndex,
   initialSession,
   lastRepAt,
@@ -282,6 +283,18 @@ describe('aides du compteur', () => {
     expect(nextInExercise(pending(exercise, 2), 'row')).toEqual({ setId: 'c', index: 2, total: 3 })
     expect(nextInExercise(pending({ ...exercise, id: 'other' }, 1), 'row')).toBeNull()
     expect(nextInExercise(null, 'row')).toBeNull()
+  })
+
+  it('retiennent le compte de la série pour l’export des points', () => {
+    expect(
+      expectedReps(
+        at({ kind: 'saved', reps: 11, next: null, error: false, correcting: false, corrected: true }),
+      ),
+    ).toBe(11)
+    expect(expectedReps(at({ kind: 'saving', reps: 4 }))).toBe(4)
+    expect(expectedReps(at({ kind: 'review', result: UNSURE, reps: 9 }))).toBe(9)
+    expect(expectedReps(at({ kind: 'empty' }, { offset: 8 }))).toBe(8)
+    expect(expectedReps(at({ kind: 'empty' }))).toBe(0)
   })
 
   it('ne rafraîchissent l’écran que quand ce qui s’y voit change', () => {
