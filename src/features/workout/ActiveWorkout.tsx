@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useProfile, useSettings } from '@/app/data-context'
@@ -7,13 +7,16 @@ import { needsLoad, newSlot } from '@/content/programs/edit'
 import { progressProgram } from '@/content/programs/progression'
 import { trainingContext } from '@/content/programs/resolve'
 import { schemeFor } from '@/content/programs/schemes'
+import { countableVariant } from '@/content/reps/movements'
 import { workoutStats } from '@/content/workouts/stats'
 import {
   addExercise,
   addSet,
   completeSet,
+  measureOf,
   nextPendingSet,
   reopenSet,
+  type PendingSet,
   type SetValues,
 } from '@/content/workouts/workout'
 import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '@/db/types'
@@ -47,7 +50,13 @@ import {
   exerciseAnchor,
   formatElapsed,
   groupByBlock,
+  restLeftSec,
 } from './workout-view'
+
+// Le compteur caméra (et MediaPipe derrière lui) ne se charge qu'au premier appui sur « Compter à la caméra ».
+const RepCounterSheet = lazy(async () => ({
+  default: (await import('./counter/RepCounterSheet')).RepCounterSheet,
+}))
 
 function scrollToElement(element: Element): void {
   element.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
@@ -96,6 +105,8 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
   const [finishing, setFinishing] = useState(false)
   const [abandoning, setAbandoning] = useState(false)
   const [busy, setBusy] = useState(false)
+  // Ligne de la séance comptée à la caméra.
+  const [counting, setCounting] = useState<string | null>(null)
   const [forcedLoads, setForcedLoads] = useState<ReadonlySet<string>>(() => new Set())
   // Exercice ajouté : on y descend dès qu'il est affiché.
   const pendingScroll = useRef<string | null>(null)
@@ -140,25 +151,41 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
   }
   const ignore = () => undefined
 
-  const complete = (exercise: WorkoutExercise, set: WorkoutSet, values: SetValues) => {
+  /**
+   * Coche une série ; le repos part tout de suite, compté depuis `restFrom` (en ms) si donné. Rend la série
+   * suivante de la séance une fois l'enregistrement fait (rejette s'il échoue).
+   */
+  const complete = (
+    exercise: WorkoutExercise,
+    set: WorkoutSet,
+    values: SetValues,
+    restFrom?: number,
+  ): Promise<PendingSet | null> => {
     // Pendant le toucher : Safari autorise ensuite les bips et la voix du repos.
     unlockCues(cues)
     const at = nowISO()
-    save((w) => completeSet(w, exercise.id, set.id, values, at)).catch(ignore)
+    const saved = save((w) => completeSet(w, exercise.id, set.id, values, at))
     const updated = completeSet(workout, exercise.id, set.id, values, at)
     const next = nextPendingSet(updated, { exerciseId: exercise.id, setId: set.id })
     if (!next) {
       skipRest()
       toast(frenchSpacing('Tout est coché : tu peux terminer la séance !'))
-      return
+    } else {
+      const { text, spoken } = describePending(
+        next,
+        catalog.byId.get(next.exercise.exerciseId)?.name ?? 'Exercice supprimé',
+        catalog.byId.get(next.exercise.exerciseId)?.measure,
+      )
+      startRest({
+        workoutId: workout.id,
+        seconds: restLeftSec(exercise.restSec, restFrom),
+        next: text,
+        announce: spoken,
+        cues,
+      })
+      if (next.exercise.id !== exercise.id) scrollToExercise(next.exercise.id)
     }
-    const { text, spoken } = describePending(
-      next,
-      catalog.byId.get(next.exercise.exerciseId)?.name ?? 'Exercice supprimé',
-      catalog.byId.get(next.exercise.exerciseId)?.measure,
-    )
-    startRest({ workoutId: workout.id, seconds: exercise.restSec, next: text, announce: spoken, cues })
-    if (next.exercise.id !== exercise.id) scrollToExercise(next.exercise.id)
+    return saved.then(() => next)
   }
 
   const add = (chosen: Exercise) => {
@@ -222,6 +249,13 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
     )
   }
   const optionsExercise = optionsFor ? workout.exercises.find((e) => e.id === optionsFor) : undefined
+  const countingExercise = counting ? workout.exercises.find((e) => e.id === counting) : undefined
+  const countingVariant = countingExercise
+    ? countableVariant(
+        countingExercise.exerciseId,
+        measureOf(countingExercise, catalog.byId.get(countingExercise.exerciseId)?.measure ?? 'reps'),
+      )
+    : null
 
   return (
     <Page
@@ -273,7 +307,7 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
                   cues={cues}
                   save={save}
                   onComplete={(set, values) => {
-                    complete(exercise, set, values)
+                    complete(exercise, set, values).catch(ignore)
                   }}
                   onReopen={(set) => {
                     save((w) => reopenSet(w, exercise.id, set.id)).catch(ignore)
@@ -283,6 +317,11 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
                   }}
                   onOptions={() => {
                     setOptionsFor(exercise.id)
+                  }}
+                  onCount={() => {
+                    // Pendant le toucher : Safari autorise ensuite les bips et la voix du compteur.
+                    unlockCues(cues)
+                    setCounting(exercise.id)
                   }}
                 />
               ))}
@@ -356,6 +395,23 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
           setAbandoning(true)
         }}
       />
+
+      {countingExercise && countingVariant && (
+        <Suspense fallback={null}>
+          <RepCounterSheet
+            workout={workout}
+            exercise={countingExercise}
+            exerciseName={catalog.byId.get(countingExercise.exerciseId)?.name ?? 'Exercice supprimé'}
+            variant={countingVariant}
+            cues={cues}
+            onComplete={(set, values, restFrom) => complete(countingExercise, set, values, restFrom)}
+            save={save}
+            onClose={() => {
+              setCounting(null)
+            }}
+          />
+        </Suspense>
+      )}
 
       <ConfirmSheet
         open={abandoning}

@@ -135,6 +135,15 @@ export function formatElapsed(totalSec: number): string {
   return h > 0 ? `${String(h)}:${String(m).padStart(2, '0')}:${sec}` : `${String(m)}:${sec}`
 }
 
+/**
+ * Repos à lancer après une série finie à `restFromMs` (série comptée à la caméra) : le repos prévu moins le
+ * temps déjà passé depuis la dernière répétition. Sans `restFromMs` : le repos prévu.
+ */
+export function restLeftSec(restSec: number, restFromMs?: number, nowMs = Date.now()): number {
+  if (restFromMs === undefined) return restSec
+  return restSec - Math.max(0, Math.round((nowMs - restFromMs) / 1000))
+}
+
 /** Durée d'une séance à la minute : « 52 min », « 1 h 05 » (au moins une minute). */
 export function formatWorkoutDuration(totalSec: number): string {
   return formatDuration(Math.max(60, Math.round(totalSec / 60) * 60))

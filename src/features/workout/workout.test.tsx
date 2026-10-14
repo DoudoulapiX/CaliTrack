@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { addSession, addSlot, emptyProgram, newSession, newSlot } from '@/content/programs/edit'
 import { schemeFor } from '@/content/programs/schemes'
 import { addExercise, completeSet, freeWorkout } from '@/content/workouts/workout'
@@ -9,10 +9,25 @@ import type { Program, Workout } from '@/db/types'
 import { startWorkout } from '@/db/workouts'
 import { sequentialIds, testCatalog } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
+import type { RepCounterSheetProps } from './counter/RepCounterSheet'
 import { skipRest } from './rest-timer'
 
 // Les horloges de l'écran (durée, repos) ne tournent pas pendant les tests : pas de rendu hors de act().
 vi.mock('./useNow', () => ({ useNow: () => Date.now() }))
+
+// La vraie feuille du compteur caméra, dont le test garde les props (pour cocher une série comme elle le fera).
+const counterSheet = vi.hoisted(() => ({ props: null as RepCounterSheetProps | null }))
+vi.mock('./counter/RepCounterSheet', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./counter/RepCounterSheet')>()
+  const { createElement } = await import('react')
+  return {
+    ...actual,
+    RepCounterSheet: (props: RepCounterSheetProps) => {
+      counterSheet.props = props
+      return createElement(actual.RepCounterSheet, props)
+    },
+  }
+})
 
 const PROGRAM_ID = 'w-1'
 const SESSION_ID = 'w-2'
@@ -20,6 +35,7 @@ const SESSION_PATH = `/training/programs/${PROGRAM_ID}/sessions/${SESSION_ID}`
 
 afterEach(() => {
   skipRest()
+  counterSheet.props = null
 })
 
 /** Programme fait main : une figure (tractions poitrine à la barre), puis des pompes et des dips. */
@@ -360,5 +376,111 @@ describe('séance en direct', () => {
 
     await router.navigate('/workout/inconnue')
     expect(await screen.findByText('Séance introuvable')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Séance libre en cours : pompes (3 séries, la première faite), gainage, pistol squat, tractions négatives,
+ * et un squat déjà fini.
+ */
+async function saveCountingWorkout(): Promise<Workout> {
+  const newId = sequentialIds('c')
+  let workout = freeWorkout({ date: '2026-10-10', now: new Date().toISOString(), newId })
+  for (const id of ['pushup', 'plank', 'pistol', 'pullup-negative', 'squat']) {
+    workout = addExercise(workout, id, {
+      restSec: 90,
+      newId,
+      sets: id === 'pushup' ? 3 : 1,
+      block: 'strength',
+    })
+  }
+  const [pushups, , , , squats] = workout.exercises
+  const at = new Date().toISOString()
+  workout = completeSet(workout, pushups!.id, pushups!.sets[0]!.id, { reps: 8 }, at)
+  workout = completeSet(workout, squats!.id, squats!.sets[0]!.id, { reps: 15 }, at)
+  return startWorkout(workout)
+}
+
+/** Ouvre la séance de saveCountingWorkout. */
+async function openCountingWorkout() {
+  let id = ''
+  const app = await renderApp('/training', {
+    setup: async () => {
+      id = (await saveCountingWorkout()).id
+    },
+  })
+  await app.router.navigate(`/workout/${id}`)
+  expect(await screen.findByRole('article', { name: 'Pompes' })).toBeInTheDocument()
+  return app
+}
+
+describe('compteur caméra', () => {
+  it('se propose sur un exercice compté qui a une série à faire, et s’ouvre sur cette série', async () => {
+    const { user } = await openCountingWorkout()
+    const pushups = screen.getByRole('article', { name: 'Pompes' })
+    const count = within(pushups).getByRole('button', { name: 'Compter à la caméra : Pompes' })
+    expect(count).toHaveTextContent('Compter à la caméra')
+    // Au chrono, pas compté, ou plus rien à faire : pas de bouton.
+    for (const name of [
+      'Gainage sur les avant-bras',
+      'Pistol squat',
+      'Tractions négatives',
+      'Squat au poids du corps',
+    ]) {
+      const card = screen.getByRole('article', { name })
+      expect(within(card).queryByRole('button', { name: /^Compter à la caméra/ })).not.toBeInTheDocument()
+    }
+
+    await user.click(count)
+    const sheet = await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    expect(within(sheet).getByRole('status')).toHaveTextContent('Préparation du compteur…')
+    expect(counterSheet.props).toMatchObject({
+      exerciseName: 'Pompes',
+      variant: { movement: 'pushup', overrides: {} },
+    })
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Pompes, série 2' })).not.toBeInTheDocument()
+    })
+    // Rien n'a été coché.
+    expect((await activeWorkout()).exercises[0]?.sets.map((set) => set.done)).toEqual([true, false, false])
+  })
+
+  it('coche la série comptée : repos raccourci du temps déjà passé, série suivante rendue', async () => {
+    const { user } = await openCountingWorkout()
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    const props = counterSheet.props!
+    const [, second, third] = props.exercise.sets
+
+    // Dernière répétition il y a 30 s : il reste 1 min de repos sur 1 min 30.
+    let next = await act(() => props.onComplete(second!, { reps: 11 }, Date.now() - 30_000))
+    expect(next).toMatchObject({ index: 2, set: { id: third!.id }, exercise: { id: props.exercise.id } })
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toHaveTextContent('1:00')
+    const saved = (await activeWorkout()).exercises[0]?.sets[1]
+    expect(saved).toMatchObject({ done: true, reps: 11 })
+
+    // Sans heure de fin : le repos entier ; puis la série d'un autre exercice.
+    next = await act(() => props.onComplete(third!, { reps: 10 }))
+    expect(next?.exercise.exerciseId).toBe('plank')
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toHaveTextContent('1:30')
+  })
+
+  it('ne lance pas de repos déjà écoulé, et rejette quand l’enregistrement échoue', async () => {
+    const { user } = await openCountingWorkout()
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    const props = counterSheet.props!
+    const [, second, third] = props.exercise.sets
+
+    await act(() => props.onComplete(second!, { reps: 9 }, Date.now() - 120_000))
+    expect(screen.queryByRole('timer', { name: 'Repos restant' })).not.toBeInTheDocument()
+
+    await db.workouts.clear()
+    let failure: unknown = null
+    await act(async () => {
+      failure = await props.onComplete(third!, { reps: 9 }).catch((error: unknown) => error)
+    })
+    expect(failure).toEqual(new Error('Séance introuvable.'))
   })
 })
