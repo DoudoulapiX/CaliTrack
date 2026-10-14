@@ -13,10 +13,21 @@ export interface SheetProps {
   tall?: boolean
   /** Change quand la feuille passe à un autre écran (liste, puis réglages) : on revient en haut. */
   scrollKey?: string
+  /** Échap passe par onClose, qui peut refuser de fermer (sinon la boîte se ferme d'elle-même). */
+  guardClose?: boolean
 }
 
 /** Feuille qui monte du bas de l'écran (boîte de dialogue native, accessible au clavier et aux lecteurs d'écran). */
-export function Sheet({ open, onClose, title, children, footer, tall = false, scrollKey }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  tall = false,
+  scrollKey,
+  guardClose = false,
+}: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -56,6 +67,14 @@ export function Sheet({ open, onClose, title, children, footer, tall = false, sc
         document.documentElement.style.overflow = ''
         onCloseRef.current()
       }}
+      onCancel={
+        guardClose
+          ? (e) => {
+              e.preventDefault()
+              onCloseRef.current()
+            }
+          : undefined
+      }
       onClick={(e) => {
         if (e.target === e.currentTarget) onCloseRef.current()
       }}
