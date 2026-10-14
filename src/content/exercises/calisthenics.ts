@@ -907,6 +907,24 @@ const DEFS: Def[] = [
       'Redescends bras tendus sans perdre la position.',
     ],
   },
+  {
+    id: 'curl-band',
+    name: 'Curl à l’élastique',
+    aliases: ['band curl', 'banded biceps curl', 'curl élastique'],
+    level: 'beginner',
+    mechanic: 'isolation',
+    force: 'pull',
+    primary: ['biceps'],
+    secondary: ['forearms'],
+    equipment: [['bands']],
+    figure: null,
+    steps: [
+      'Debout sur le milieu de l’élastique, pieds largeur de hanches, une extrémité dans chaque main, bras tendus.',
+      'Coudes collés au corps, monte les mains jusqu’aux épaules en expirant.',
+      'Redescends lentement jusqu’aux bras tendus.',
+    ],
+    tips: ['Écarte un peu les pieds sur l’élastique pour durcir l’exercice.'],
+  },
 
   /* ------------------------------------------------------------------ */
   /* Jambes                                                               */
