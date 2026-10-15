@@ -19,7 +19,10 @@ import {
   lastRepAt,
   measuredFps,
   nextInExercise,
+  savedOffset,
   sessionReducer,
+  unsavedReps,
+  type Pause,
   type SessionState,
   type SessionView,
 } from './counter-session'
@@ -41,14 +44,20 @@ export interface SessionActions {
   readonly showGuide: () => void
   /** « Terminer la série ». */
   readonly finish: () => void
-  /** Croix, Échap ou fond : demande d'abord s'il reste des répétitions pas enregistrées. */
+  /**
+   * Croix, Échap ou fond : demande d'abord s'il reste des répétitions pas enregistrées ; pendant un
+   * enregistrement, ferme quand il a réussi ; pendant la question, ne fait rien (seuls ses boutons choisissent).
+   */
   readonly close: () => void
+  /** Garde la feuille ouverte : retour à l'écran d'avant la question. */
   readonly keepCounting: () => void
   /** « Fermer sans enregistrer ». */
   readonly closeNow: () => void
   /** « Réessayer » après un problème ou quand rien n'a été compté. */
   readonly retry: () => void
   readonly adjust: (reps: number) => void
+  /** « Ajouter les 2 mouvements » écartés après une pause (une fois). */
+  readonly addDoubtful: () => void
   /** « Enregistrer N répétitions », ou « Réessayer » après un enregistrement raté. */
   readonly save: () => void
   /** « Ne pas enregistrer » : la série se recompte. */
@@ -87,11 +96,24 @@ export interface RepSession {
   readonly validated: boolean
 }
 
-/** Un essai : un compteur neuf, et ce qu'il a rendu en dernier. */
+/**
+ * Un essai : un compteur neuf, et ce qu'il a rendu en dernier. Le temps passé hors du direct (question de
+ * fermeture, conseils) est retiré du temps des images : le compteur ne voit pas ces pauses.
+ */
 interface Attempt {
   readonly number: number
+  /** Le compte d'où l'essai part (« Continuer la série »). */
+  readonly offset: number
   readonly counter: RepCounter
   last: CounterSnapshot
+  /** Temps de la dernière image donnée au compteur (temps du compteur). */
+  lastT: number
+  /** Millisecondes de pause retirées du temps des images. */
+  shift: number
+  /** Début de la pause en cours (performance.now()), sinon null. */
+  pausedAt: number | null
+  /** Les pauses finies : temps du compteur où chacune a commencé, et sa durée. */
+  readonly pauses: Pause[]
 }
 
 /** La dernière image analysée : son essai, son temps (celui du compteur), l'heure, et sa taille. */
@@ -144,26 +166,31 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const { state: current, props: currentProps } = latest.current
     const existing = attemptRef.current
     if (existing?.number === current.attempt) return existing
-    // Nouvelle série : les points de la précédente sont oubliés (« Continuer la série » les garde).
-    if (current.offset === 0) recorder.clear()
+    // Les points gardés sont ceux de l'essai : un compteur neuf les rejoue depuis le début (« Continuer la
+    // série » compris, son compte attendu étant ce qu'il ajoute).
+    recorder.clear()
     const counter = createRepCounter({ variant: currentProps.variant, offset: current.offset })
-    const attempt: Attempt = { number: current.attempt, counter, last: counter.snapshot }
+    const attempt: Attempt = {
+      number: current.attempt,
+      offset: current.offset,
+      counter,
+      last: counter.snapshot,
+      lastT: Number.NEGATIVE_INFINITY,
+      shift: 0,
+      pausedAt: null,
+      pauses: [],
+    }
     attemptRef.current = attempt
     return attempt
   }, [recorder])
 
-  /** Temps du compteur maintenant : celui de la dernière image, plus le temps passé depuis. */
+  /** Temps du compteur maintenant : celui de la dernière image, plus le temps passé depuis (hors pause). */
   const counterNow = useCallback((): number => {
     const frame = lastFrameRef.current
     if (!frame) return Math.round(performance.now())
-    return Math.round(frame.t + Math.max(1, performance.now() - frame.perf))
-  }, [])
-
-  /** Répétitions de la série déjà enregistrées (0 si elle n'est pas cochée). */
-  const savedReps = useCallback((): number => {
-    const { state: current, props: currentProps } = latest.current
-    const set = currentProps.exercise.sets.find((s) => s.id === current.setId)
-    return set?.done ? (set.reps ?? 0) : 0
+    const attempt = attemptRef.current
+    const now = (attempt?.number === frame.attempt ? attempt.pausedAt : null) ?? performance.now()
+    return Math.round(frame.t + Math.max(1, now - frame.perf))
   }, [])
 
   /** Fin de l'essai (automatique, « Terminer la série », caméra coupée) : une seule fois par essai. */
@@ -185,6 +212,15 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       if (snapshot !== before) {
         const signal = cueFor(before, snapshot, targetMin(currentProps.exercise.target))
         if (signal) cue(signal.tone, currentProps.cues, signal.text)
+        // « Continuer la série » après l'enregistrement : le repos de la série s'arrête à la première répétition
+        // de plus (sans elle, la série reste comme elle était, repos compris).
+        if (
+          latest.current.state.resume?.kind === 'saved' &&
+          before.reps <= attempt.offset &&
+          snapshot.reps > attempt.offset
+        ) {
+          skipRest()
+        }
       }
       const now = Date.now()
       const previous = shownRef.current
@@ -211,16 +247,20 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
         settle(attempt, ended)
         return
       }
-      recorder.add(frame)
+      // Le temps du compteur, pauses retirées (toujours croissant).
+      const t = Math.max(attempt.lastT + 1, frame.t - attempt.shift)
+      attempt.lastT = t
+      const counted = t === frame.t ? frame : { ...frame, t }
+      recorder.add(counted)
       lastFrameRef.current = {
         attempt: attempt.number,
-        t: frame.t,
+        t,
         at: Date.now(),
         perf: performance.now(),
         width: frame.width,
         height: frame.height,
       }
-      publish(attempt, attempt.counter.push(frame, light))
+      publish(attempt, attempt.counter.push(counted, light))
     },
     [currentAttempt, publish, recorder, settle],
   )
@@ -234,10 +274,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const attempt = attemptRef.current
     if (view.kind !== 'live' && view.kind !== 'guide' && view.kind !== 'confirmClose') return false
     if (attempt?.number !== number || attempt.counter.result) return false
-    if (attempt.last.reps <= savedReps()) return false
+    if (attempt.last.reps <= savedOffset(latest.current.state)) return false
     settle(attempt, attempt.counter.finish(counterNow(), 'interrupted'))
     return true
-  }, [counterNow, savedReps, settle])
+  }, [counterNow, settle])
 
   const onHidden = useCallback(() => {
     interrupt()
@@ -280,6 +320,27 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     if (isLive) currentAttempt()
   }, [isLive, state.attempt, currentAttempt])
 
+  // Hors du direct (question de fermeture, conseils), l'essai attend : au retour, ce temps est retiré du temps
+  // du compteur, qui n'y voit ni un arrêt (fin de série) ni une image saccadée.
+  useEffect(() => {
+    const attempt = attemptRef.current
+    if (attempt?.number !== state.attempt) return
+    const now = performance.now()
+    if (!isLive) {
+      attempt.pausedAt ??= now
+      return
+    }
+    const { pausedAt } = attempt
+    attempt.pausedAt = null
+    // Pas encore d'image : rien à décaler.
+    if (pausedAt === null || attempt.lastT === Number.NEGATIVE_INFINITY) return
+    const ms = Math.round(now - pausedAt)
+    attempt.shift += ms
+    attempt.pauses.push({ t: attempt.lastT, ms })
+    const frame = lastFrameRef.current
+    if (frame?.attempt === attempt.number) lastFrameRef.current = { ...frame, perf: frame.perf + ms }
+  }, [isLive, state.attempt])
+
   // Caméra figée en direct : le compteur voit quand même le temps passer (et peut finir la série).
   useEffect(() => {
     if (!isLive) return
@@ -296,8 +357,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     }
   }, [isLive, counterNow, publish])
 
-  // Enregistrement de la série : une fois par entrée dans l'écran « enregistrement ».
+  // Enregistrement de la série : une fois par entrée dans l'écran « enregistrement ». Fermée pendant ce temps, la
+  // feuille se ferme quand il a réussi ; s'il échoue, elle reste ouverte sur l'erreur.
   const savingFor = useRef<SessionView | null>(null)
+  const closeWhenSaved = useRef(false)
   useEffect(() => {
     const { view } = state
     if (view.kind !== 'saving' || savingFor.current === view) return
@@ -305,7 +368,11 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const { exercise: row, onComplete, cues: options } = latest.current.props
     const set = row.sets.find((s) => s.id === state.setId)
     const auto = state.result?.confident === true
-    const restFrom = lastRepAt(state.result?.repTimes ?? [], lastFrameRef.current)
+    const restFrom = lastRepAt(
+      state.result?.repTimes ?? [],
+      lastFrameRef.current,
+      attemptRef.current?.pauses ?? [],
+    )
     const saving = set
       ? onComplete(set, { reps: view.reps }, restFrom)
       : Promise.reject(new Error('Série introuvable'))
@@ -313,8 +380,13 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       (next) => {
         dispatch({ type: 'saved', next: nextInExercise(next, row.id) })
         if (auto) cue('go', options, CUE_TEXT.saved(view.reps))
+        if (closeWhenSaved.current) {
+          closeWhenSaved.current = false
+          latest.current.props.onClose()
+        }
       },
       () => {
+        closeWhenSaved.current = false
         dispatch({ type: 'saveFailed' })
       },
     )
@@ -346,12 +418,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     }
   }, [state.view, resting])
 
-  const shownReps = (): number => {
-    const { view } = latest.current.state
-    if (view.kind === 'review') return view.reps
-    if (view.kind !== 'live' && view.kind !== 'guide') return 0
+  /** Le compte de l'essai en cours, s'il a commencé. */
+  const liveReps = (): number | null => {
     const attempt = attemptRef.current
-    return attempt?.number === latest.current.state.attempt ? attempt.last.reps : 0
+    return attempt?.number === latest.current.state.attempt ? attempt.last.reps : null
   }
 
   const actions: SessionActions = {
@@ -371,12 +441,15 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       settle(attempt, attempt.counter.finish(counterNow(), 'manual'))
     },
     close: () => {
-      if (latest.current.state.view.kind === 'confirmClose') {
-        onClose()
+      const { state: current } = latest.current
+      // Un deuxième toucher sur la croix ou le fond ne répond pas à la question à la place de la personne.
+      if (current.view.kind === 'confirmClose') return
+      if (current.view.kind === 'saving') {
+        closeWhenSaved.current = true
         return
       }
-      const reps = shownReps()
-      if (reps > savedReps()) dispatch({ type: 'askClose', reps })
+      const unsaved = unsavedReps(current, liveReps())
+      if (unsaved.reps > 0) dispatch({ type: 'askClose', ...unsaved })
       else onClose()
     },
     keepCounting: () => {
@@ -393,6 +466,9 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     adjust: (reps) => {
       dispatch({ type: 'adjust', reps })
     },
+    addDoubtful: () => {
+      dispatch({ type: 'addDoubtful' })
+    },
     save: () => {
       dispatch({ type: 'save' })
     },
@@ -401,7 +477,6 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     },
     continueSet: () => {
       dispatch({ type: 'continueSet' })
-      skipRest()
     },
     nextSet: () => {
       dispatch({ type: 'nextSet' })
@@ -436,6 +511,7 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     exportPoints: () => {
       const { result } = state
       if (!result) return
+      const from = attemptRef.current?.offset ?? 0
       const at = new Date()
       const name = exportFileName(movement, at)
       const frame = lastFrameRef.current
@@ -445,13 +521,13 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
         movement,
         exerciseId: exercise.exerciseId,
         kind: 'set',
-        // Le compte attendu : celui enregistré (ou vérifié), pas celui du compteur.
-        expected: { reps: expectedReps(state) },
+        // Le compte attendu : celui enregistré (ou vérifié), pas celui du compteur, moins celui d'où l'essai part.
+        expected: { reps: expectedReps(state, from) },
         split: 'check',
         source: `Compteur caméra de CaliTrack, ${exerciseName}, ${format(at, 'yyyy-MM-dd HH:mm')}`,
         licence: 'À préciser avant d’ajouter le fichier au dépôt',
         estimator: `mediapipe-0.10.35-lite-${delegate.toLowerCase()}`,
-        notes: `Compté par l’appli : ${String(result.reps)}, ${result.confident ? 'sûr' : `à vérifier (${result.reasons.join(', ')})`}, fin : ${result.endedBy}`,
+        notes: `Compté par l’appli : ${String(result.reps - from)}${from > 0 ? ` de plus que ${String(from)}` : ''}, ${result.confident ? 'sûr' : `à vérifier (${result.reasons.join(', ')})`}, fin : ${result.endedBy}`,
         fps: 15,
         width: frame?.width ?? 640,
         height: frame?.height ?? 480,

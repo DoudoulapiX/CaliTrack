@@ -10,6 +10,7 @@ import type { Program, Workout } from '@/db/types'
 import { startWorkout } from '@/db/workouts'
 import { sequentialIds, testCatalog } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
+import { expectFrenchSpacing } from '@/test/typography'
 import type { RepCounterSheetProps } from './counter/RepCounterSheet'
 import { skipRest } from './rest-timer'
 
@@ -17,15 +18,20 @@ import { skipRest } from './rest-timer'
 vi.mock('./useNow', () => ({ useNow: () => Date.now() }))
 
 // La vraie feuille du compteur caméra, dont le test garde les props (pour cocher une série comme elle le fera).
-const counterSheet = vi.hoisted(() => ({ props: null as RepCounterSheetProps | null }))
+// `unloadable` : son chargement échoue (fichier pas encore en cache, sans réseau).
+const counterSheet = vi.hoisted(() => ({ props: null as RepCounterSheetProps | null, unloadable: false }))
 vi.mock('./counter/RepCounterSheet', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./counter/RepCounterSheet')>()
   const { createElement } = await import('react')
+  const RepCounterSheet = (props: RepCounterSheetProps) => {
+    counterSheet.props = props
+    return createElement(actual.RepCounterSheet, props)
+  }
   return {
     ...actual,
-    RepCounterSheet: (props: RepCounterSheetProps) => {
-      counterSheet.props = props
-      return createElement(actual.RepCounterSheet, props)
+    get RepCounterSheet() {
+      if (counterSheet.unloadable) throw new TypeError('Failed to fetch dynamically imported module')
+      return RepCounterSheet
     },
   }
 })
@@ -48,6 +54,7 @@ const SESSION_PATH = `/training/programs/${PROGRAM_ID}/sessions/${SESSION_ID}`
 afterEach(() => {
   skipRest()
   counterSheet.props = null
+  counterSheet.unloadable = false
   pose.engines = []
 })
 
@@ -486,6 +493,29 @@ describe('compteur caméra', () => {
     next = await act(() => props.onComplete(third!, { reps: 10 }))
     expect(next?.exercise.exerciseId).toBe('plank')
     expect(screen.getByRole('timer', { name: 'Repos restant' })).toHaveTextContent('1:30')
+  })
+
+  it('ne se charge pas (hors ligne, pas encore en cache) : la séance reste, et le prochain appui réessaie', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { user } = await openCountingWorkout()
+    counterSheet.unloadable = true
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    const failed = await screen.findByRole('dialog', { name: 'Compteur caméra' })
+    expect(within(failed).getByRole('alert')).toHaveTextContent(
+      'Le compteur n’a pas pu démarrer. S’il n’a encore jamais servi, connecte-toi une fois à Internet pour le télécharger.',
+    )
+    expect(screen.getByRole('article', { name: 'Pompes' })).toBeInTheDocument()
+    expectFrenchSpacing()
+
+    // Fermé, puis rouvert une fois en ligne : le compteur se charge.
+    await user.click(within(failed).getByRole('button', { name: 'Fermer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Compteur caméra' })).not.toBeInTheDocument()
+    })
+    counterSheet.unloadable = false
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    expect(await screen.findByRole('dialog', { name: 'Pompes, série 2' })).toBeInTheDocument()
+    expect((await activeWorkout()).exercises[0]?.sets.map((set) => set.done)).toEqual([true, false, false])
   })
 
   it('ne lance pas de repos déjà écoulé, et rejette quand l’enregistrement échoue', async () => {

@@ -11,6 +11,7 @@ import {
   CLOSE_LABEL,
   closeQuestion,
   EMPTY_TEXT,
+  keepLabel,
   MAX_REPS,
   nextText,
   PROBLEM_TEXT,
@@ -142,7 +143,6 @@ function SavedResult({
 /** « 7 répétitions ? » : rien n'est enregistré avant que le nombre soit vérifié. */
 function ReviewResult({ view, actions }: { view: ReviewView; actions: SessionActions }) {
   const { result } = view
-  const [added, setAdded] = useState(false)
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-center text-[32px] leading-tight font-bold text-ink tabular">
@@ -164,15 +164,8 @@ function ReviewResult({ view, actions }: { view: ReviewView; actions: SessionAct
           max={MAX_REPS}
           onChange={actions.adjust}
         />
-        {result.doubtful > 0 && !added && (
-          <Button
-            variant="soft"
-            size="sm"
-            onClick={() => {
-              setAdded(true)
-              actions.adjust(view.reps + result.doubtful)
-            }}
-          >
+        {result.doubtful > 0 && !view.addedDoubtful && (
+          <Button variant="soft" size="sm" onClick={actions.addDoubtful}>
             {addDoubtfulLabel(result.doubtful)}
           </Button>
         )}
@@ -232,10 +225,12 @@ export function CounterResult({ view, rest, actions }: CounterResultProps) {
     case 'confirmClose':
       return (
         <div className="flex flex-col gap-4">
-          <p className="text-center text-[17px] font-semibold text-ink">{closeQuestion(view.reps)}</p>
+          <p className="text-center text-[17px] font-semibold text-ink">
+            {closeQuestion(view.reps, view.saved)}
+          </p>
           <div className="flex flex-col gap-2">
             <Button block size="lg" onClick={actions.keepCounting}>
-              {CLOSE_LABEL.keep}
+              {keepLabel(view.back.kind)}
             </Button>
             <Button variant="danger" block size="lg" onClick={actions.closeNow}>
               {CLOSE_LABEL.close}
