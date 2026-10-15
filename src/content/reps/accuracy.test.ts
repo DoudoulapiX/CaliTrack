@@ -38,6 +38,14 @@ describe.each([15, 10, 8])('à %d images par seconde', (fps) => {
     expect(row.confidentWrongCheck, misses).toBe(0)
   })
 
+  it.each(VALIDATED)('%s : aucune série jugée trop lente pour être sûre', (movement) => {
+    // Sinon la cible des comptes sûrs mais faux ne verrait qu'une partie des séries.
+    const slow = runsAt(fps)
+      .filter((run) => run.movement === movement && run.fixture.kind === 'set')
+      .filter((run) => run.result.reasons.includes('slow'))
+    expect(slow.map((run) => run.fixture.name)).toEqual([])
+  })
+
   it('ne compte rien sur les fichiers négatifs, quel que soit le mouvement', () => {
     const negatives = runsAt(fps).filter((run) => run.fixture.kind === 'negative')
     expect(negatives.length).toBe(

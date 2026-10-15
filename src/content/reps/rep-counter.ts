@@ -202,11 +202,16 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     pending = []
   }
 
-  /** Images par seconde depuis le départ ; null tant que c'est trop tôt pour le dire. */
+  /**
+   * Images par seconde depuis le départ, à une image près : chaque image arrive avec la caméra, jusqu'à un
+   * intervalle de caméra après son heure, et une cadence de 8 tout juste mesurerait parfois 7,98. Les images
+   * comptées sur le temps qu'elles couvrent (un intervalle de plus que d'intervalles) : 8 tout juste n'est jamais
+   * sous 8, 7,5 l'est passé 2 s. Null tant que c'est trop tôt pour le dire.
+   */
   function fpsSinceGo(): number | null {
     if (goAt === null || lastFrameT === null) return null
     const span = lastFrameT - goAt
-    return span >= FPS_MIN_SPAN_MS ? ((framesSinceGo - 1) * 1000) / span : null
+    return span >= FPS_MIN_SPAN_MS ? (framesSinceGo * 1000) / span : null
   }
 
   function end(t: number, why: EndReason): CounterResult {

@@ -313,6 +313,34 @@ describe('createRepCounter : suite de série, temps et images vides', () => {
     expect(fine.result.reasons).toEqual([])
   })
 
+  it.each([15, 30])(
+    'juge à une image près : 8 images par seconde calées sur une caméra à %i ne sont jamais lentes',
+    (cameraFps) => {
+      // Chaque image retenue arrive avec la caméra, jusqu'à une image de caméra après son heure : la mesure depuis
+      // le départ tombe un peu sous 8 sur une série sur deux.
+      const sets = [3, 4, 5, 6, 7, 8, 9, 10].flatMap((reps) =>
+        [0, 1, 2].map((shift) => {
+          const frames = synthSet({ movement: 'squat', reps, fps: cameraFps }).slice(shift)
+          return play(decimate(frames, 8))
+        }),
+      )
+      const slow = sets.filter(
+        ({ result, snapshots }) =>
+          result.reasons.includes('slow') || snapshots.some((snapshot) => snapshot.slow),
+      )
+      expect(slow).toHaveLength(0)
+      expect(sets.every(({ result }) => result.confident)).toBe(true)
+    },
+  )
+
+  it('reste lent à 7,5 images par seconde (une image de caméra sur quatre)', () => {
+    for (const reps of [3, 5, 10]) {
+      const played = play(decimate(synthSet({ movement: 'squat', reps, fps: 30 }), 7.5))
+      expect(played.result.reps).toBe(reps)
+      expect(played.result.reasons).toEqual(['slow'])
+    }
+  })
+
   it('donne de quoi régler le compteur', () => {
     const played = play(synthSet({ movement: 'squat', reps: [{}, { durationMs: 400, depth: 1 }, {}] }))
     // Au plus bas de la première répétition (1,5 s + 1 s).
