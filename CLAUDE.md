@@ -37,7 +37,7 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
 - Prettier : pas de point-virgule, guillemets simples, 110 colonnes.
 - Classes Tailwind écrites en entier (pas de noms construits par morceaux).
 - Une feuille qui peut refuser de se fermer (confirmation) prend `guardClose` : sans lui, Échap ferme la
-  `<dialog>` sans passer par `onClose`.
+  `<dialog>` avant de prévenir `onClose`, qui ne peut plus la garder ouverte.
 - Le routeur garde la barre finale de `BASENAME` (`/CaliTrack/`) : sans elle, recharger l'accueil échoue.
 
 ## Données des utilisateurs
