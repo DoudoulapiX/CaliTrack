@@ -732,6 +732,16 @@ describe('compteur caméra : fermeture et problèmes', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
     expect(within(sheet).getByText('Fermer sans enregistrer les 2 répétitions de plus ?')).toBeInTheDocument()
     expectFrenchSpacing()
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+
+    // Compte à vérifier, réglé plus bas que la série enregistrée : ce compte-là serait perdu aussi.
+    end({ reps: 12, confident: false, reasons: ['lost'] })
+    await within(sheet).findByRole('heading', { name: /^12\srépétitions\s\?$/ })
+    for (let tap = 0; tap < 3; tap++) {
+      await user.click(within(sheet).getByRole('button', { name: 'Répétitions : moins' }))
+    }
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Fermer sans enregistrer les 9 répétitions ?')).toBeInTheDocument()
     await user.click(within(sheet).getByRole('button', { name: 'Fermer sans enregistrer' }))
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

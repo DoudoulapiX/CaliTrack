@@ -281,7 +281,8 @@ export function unsavedReps(state: SessionState, live: number | null): { reps: n
       // Préparation, problème, rien compté : le compte d'où le prochain essai repartira.
       counted = state.offset
   }
-  return { reps: Math.max(0, counted - saved), saved }
+  // Réglé plus bas que la série enregistrée : ce compte-là serait perdu (la série garderait l'ancien).
+  return counted >= saved ? { reps: counted - saved, saved } : { reps: counted, saved: 0 }
 }
 
 /**

@@ -412,7 +412,9 @@ describe('aides du compteur', () => {
       saved: 10,
     })
     expect(unsavedReps(at({ ...reviewView, reps: 13 }, continued), null)).toEqual({ reps: 3, saved: 10 })
-    expect(unsavedReps(at({ ...reviewView, reps: 9 }, continued), null)).toEqual({ reps: 0, saved: 10 })
+    expect(unsavedReps(at({ ...reviewView, reps: 10 }, continued), null)).toEqual({ reps: 0, saved: 10 })
+    // Réglé plus bas que la série enregistrée : ce compte-là serait perdu.
+    expect(unsavedReps(at({ ...reviewView, reps: 9 }, continued), null)).toEqual({ reps: 9, saved: 0 })
     expect(savedOffset(at({ kind: 'live' }, continued))).toBe(10)
 
     // Depuis un compte vérifié pas encore enregistré : il est perdu aussi, où qu'on soit.

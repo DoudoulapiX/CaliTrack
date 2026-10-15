@@ -380,7 +380,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       (next) => {
         dispatch({ type: 'saved', next: nextInExercise(next, row.id) })
         if (auto) cue('go', options, CUE_TEXT.saved(view.reps))
-        if (closeWhenSaved.current) latest.current.props.onClose()
+        if (closeWhenSaved.current) {
+          closeWhenSaved.current = false
+          latest.current.props.onClose()
+        }
       },
       () => {
         closeWhenSaved.current = false
