@@ -4,7 +4,8 @@ import type { PoseEngine } from './pose-engine'
 /*
  * La boucle d'analyse du compteur : à chaque nouvelle image de la caméra, au plus `maxFps` fois par seconde et
  * jamais plus de la moitié du temps (une analyse toutes les deux fois sa durée moyenne, à peine plus), le moteur
- * analyse l'image affichée. Une seule analyse à la fois : elle est synchrone.
+ * analyse l'image affichée. Une seule analyse à la fois : elle est synchrone. Un affichage à la traîne ne ralentit
+ * pas l'analyse en dessous de 10 images par seconde (STALL_MS).
  *
  * Chaque analyse a son heure, un pas après l'heure de la précédente (pas après l'image qui l'a lancée) : avec une
  * caméra à 30 images par seconde et 60 ms d'analyse (le budget d'un iPhone), le pas de 121 ms donne 8,3 analyses
@@ -21,35 +22,66 @@ export interface FrameScheduler {
 const TIMEOUT_MS = 33
 
 /**
- * L'image suivante de la vidéo : requestVideoFrameCallback (Safari 15.4 et plus, Chromium), sinon
+ * Affichage à la traîne (téléphone surchargé, moins de 10 images par seconde à l'écran) : sans nouvelle image
+ * montrée depuis 100 ms, l'analyse se fait quand même sur l'image de la vidéo. Le compte ne dépend pas de
+ * l'affichage : 10 analyses par seconde restent au-dessus des 8 qu'il faut au compteur (COUNTER_PARAMS.minFps).
+ * Avec une caméra à 15 images par seconde ou plus, l'image montrée arrive toujours avant.
+ */
+export const STALL_MS = 100
+
+/**
+ * La prochaine image montrée : requestVideoFrameCallback (Safari 15.4 et plus, Chromium), sinon
  * requestAnimationFrame quand l'image a changé, sinon une minuterie.
  */
+function nextShownFrame(video: HTMLVideoElement, callback: () => void): () => void {
+  if (typeof video.requestVideoFrameCallback === 'function') {
+    const handle = video.requestVideoFrameCallback(() => {
+      callback()
+    })
+    return () => {
+      video.cancelVideoFrameCallback(handle)
+    }
+  }
+  if (typeof requestAnimationFrame === 'function') {
+    const shown = video.currentTime
+    let handle = 0
+    const check = () => {
+      // Même image qu'à la demande (vidéo en pause, image pas encore arrivée) : on attend la suivante.
+      if (video.currentTime === shown) handle = requestAnimationFrame(check)
+      else callback()
+    }
+    handle = requestAnimationFrame(check)
+    return () => {
+      cancelAnimationFrame(handle)
+    }
+  }
+  const timer = setTimeout(callback, TIMEOUT_MS)
+  return () => {
+    clearTimeout(timer)
+  }
+}
+
+/** L'image suivante de la vidéo : la prochaine image montrée, ou au plus tard après STALL_MS. */
 export const videoFrameScheduler: FrameScheduler = {
   request(video, callback) {
-    if (typeof video.requestVideoFrameCallback === 'function') {
-      const handle = video.requestVideoFrameCallback(() => {
-        callback()
-      })
-      return () => {
-        video.cancelVideoFrameCallback(handle)
-      }
+    let waiting = true
+    const fire = () => {
+      if (!waiting) return
+      waiting = false
+      callback()
     }
-    if (typeof requestAnimationFrame === 'function') {
-      const shown = video.currentTime
-      let handle = 0
-      const check = () => {
-        // Même image qu'à la demande (vidéo en pause, image pas encore arrivée) : on attend la suivante.
-        if (video.currentTime === shown) handle = requestAnimationFrame(check)
-        else callback()
-      }
-      handle = requestAnimationFrame(check)
-      return () => {
-        cancelAnimationFrame(handle)
-      }
-    }
-    const timer = setTimeout(callback, TIMEOUT_MS)
+    const stall = setTimeout(() => {
+      cancelShown()
+      fire()
+    }, STALL_MS)
+    const cancelShown = nextShownFrame(video, () => {
+      clearTimeout(stall)
+      fire()
+    })
     return () => {
-      clearTimeout(timer)
+      waiting = false
+      cancelShown()
+      clearTimeout(stall)
     }
   },
 }

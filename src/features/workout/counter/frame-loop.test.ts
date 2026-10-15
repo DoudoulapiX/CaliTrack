@@ -4,6 +4,7 @@ import { emptyFrame, fakePoseEngine, manualScheduler } from '@/test/pose'
 import {
   FRAME_SLACK_MS,
   MAX_FPS,
+  STALL_MS,
   startFrameLoop,
   videoFrameScheduler,
   type FrameLoopOptions,
@@ -334,6 +335,84 @@ describe('cadence des images de la vidéo', () => {
     video.currentTime = 2
     paint()
     expect(callback).toHaveBeenCalledTimes(1)
+  })
+
+  it('n’attend pas plus de 100 ms une image montrée : l’affichage à la traîne ne bloque pas l’analyse', () => {
+    vi.useFakeTimers()
+    let shown: VideoFrameRequestCallback | null = null
+    const requestVideoFrameCallback = vi.fn((callback: VideoFrameRequestCallback) => {
+      shown = callback
+      return 3
+    })
+    const cancelVideoFrameCallback = vi.fn()
+    const video = { requestVideoFrameCallback, cancelVideoFrameCallback } as unknown as HTMLVideoElement
+    const callback = vi.fn()
+    videoFrameScheduler.request(video, callback)
+    vi.advanceTimersByTime(STALL_MS - 1)
+    expect(callback).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(cancelVideoFrameCallback).toHaveBeenCalledExactlyOnceWith(3)
+    // L'image montrée qui arrive après ne rappelle pas une deuxième fois.
+    shown!(0, {} as VideoFrameCallbackMetadata)
+    expect(callback).toHaveBeenCalledTimes(1)
+  })
+
+  it('l’image montrée à temps annule l’attente de 100 ms ; annuler arrête les deux', () => {
+    vi.useFakeTimers()
+    let shown: VideoFrameRequestCallback | null = null
+    const video = {
+      requestVideoFrameCallback: (callback: VideoFrameRequestCallback) => {
+        shown = callback
+        return 1
+      },
+      cancelVideoFrameCallback: vi.fn(),
+    } as unknown as HTMLVideoElement
+    const callback = vi.fn()
+    videoFrameScheduler.request(video, callback)
+    vi.advanceTimersByTime(33)
+    shown!(0, {} as VideoFrameCallbackMetadata)
+    expect(callback).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(STALL_MS * 3)
+    expect(callback).toHaveBeenCalledTimes(1)
+
+    const cancel = videoFrameScheduler.request(video, callback)
+    const late = shown!
+    cancel()
+    vi.advanceTimersByTime(STALL_MS * 3)
+    late(0, {} as VideoFrameCallbackMetadata)
+    expect(callback).toHaveBeenCalledTimes(1)
+  })
+
+  it('avec requestAnimationFrame aussi, une image qui ne change plus n’arrête pas l’analyse', () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+    })
+    const video = { currentTime: 4 }
+    const callback = vi.fn()
+    videoFrameScheduler.request(video as HTMLVideoElement, callback)
+    vi.advanceTimersByTime(STALL_MS - 1)
+    expect(callback).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('une vidéo dont l’affichage s’est figé est analysée 10 fois par seconde, au-dessus du minimum du compteur', () => {
+    vi.useFakeTimers()
+    expect(1000 / STALL_MS).toBeGreaterThan(COUNTER_PARAMS.minFps)
+    const video = {
+      readyState: HTMLMediaElement.HAVE_ENOUGH_DATA,
+      requestVideoFrameCallback: () => 1,
+      cancelVideoFrameCallback: () => undefined,
+    } as unknown as HTMLVideoElement
+    const { engine } = fakePoseEngine()
+    const loop = startFrameLoop({ video, engine, onFrame: vi.fn(), onError: vi.fn(), now: () => Date.now() })
+    vi.advanceTimersByTime(3000)
+    loop.stop()
+    expect(engine.detect.mock.calls).toHaveLength(30)
+    vi.advanceTimersByTime(1000)
+    expect(engine.detect.mock.calls).toHaveLength(30)
   })
 
   it('sinon, une image toutes les 33 ms', () => {
