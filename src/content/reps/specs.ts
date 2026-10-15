@@ -70,6 +70,13 @@ export interface MovementSpec {
   /** Déplacement maximal du point d'appui pendant une répétition, en longueurs de buste. */
   readonly maxAnchorDrift: number
   /**
+   * Point d'appui fixé dans la pièce (pieds au sol, mains au sol ou sur la barre) : son déplacement se mesure
+   * depuis la fin du mouvement précédent, pas seulement pendant la répétition (deux pas puis se baisser pour
+   * ramasser quelque chose ne font pas un squat de plus). Le coude des curls, lui, peut bouger entre deux
+   * répétitions.
+   */
+  readonly anchorFixed: boolean
+  /**
    * Barres : les mains à plus de tant de longueurs de buste de leur place au départ veulent dire que la personne
    * a lâché les barres (position quittée, fin de série) ; null pour les autres mouvements.
    */
@@ -119,6 +126,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     maxTorsoTilt: 60,
     anchor: 'ankles',
     maxAnchorDrift: 0.3,
+    anchorFixed: true,
     mover: 'hips',
     minTravel: 0.25,
     upright: true,
@@ -142,6 +150,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     minBodyLine: 140,
     anchor: 'wrists',
     maxAnchorDrift: 0.3,
+    anchorFixed: true,
     mover: 'shoulders',
     minTravel: 0.15,
     upright: false,
@@ -163,6 +172,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     handsMargin: 0.1,
     anchor: 'wrists',
     maxAnchorDrift: 0.3,
+    anchorFixed: true,
     leaveAnchor: 0.5,
     mover: 'shoulders',
     minTravel: 0.15,
@@ -185,6 +195,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     maxTorsoTilt: 40,
     anchor: 'wrists',
     maxAnchorDrift: 0.3,
+    anchorFixed: true,
     leaveAnchor: 0.5,
     mover: 'shoulders',
     minTravel: 0.3,
@@ -209,6 +220,7 @@ export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
     maxUpperArmTilt: 60,
     anchor: 'elbow',
     maxAnchorDrift: 0.45,
+    anchorFixed: false,
     mover: 'wrist',
     minTravel: 0.25,
     upright: true,

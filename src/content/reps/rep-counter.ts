@@ -8,6 +8,7 @@ import {
   missingPart,
   pairPoint,
   SIDES,
+  sidePoints,
   type Body,
   type FrameFeatures,
   type Side,
@@ -402,7 +403,7 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
           ...input,
           value,
           posture: posture && f.arms[s],
-          anchor: bodyPoint(body, spec.anchor, s),
+          anchors: sidePoints(body, spec.anchor, s),
           mover: bodyPoint(body, spec.mover, s),
         })
         onEvent(ev, s)
@@ -415,7 +416,7 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
         value: f.signal,
         pair: f.pair,
         posture: posture && armsOk,
-        anchor: bodyPoint(body, spec.anchor, pointSide),
+        anchors: sidePoints(body, spec.anchor, pointSide),
         mover: bodyPoint(body, spec.mover, pointSide),
       })
       onEvent(ev, null)

@@ -10,6 +10,7 @@ import {
   pairPoint,
   postureOk,
   readBody,
+  sidePoints,
   sideSignal,
   viewOk,
   type Body,
@@ -93,6 +94,13 @@ describe('points des deux côtés', () => {
     expect(bodyPoint(seen, 'elbow', 1)).toEqual(seen.pixel(14))
     expect(bodyPoint(seen, 'wrist', 1)).toBeNull()
     expect(bodyPoint(seen, 'hips', 0)).toEqual(seen.pixel(23))
+  })
+
+  it('sidePoints : appui de chaque côté, ou du seul côté suivi', () => {
+    expect(sidePoints(seen, 'ankles', null)).toEqual([seen.pixel(27), seen.pixel(28)])
+    expect(sidePoints(seen, 'wrists', null)).toEqual([seen.pixel(15), null])
+    expect(sidePoints(seen, 'ankles', 0)).toEqual([seen.pixel(27), null])
+    expect(sidePoints(seen, 'elbow', 1)).toEqual([null, seen.pixel(14)])
   })
 
   it('jointSide et missingPart', () => {

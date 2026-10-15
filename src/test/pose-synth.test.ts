@@ -184,6 +184,23 @@ describe('séries fabriquées', () => {
     expect(Math.max(...wrists) - Math.min(...wrists)).toBeGreaterThan(0.1)
   })
 
+  it('font marcher la personne sur le côté, sans changer sa position', () => {
+    // Une répétition de 1,5 à 3,5 s, puis 0,5 m de marche de 4 à 5 s, debout jusqu'à 6 s.
+    const frames = synthSet({ movement: 'squat', reps: 1, walk: { at: 4000, metres: 0.5, durationMs: 1000 } })
+    const at = (t: number) => frames.find((frame) => frame.t >= t)!
+    const ankleX = (t: number) => at(t).image![27]![0] * at(t).width
+    // De face, la gauche de la personne est à droite de l'image.
+    expect(ankleX(4000) - ankleX(0)).toBeCloseTo(0, 5)
+    // À vitesse constante (image de 4,6 s : 0,3 m).
+    expect(ankleX(4600) - ankleX(0)).toBeCloseTo(0.3 * SYNTH_CAMERAS.squat.pixelsPerMetre, 0)
+    expect(ankleX(5000) - ankleX(0)).toBeCloseTo(0.5 * SYNTH_CAMERAS.squat.pixelsPerMetre, 0)
+    expect(ankleX(6000) - ankleX(5000)).toBeCloseTo(0, 5)
+    // Même position : les points dans l'espace (hanches en 0) ne changent pas.
+    at(6000).world!.forEach((point, joint) => {
+      point.forEach((value, axis) => expect(value).toBeCloseTo(at(0).world![joint]![axis]!, 9))
+    })
+  })
+
   it('peuvent passer à une autre personne, ailleurs dans l’image', () => {
     const frames = synthSet({ movement: 'squat', reps: 1, switchAt: 1000, leadMs: 2000 })
     const hipX = (frame: PoseFrame) => frame.image![23]![0] * frame.width

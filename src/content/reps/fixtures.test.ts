@@ -19,7 +19,7 @@ const NEGATIVES = FIXTURES.filter((fixture) => fixture.kind === 'negative').map(
 )
 
 describe('fichiers de points (src/test/reps)', () => {
-  it('couvrent séries réelles, négatifs et séries fabriquées, dans 3 Mio au plus', () => {
+  it('couvrent séries réelles, négatifs et séries fabriquées, dans 3 Mo au plus', () => {
     const names = FIXTURES.map((fixture) => fixture.name)
     const count = (prefix: string) => names.filter((name) => name.startsWith(prefix)).length
     expect(count('mmfit-squats-')).toBeGreaterThanOrEqual(8)
@@ -31,7 +31,7 @@ describe('fichiers de points (src/test/reps)', () => {
       (sum, file) => sum + statSync(join(REP_FIXTURES_DIR, file)).size,
       0,
     )
-    expect(bytes).toBeLessThanOrEqual(3 * 1024 * 1024)
+    expect(bytes).toBeLessThanOrEqual(3_000_000)
   })
 
   it('disent d’où ils viennent et sous quelle licence', () => {

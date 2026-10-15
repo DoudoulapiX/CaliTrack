@@ -397,6 +397,11 @@ export interface SynthSetOptions {
   readonly pinned?: 'anchor' | 'mover'
   /** Moments où personne n'est vu (ms depuis le début). */
   readonly gaps?: readonly (readonly [from: number, to: number])[]
+  /**
+   * La personne se déplace sur le côté (vers sa gauche si `metres` est positif), à vitesse constante, de `at` à
+   * `at + durationMs` (ms depuis le début).
+   */
+  readonly walk?: { readonly at: number; readonly metres: number; readonly durationMs: number }
   /** À partir de ce moment, une autre personne ailleurs dans l'image (décalée de `switchShift` pixels). */
   readonly switchAt?: number
   readonly switchShift?: number
@@ -511,6 +516,11 @@ export function synthSet(options: SynthSetOptions): PoseFrame[] {
     if (pinned === 'mover' && !(done && after === 'leave')) {
       const lift = reference - moverHeight(movement, body)
       body = new Map([...body].map(([joint, point]) => [joint, add(point, [0, lift, 0])]))
+    }
+    if (options.walk) {
+      const { at: from, metres, durationMs } = options.walk
+      const aside = metres * Math.min(1, Math.max(0, (elapsed - from) / durationMs))
+      body = new Map([...body].map(([joint, point]) => [joint, add(point, [aside, 0, 0])]))
     }
     const switched = options.switchAt !== undefined && elapsed >= options.switchAt
     frames.push(

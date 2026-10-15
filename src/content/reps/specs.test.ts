@@ -29,6 +29,13 @@ describe('seuils des mouvements', () => {
       'dip',
       'pullup',
     ])
+    // Pieds au sol, mains au sol ou sur la barre : fixés dans la pièce ; le coude des curls ne l'est pas.
+    expect(COUNTED_MOVEMENTS.filter((movement) => SPECS[movement].anchorFixed)).toEqual([
+      'squat',
+      'pushup',
+      'dip',
+      'pullup',
+    ])
     expect(SPECS.dip.leaveAnchor).toBeGreaterThan(SPECS.dip.maxAnchorDrift)
     expect(SPECS.pullup.leaveAnchor).toBeGreaterThan(SPECS.pullup.maxAnchorDrift)
   })

@@ -476,6 +476,29 @@ describe.each([
   })
 })
 
+describe('createRepCounter : mouvement hors série', () => {
+  // Trois squats, puis la personne fait quelques pas et se baisse pour ramasser quelque chose (MM-Fit w17,
+  // série 1) : ses pieds ont bougé depuis la dernière répétition, ce n'est pas un squat de plus.
+  const frames = synthSet({
+    movement: 'squat',
+    reps: [{}, {}, { pauseMs: 3000 }, {}],
+    walk: { at: 9000, metres: 0.5, durationMs: 1500 },
+    ...STAY,
+  })
+
+  it('ne compte pas un dernier mouvement fait après quelques pas, et reste sûr de son compte', () => {
+    const played = play(frames)
+    expect(played.result).toMatchObject({ reps: 3, confident: true, rejected: 0, endedBy: 'idle' })
+    expect(played.events.filter((event) => event.kind === 'rejected')).toEqual([
+      expect.objectContaining({ why: 'anchor' }),
+    ])
+  })
+
+  it('le compterait si les pieds pouvaient bouger entre deux répétitions', () => {
+    expect(play(frames, { spec: { anchorFixed: false } }).result.reps).toBe(4)
+  })
+})
+
 describe('createRepCounter : réglages', () => {
   it('prend les seuils et réglages donnés', () => {
     const frames = synthSet({ movement: 'squat', reps: [{ depth: 0.62 }, { depth: 0.62 }, { depth: 0.62 }] })

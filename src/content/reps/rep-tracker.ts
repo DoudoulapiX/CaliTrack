@@ -1,5 +1,5 @@
 import { distance, smoothingWeight, type Pixel } from './geometry.ts'
-import type { Side } from './features.ts'
+import { SIDES, type Side } from './features.ts'
 import { FEET_DRIFT_TORSO, type MovementSpec } from './specs.ts'
 import type { CounterParams, Phase, RejectReason } from './types.ts'
 
@@ -7,7 +7,15 @@ import type { CounterParams, Phase, RejectReason } from './types.ts'
  * Suivi d'une mesure (un côté, ou un bras pour les curls) : en haut → descend → en bas → remonte. La répétition
  * est comptée en remontant, après des contrôles dans cet ordre : durée, position tenue, déplacement des hanches
  * et des pieds, point d'appui immobile, course suffisante.
+ *
+ * Un point d'appui fixé dans la pièce (pieds au sol, mains au sol ou sur la barre) ne doit pas bouger depuis la
+ * fin du mouvement précédent : faire deux pas puis se baisser pour ramasser quelque chose n'est pas un squat de
+ * plus. Chaque côté est suivi à part : un pas ne déplace qu'un pied, et un point qui disparaît ne fait pas sauter
+ * le milieu des deux.
  */
+
+/** Point d'appui de chaque côté (gauche, droit), en pixels ; null quand il n'est pas vu ou pas suivi. */
+export type SidePoints = readonly [left: Pixel | null, right: Pixel | null]
 
 export interface TrackerInput {
   readonly t: number
@@ -19,8 +27,9 @@ export interface TrackerInput {
   readonly hipX: number
   readonly ankleX: number | null
   readonly torso: number
-  /** Point d'appui et partie qui bouge, en pixels (null quand ils ne sont pas vus). */
-  readonly anchor: Pixel | null
+  /** Point d'appui, de chaque côté. */
+  readonly anchors: SidePoints
+  /** Partie qui bouge, en pixels (null quand elle n'est pas vue). */
   readonly mover: Pixel | null
   /** Barre : mesure du bras le moins plié, quand les deux bras sont vus. */
   readonly pair?: number | null
@@ -52,7 +61,7 @@ export type TrackerParams = Pick<
 
 type TrackerSpec = Pick<
   MovementSpec,
-  'extended' | 'flexed' | 'attempt' | 'minRepMs' | 'maxAnchorDrift' | 'minTravel'
+  'extended' | 'flexed' | 'attempt' | 'minRepMs' | 'maxAnchorDrift' | 'anchorFixed' | 'minTravel'
 >
 
 interface Movement {
@@ -66,7 +75,8 @@ interface Movement {
   pairMin: number | null
   frames: number
   postureFrames: number
-  anchor0: Pixel | null
+  /** Place de référence du point d'appui, par côté : fin du mouvement précédent, sinon début de celui-ci. */
+  anchor0: [Pixel | null, Pixel | null]
   anchorDrift: number
   moverMin: number | null
   moverMax: number | null
@@ -77,6 +87,8 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
   let lastT: number | null = null
   let phase: Phase = 'unknown'
   let current: Movement | null = null
+  /** Place du point d'appui à la fin du mouvement précédent (null : pas encore de mouvement fini). */
+  let rest: SidePoints | null = null
 
   function verdict(
     input: TrackerInput,
@@ -126,6 +138,7 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
         value = null
         if (phase !== 'unknown') phase = 'top'
         current = null
+        rest = null
       }
       value = value === null ? input.value : value + smoothingWeight(dt, params.tauMs) * (input.value - value)
       lastT = t
@@ -148,7 +161,9 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
           pairMin: null,
           frames: 0,
           postureFrames: 0,
-          anchor0: input.anchor,
+          anchor0: spec.anchorFixed
+            ? [rest?.[0] ?? input.anchors[0], rest?.[1] ?? input.anchors[1]]
+            : [input.anchors[0], input.anchors[1]],
           anchorDrift: 0,
           moverMin: input.mover?.[1] ?? null,
           moverMax: input.mover?.[1] ?? null,
@@ -158,9 +173,12 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
         const move = current
         move.frames++
         if (input.posture) move.postureFrames++
-        if (input.anchor && move.anchor0) {
-          move.anchorDrift = Math.max(move.anchorDrift, distance(input.anchor, move.anchor0))
-        } else if (input.anchor) move.anchor0 = input.anchor
+        for (const side of SIDES) {
+          const point = input.anchors[side]
+          const from = move.anchor0[side]
+          if (point && from) move.anchorDrift = Math.max(move.anchorDrift, distance(point, from))
+          else if (point) move.anchor0[side] = point
+        }
         if (input.mover) {
           const y = input.mover[1]
           move.moverMin = move.moverMin === null ? y : Math.min(move.moverMin, y)
@@ -175,6 +193,7 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
           const event = verdict(input, move, phase === 'bottom', crossing)
           phase = 'top'
           current = null
+          rest = input.anchors
           return event
         }
       }

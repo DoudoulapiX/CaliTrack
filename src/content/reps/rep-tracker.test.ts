@@ -4,7 +4,13 @@ import { COUNTER_PARAMS, SPECS } from './specs'
 const SPEC = SPECS.squat // en haut ≥ 150, en bas ≤ 120, demi-répétition ≤ 135, 600 ms au moins
 const TOP = 175
 
-/** Une image : le point d'appui reste en place, la partie qui bouge descend avec la mesure (buste 100 px). */
+/** Les deux pieds à leur place. */
+const FEET: TrackerInput['anchors'] = [
+  [180, 600],
+  [220, 600],
+]
+
+/** Une image : les pieds restent en place, la partie qui bouge descend avec la mesure (buste 100 px). */
 function input(t: number, value: number, patch: Partial<TrackerInput> = {}): TrackerInput {
   return {
     t,
@@ -13,7 +19,7 @@ function input(t: number, value: number, patch: Partial<TrackerInput> = {}): Tra
     hipX: 200,
     ankleX: 200,
     torso: 100,
-    anchor: [200, 600],
+    anchors: FEET,
     mover: [200, 300 + (TOP - value)],
     ...patch,
   }
@@ -105,13 +111,38 @@ describe('createRepTracker', () => {
     expect(run(samples, (t) => ({ posture: t < 900 }))).toMatchObject([{ kind: 'rejected', why: 'posture' }])
     expect(run(samples, (t) => ({ hipX: 200 + (t - 500) * 0.05 }))).toMatchObject([{ why: 'drift' }])
     expect(run(samples, (t) => ({ ankleX: 200 + (t - 500) * 0.04 }))).toMatchObject([{ why: 'drift' }])
-    expect(run(samples, (t) => ({ anchor: [200, 600 + (t - 500) * 0.04] }))).toMatchObject([
+    // Un seul pied qui bouge suffit (chaque côté est suivi à part).
+    expect(run(samples, (t) => ({ anchors: [[180, 600 + (t - 500) * 0.04], FEET[1]] }))).toMatchObject([
       { why: 'anchor' },
     ])
     expect(run(samples, () => ({ mover: [200, 300] }))).toMatchObject([{ why: 'travel' }])
     expect(run(samples, () => ({ mover: null }))).toMatchObject([{ why: 'travel' }])
     // Point d'appui pas vu au départ : il sert dès qu'il apparaît.
-    expect(run(samples, (t) => ({ anchor: t < 1000 ? null : [200, 600] }))).toMatchObject([{ kind: 'rep' }])
+    expect(run(samples, (t) => ({ anchors: t < 1000 ? [null, null] : FEET }))).toMatchObject([
+      { kind: 'rep' },
+    ])
+    // Un pied qui disparaît un moment ne compte pas comme un pied qui bouge.
+    expect(run(samples, (t) => ({ anchors: t > 1000 && t < 1500 ? [FEET[0], null] : FEET }))).toMatchObject([
+      { kind: 'rep' },
+    ])
+  })
+
+  it('pieds au sol : mesurés depuis la fin du mouvement précédent, pas seulement pendant la répétition', () => {
+    // Deux répétitions ; entre les deux, en haut, la personne fait un pas (pied gauche 60 px plus loin).
+    const samples = [...still(0, 500), ...rep(500, 2000, 85), ...still(2567, 4000), ...rep(4000, 2000, 85)]
+    const step = (t: number): Partial<TrackerInput> => ({
+      anchors: t < 3000 ? FEET : [[240, 600], FEET[1]],
+    })
+    expect(run(samples, step).map((event) => event.kind)).toEqual(['rep', 'rejected'])
+    expect(run(samples, step)[1]).toMatchObject({ why: 'anchor' })
+    // Coude des curls : il peut bouger entre deux répétitions.
+    expect(run(samples, step, { ...SPEC, anchorFixed: false }).map((event) => event.kind)).toEqual([
+      'rep',
+      'rep',
+    ])
+    // Après un trou d'images, la place de référence repart du début de la répétition.
+    const gap = samples.filter(([t]) => t < 2800 || t > 3700)
+    expect(run(gap, step).map((event) => event.kind)).toEqual(['rep', 'rep'])
   })
 
   it('ne compte pas à cheval sur un trou d’images, mais supporte un court trou', () => {

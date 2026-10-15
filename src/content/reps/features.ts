@@ -228,6 +228,16 @@ export function bodyPoint(body: Body, kind: ContactPoint | MovingPoint, side: Si
   return pairPoint(body, POINTS[kind], side)
 }
 
+/** Point d'appui de chaque côté (gauche, droit), en pixels : seulement celui du côté suivi quand il y en a un. */
+export function sidePoints(
+  body: Body,
+  kind: ContactPoint,
+  side: Side | null,
+): readonly [left: Pixel | null, right: Pixel | null] {
+  const pair = POINTS[kind]
+  return [side === 1 ? null : pairPoint(body, pair, 0), side === 0 ? null : pairPoint(body, pair, 1)]
+}
+
 /** Ce qui ne change pas d'une image à l'autre : côté suivi et longueur des bras tendus, s'ils sont connus. */
 export interface FeatureState {
   readonly side: Side | null
