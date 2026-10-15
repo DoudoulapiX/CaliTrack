@@ -140,9 +140,9 @@ describe('createRepTracker', () => {
       'rep',
       'rep',
     ])
-    // Après un trou d'images, la place de référence repart du début de la répétition.
+    // Après un trou d'images, la place de référence repart du début de la répétition (le trou est signalé).
     const gap = samples.filter(([t]) => t < 2800 || t > 3700)
-    expect(run(gap, step).map((event) => event.kind)).toEqual(['rep', 'rep'])
+    expect(run(gap, step).map((event) => event.kind)).toEqual(['rep', 'lost', 'rep'])
   })
 
   it('ne compte pas à cheval sur un trou d’images, mais supporte un court trou', () => {
@@ -152,6 +152,51 @@ describe('createRepTracker', () => {
     // 400 ms sans image pendant la descente : la durée part du milieu du trou, la répétition compte.
     const shortGap = samples.filter(([t]) => t < 800 || t > 1200)
     expect(run(shortGap)).toMatchObject([{ kind: 'rep' }])
+  })
+
+  it('signale un trou d’images assez long pour qu’une répétition s’y perde, où qu’il tombe', () => {
+    const samples = [...still(0, 500), ...rep(500, 2000, 85), ...still(2567, 5000)]
+    const after = (t: number) => samples.find(([time]) => time > t)![0]
+    // Pendant la répétition : perdue, et dite perdue à la première image après le trou.
+    const during = run(samples.filter(([t]) => t < 1200 || t > 2000))
+    expect(during[0]).toEqual({ kind: 'lost', t: after(2000) })
+    expect(during.some((event) => event.kind === 'rep')).toBe(false)
+    // En haut, avant ou après : une répétition entière (600 ms au moins) a pu se faire sans être vue.
+    expect(run(samples.filter(([t]) => t < 3000 || t > 3800))).toEqual([
+      expect.objectContaining({ kind: 'rep' }),
+      { kind: 'lost', t: after(3800) },
+    ])
+    // Un trou avant d'avoir vu le haut ne cache rien de compté.
+    const unknown = rep(-1000, 2000, 85).filter(([t]) => t >= 0 && (t < 300 || t > 1200))
+    expect(run(unknown)).toEqual([])
+    // Trou de gapResetMs tout juste : rien ; une milliseconde de plus : signalé.
+    const edge = (gap: number): [number, number][] => [
+      ...still(0, 500),
+      ...rep(500, 2000, 85),
+      [2600, TOP],
+      [2600 + gap, TOP],
+    ]
+    expect(run(edge(COUNTER_PARAMS.gapResetMs)).map((event) => event.kind)).toEqual(['rep'])
+    expect(run(edge(COUNTER_PARAMS.gapResetMs + 1)).map((event) => event.kind)).toEqual(['rep', 'lost'])
+  })
+
+  it('repris en pleine série, dit perdu le mouvement de quelqu’un qui n’est pas en haut', () => {
+    const resumed = (samples: readonly [number, number][]) => {
+      const tracker = createRepTracker(SPEC, COUNTER_PARAMS, { resumed: true })
+      return samples.map(([t, value]) => tracker.step(input(t, value))).filter((event) => event !== null)
+    }
+    // En plein mouvement : perdu, une seule fois ; la répétition suivante compte.
+    const midway = [
+      ...rep(0, 2000, 85).filter(([t]) => t >= 600),
+      ...still(2067, 2500),
+      ...rep(2500, 2000, 85),
+    ]
+    expect(resumed(midway).map((event) => event.kind)).toEqual(['lost', 'rep'])
+    expect(resumed(midway)[0]).toEqual({ kind: 'lost', t: 600 })
+    // En haut : rien de perdu.
+    expect(resumed([...still(0, 500), ...rep(500, 2000, 85)]).map((event) => event.kind)).toEqual(['rep'])
+    // Sans `resumed` (début de série), rien n'est signalé.
+    expect(run(midway).map((event) => event.kind)).toEqual(['rep'])
   })
 
   it('barre : les deux bras doivent plier, sinon demi-répétition', () => {

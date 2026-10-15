@@ -10,8 +10,16 @@ export interface JudgeInput {
   /** Répétitions vues pendant ce passage devant la caméra (sans celles déjà enregistrées, sans les douteuses). */
   readonly reps: number
   readonly doubtful: number
-  /** Mouvements allés jusqu'en bas mais refusés, entre le départ et la dernière répétition. */
+  /**
+   * Mouvements allés jusqu'en bas mais refusés : entre le départ et la dernière répétition, puis jusqu'à la fin
+   * ceux d'une vraie répétition ratée (trop lente, position perdue, course trop courte).
+   */
   readonly rejected: number
+  /**
+   * Moments où des répétitions ont pu passer sans être vues : trou dans les images plus long que gapResetMs, ou
+   * une autre personne à la place (le mouvement en cours est alors perdu).
+   */
+  readonly lost: number
   /** Part des images utilisables et en position entre le départ et la dernière répétition. */
   readonly quality: number
   /** Images analysées par seconde depuis le départ (null : pas assez d'images pour le dire). */
@@ -26,7 +34,7 @@ export function judge(
   params: Pick<CounterParams, 'confidentShare' | 'minFps'> = COUNTER_PARAMS,
 ): { confident: boolean; reasons: UnsureReason[] } {
   const reasons: UnsureReason[] = []
-  if (input.quality < params.confidentShare) reasons.push('lost')
+  if (input.quality < params.confidentShare || input.lost > 0) reasons.push('lost')
   if (input.doubtful > 0) reasons.push('doubtful')
   if (input.rejected > 0) reasons.push('rejected')
   if (input.reps < 2) reasons.push('fewReps')

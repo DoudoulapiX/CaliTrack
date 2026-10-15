@@ -68,6 +68,12 @@ const FPS_TAU_MS = 1000
 const FPS_MIN_SPAN_MS = 1000
 
 const PHASE_ORDER: readonly Phase[] = ['unknown', 'top', 'down', 'bottom']
+/**
+ * Refus d'une vraie répétition ratée, qui comptent jusqu'à la fin de la série (la dernière répétition est souvent
+ * la plus dure). Pas `fast` : une flexion éclair après la série (MM-Fit w00) n'en est pas une, et une répétition
+ * coupée par un trou d'images est déjà dite perdue ; ni `drift`, ni `anchor` : c'est la personne qui s'en va.
+ */
+const FAILED_ATTEMPTS: readonly RejectReason[] = ['slow', 'posture', 'travel']
 const SIDE_NAME = ['left', 'right'] as const
 
 function sameHint(a: PlacementHint | null, b: PlacementHint | null): boolean {
@@ -110,8 +116,10 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
   const repTimes: number[] = []
   let reps = 0
   let partials = 0
-  const rejectedTimes: number[] = []
+  const rejections: { readonly t: number; readonly why: RejectReason }[] = []
   let lastReject: RejectReason | null = null
+  /** Moments où des répétitions ont pu passer sans être vues (trou dans les images, autre personne). */
+  const lostTimes: number[] = []
   let lastRepAt: number | null = null
   let event: (RepEvent & { readonly id: number }) | null = null
   let eventId = 0
@@ -131,11 +139,11 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     event = { ...next, id: eventId }
   }
 
-  function newTrackers(): RepTracker[] {
+  /** resumed : repris en pleine série, après le passage d'une autre personne (voir createRepTracker). */
+  function newTrackers(resumed = false): RepTracker[] {
     merger.reset()
-    return perArm
-      ? [createRepTracker(spec, params), createRepTracker(spec, params)]
-      : [createRepTracker(spec, params)]
+    const tracker = () => createRepTracker(spec, params, { resumed })
+    return perArm ? [tracker(), tracker()] : [tracker()]
   }
 
   function allAtTop(): boolean {
@@ -162,8 +170,10 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     } else if (ev.kind === 'partial') {
       partials++
       emit({ kind: 'partial', t: ev.t })
+    } else if (ev.kind === 'lost') {
+      lostTimes.push(ev.t)
     } else {
-      rejectedTimes.push(ev.t)
+      rejections.push({ t: ev.t, why: ev.why })
       lastReject = ev.why
       emit({ kind: 'rejected', t: ev.t, why: ev.why })
     }
@@ -192,11 +202,16 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     pending = []
   }
 
-  /** Images par seconde depuis le départ ; null tant que c'est trop tôt pour le dire. */
+  /**
+   * Images par seconde depuis le départ, à une image près : chaque image arrive avec la caméra, jusqu'à un
+   * intervalle de caméra après son heure, et une cadence de 8 tout juste mesurerait parfois 7,98. Les images
+   * comptées sur le temps qu'elles couvrent (un intervalle de plus que d'intervalles) : 8 tout juste n'est jamais
+   * sous 8, 7,5 l'est passé 2 s. Null tant que c'est trop tôt pour le dire.
+   */
   function fpsSinceGo(): number | null {
     if (goAt === null || lastFrameT === null) return null
     const span = lastFrameT - goAt
-    return span >= FPS_MIN_SPAN_MS ? ((framesSinceGo - 1) * 1000) / span : null
+    return span >= FPS_MIN_SPAN_MS ? (framesSinceGo * 1000) / span : null
   }
 
   function end(t: number, why: EndReason): CounterResult {
@@ -206,13 +221,17 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     const windowEnd = lastRep !== null && lastRep >= start ? lastRep : t
     const inWindow = samples.filter((sample) => sample.t >= start && sample.t <= windowEnd)
     const quality = inWindow.length > 0 ? inWindow.filter((sample) => sample.ok).length / inWindow.length : 1
-    const rejected =
-      lastRep === null ? 0 : rejectedTimes.filter((time) => time >= start && time <= lastRep).length
+    // Après la dernière répétition gardée, seule une vraie répétition ratée compte.
+    const rejected = rejections.filter(
+      ({ t: time, why }) =>
+        time >= start && ((lastRep !== null && time <= lastRep) || FAILED_ATTEMPTS.includes(why)),
+    ).length
     const verdict = judge(
       {
         reps: kept.length,
         doubtful: doubtful.length,
         rejected,
+        lost: lostTimes.filter((time) => time >= start).length,
         quality,
         fps: fpsSinceGo(),
         endedBy: why,
@@ -333,7 +352,12 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     if (good && body?.hip && lastHip && lastHipT !== null && t - lastHipT < params.jumpWindowMs) {
       if (distance(body.hip, lastHip) / body.torso > params.jumpTorso) {
         if (status === 'counting') {
-          trackers = newTrackers()
+          // Le mouvement en cours est perdu ; les nouveaux suivis le disent aussi s'ils ne trouvent pas la
+          // personne en haut (au retour de la bonne personne, en plein mouvement).
+          if (trackers?.some((tracker) => tracker.phase === 'down' || tracker.phase === 'bottom')) {
+            lostTimes.push(t)
+          }
+          trackers = newTrackers(true)
           // Les mains de la nouvelle personne servent de nouvelle place.
           anchorHome = bodyPoint(body, spec.anchor, null)
         }

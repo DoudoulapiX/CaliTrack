@@ -1,3 +1,4 @@
+import { COUNTER_PARAMS } from '@/content/reps/specs'
 import type { PoseFrame } from '@/content/reps/types'
 import { emptyFrame, fakePoseEngine, manualScheduler } from '@/test/pose'
 import {
@@ -114,6 +115,43 @@ describe('boucle d’analyse des images', () => {
     for (const { ms } of frames) expect(ms).toBeCloseTo(60)
   })
 
+  it.each([50, 55, 60])(
+    'garde assez d’images pour que le compteur soit sûr de lui, caméra à 30 images par seconde et %i ms d’analyse',
+    (inferenceMs) => {
+      // Comme sur l'iPhone : les images arrivent toutes les 33,3 ms quoi qu'il arrive ; celles qui passent pendant une
+      // analyse sont perdues.
+      const period = 1000 / 30
+      let time = 0
+      const scheduler = manualScheduler()
+      const { engine } = fakePoseEngine()
+      const starts: number[] = []
+      engine.detect.mockImplementation((_source, t) => {
+        starts.push(time)
+        time += inferenceMs
+        return emptyFrame(t)
+      })
+      startFrameLoop({
+        video: videoStub(),
+        engine,
+        onFrame: vi.fn(),
+        onError: vi.fn(),
+        scheduler,
+        now: () => time,
+      })
+      for (let image = 1; image <= 20 * 30; image++) {
+        if (image * period < time) continue
+        time = image * period
+        scheduler.step()
+      }
+      const first = starts[0]!
+      const last = starts.at(-1)!
+      // Mesuré comme le compteur : des intervalles sur le temps qu'ils couvrent.
+      expect(((starts.length - 1) * 1000) / (last - first)).toBeGreaterThanOrEqual(COUNTER_PARAMS.minFps)
+      // Et toujours pas plus de la moitié du temps, de la première analyse à la fin de la dernière.
+      expect(starts.length * inferenceMs).toBeLessThanOrEqual((last + inferenceMs - first) / 2)
+    },
+  )
+
   it('n’analyse pas une vidéo sans image prête, mais continue d’attendre', () => {
     const time = clock()
     const scheduler = manualScheduler()
@@ -155,6 +193,17 @@ describe('boucle d’analyse des images', () => {
     frame()
     expect(frames).toHaveLength(before + 1)
     expect(frames[before]!.frame.t).toBeGreaterThan(lastT + 2000)
+  })
+
+  it('ne rattrape pas les analyses manquées pendant une pause', () => {
+    const { frames, loop, run } = setup()
+    run(1)
+    loop.pause()
+    run(2)
+    loop.resume()
+    const before = frames.length
+    run(2)
+    expect(frames).toHaveLength(before + 2 * 15)
   })
 
   it('ne repart plus une fois arrêtée', () => {

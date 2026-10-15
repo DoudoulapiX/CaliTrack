@@ -1,6 +1,7 @@
 import { project, SYNTH_CAMERAS, synthPose, synthSet, type SynthSetOptions } from '@/test/pose-synth'
+import { loadRepFixture } from '@/test/reps-fixtures'
 import { idleLimit } from './cadence'
-import { decimate } from './fixture'
+import { decimate, decodeFixture } from './fixture'
 import { createRepCounter, type RepCounterOptions } from './rep-counter'
 import type {
   CountedMovement,
@@ -9,6 +10,7 @@ import type {
   CounterResult,
   CounterSnapshot,
   CounterStatus,
+  ImagePoint,
   PoseFrame,
   RepEvent,
 } from './types'
@@ -311,6 +313,34 @@ describe('createRepCounter : suite de série, temps et images vides', () => {
     expect(fine.result.reasons).toEqual([])
   })
 
+  it.each([15, 30])(
+    'juge à une image près : 8 images par seconde calées sur une caméra à %i ne sont jamais lentes',
+    (cameraFps) => {
+      // Chaque image retenue arrive avec la caméra, jusqu'à une image de caméra après son heure : la mesure depuis
+      // le départ tombe un peu sous 8 sur une série sur deux.
+      const sets = [3, 4, 5, 6, 7, 8, 9, 10].flatMap((reps) =>
+        [0, 1, 2].map((shift) => {
+          const frames = synthSet({ movement: 'squat', reps, fps: cameraFps }).slice(shift)
+          return play(decimate(frames, 8))
+        }),
+      )
+      const slow = sets.filter(
+        ({ result, snapshots }) =>
+          result.reasons.includes('slow') || snapshots.some((snapshot) => snapshot.slow),
+      )
+      expect(slow).toHaveLength(0)
+      expect(sets.every(({ result }) => result.confident)).toBe(true)
+    },
+  )
+
+  it('reste lent à 7,5 images par seconde (une image de caméra sur quatre)', () => {
+    for (const reps of [3, 5, 10]) {
+      const played = play(decimate(synthSet({ movement: 'squat', reps, fps: 30 }), 7.5))
+      expect(played.result.reps).toBe(reps)
+      expect(played.result.reasons).toEqual(['slow'])
+    }
+  })
+
   it('donne de quoi régler le compteur', () => {
     const played = play(synthSet({ movement: 'squat', reps: [{}, { durationMs: 400, depth: 1 }, {}] }))
     // Au plus bas de la première répétition (1,5 s + 1 s).
@@ -330,6 +360,73 @@ describe('createRepCounter : suite de série, temps et images vides', () => {
     expect(played.snapshots[0]!.debug).toMatchObject({ quality: 0, phase: 'top' })
     expect(played.snapshots.at(-2)!.debug.lastReject).toBe('fast')
     expect(played.result).toMatchObject({ reps: 2, rejected: 1 })
+  })
+})
+
+/** Une autre personne, un quart de largeur plus loin dans l'image, à la place de la bonne de `from` à `to`. */
+function elsewhere(frames: readonly PoseFrame[], from: number, to: number): PoseFrame[] {
+  return frames.map((frame) =>
+    frame.t >= from && frame.t < to && frame.image
+      ? { ...frame, image: frame.image.map(([x, y, v]): ImagePoint => [x + 0.25, y, v]) }
+      : frame,
+  )
+}
+
+/** Les images de `from` à `to` remplacées par des images sans personne. */
+function nobodyBetween(frames: readonly PoseFrame[], from: number, to: number): PoseFrame[] {
+  return frames.map((frame) => (frame.t >= from && frame.t < to ? nobody(frame.t) : frame))
+}
+
+describe('createRepCounter : répétitions perdues de vue', () => {
+  // Cinq squats de 2 s toutes les 2,5 s à partir de 1,5 s : la troisième de 6,5 s à 8,5 s (en bas à 7,5 s).
+  const frames = synthSet({ movement: 'squat', reps: 5, ...STAY })
+  const sure = (played: Played) => [played.result.reps, played.result.confident, played.result.reasons]
+
+  it('un trou d’images en pleine répétition : la répétition est perdue, le compte à vérifier', () => {
+    // Caméra figée 1,5 s (aucune image), ou personne trouvée pendant 1,5 s.
+    const stalled = play(frames.filter((frame) => frame.t < 6900 || frame.t >= 8400))
+    expect(sure(stalled)).toEqual([4, false, ['lost']])
+    expect(sure(play(nobodyBetween(frames, 6900, 8400)))).toEqual([4, false, ['lost']])
+  })
+
+  it('un trou d’images en haut, entre deux répétitions : une répétition a pu s’y faire, compte à vérifier', () => {
+    // Pendant la pause après la deuxième répétition, un peu plus longtemps que gapResetMs.
+    expect(sure(play(frames.filter((frame) => frame.t < 5800 || frame.t > 6600)))).toEqual([
+      5,
+      false,
+      ['lost'],
+    ])
+  })
+
+  it('un court trou d’images ne change rien', () => {
+    expect(sure(play(nobodyBetween(frames, 7000, 7400)))).toEqual([5, true, []])
+  })
+
+  it('une autre personne deux images en pleine répétition : perdue, compte à vérifier', () => {
+    expect(sure(play(elsewhere(frames, 7400, 7534)))).toEqual([4, false, ['lost']])
+    // Juste au moment où la personne remonte en haut.
+    expect(sure(play(elsewhere(frames, 8200, 8334)))).toEqual([4, false, ['lost']])
+  })
+
+  it('une autre personne deux images pendant que la personne attend en haut : rien de perdu', () => {
+    expect(sure(play(elsewhere(frames, 6067, 6200)))).toEqual([5, true, []])
+  })
+
+  it('une vraie série (MM-Fit) : 1,5 s sans image ou deux images d’une autre personne, jamais 9 sûr pour 10', () => {
+    const fixture = loadRepFixture('mmfit-squats-w08-2')
+    const real = decodeFixture(fixture)
+    const counted = play(real).result
+    expect([counted.reps, counted.confident]).toEqual([10, true])
+    // Au milieu de chaque répétition, entre deux répétitions comptées.
+    const middles = counted.repTimes.slice(1).map((t, i) => (counted.repTimes[i]! + t) / 2)
+    for (const middle of middles) {
+      const stalled = play(real.filter((frame) => frame.t < middle - 750 || frame.t > middle + 750)).result
+      const switched = play(elsewhere(real, middle, middle + 134)).result
+      for (const result of [stalled, switched]) {
+        expect(result.reps === fixture.expected.reps || !result.confident, String(middle)).toBe(true)
+        if (result.reps !== fixture.expected.reps) expect(result.reasons).toContain('lost')
+      }
+    }
   })
 })
 
@@ -452,6 +549,7 @@ describe.each([
     const played = run({ reps: 4, switchAt: 5000 })
     expect(played.result.reps).toBe(3)
     expect(played.result.endedBy).toBe('idle')
+    expect(played.result.reasons).toContain('lost')
   })
 
   it('supporte des images sans personne pendant la série, et termine quand elle part', () => {
@@ -473,6 +571,96 @@ describe.each([
     expect(hints.every((hint) => hint === null)).toBe(true)
     // Tractions : moyenne des deux bras ; dips : le côté le mieux vu (le plus près du téléphone).
     expect(played.snapshots[30]!.debug.side).toBe(movement === 'pullup' ? 'both' : 'left')
+  })
+})
+
+describe('createRepCounter : curls, un bras pas vu', () => {
+  const curl = variant('curl')
+  /** Les points d'un bras (épaule, coude, poignet) à peine sous la visibilité utile, de `from` à `to`. */
+  const dimArm = (frames: readonly PoseFrame[], joints: readonly number[], from = 0, to = Infinity) =>
+    frames.map((frame) =>
+      frame.image && frame.t >= from && frame.t < to
+        ? {
+            ...frame,
+            image: frame.image.map(([x, y, v], joint): ImagePoint => [
+              x,
+              y,
+              joints.includes(joint) ? 0.45 : v,
+            ]),
+          }
+        : frame,
+    )
+
+  it('une vraie série de curls alternés (MM-Fit), un bras caché tout du long : jamais la moitié, sûre', () => {
+    const real = decodeFixture(loadRepFixture('mmfit-curls-w05-21'))
+    for (const arm of [
+      [11, 13, 15],
+      [12, 14, 16],
+    ]) {
+      const played = play(dimArm(real, arm), { variant: curl })
+      expect(played.result.confident, String(arm)).toBe(false)
+      // La consigne le dit presque tout du long : on ne voit pas les mains.
+      const hands = played.snapshots.filter((snapshot) => snapshot.hint?.kind === 'out')
+      expect(hands.length, String(arm)).toBeGreaterThan(played.snapshots.length * 0.8)
+      expect(hands.map((snapshot) => snapshot.hint)).toEqual(
+        hands.map(() => ({ kind: 'out', part: 'hands' })),
+      )
+    }
+  })
+
+  it('un bras caché un moment pendant une série alternée : compte à vérifier', () => {
+    const frames = synthSet({ movement: 'curl', reps: 6, alternate: true, ...STAY })
+    expect(play(frames, { variant: curl }).result).toMatchObject({ reps: 6, confident: true })
+    // Le bras droit (deuxième répétition, de 4 s à 6 s) caché de 4,5 s à 5,5 s.
+    const hidden = play(dimArm(frames, [12, 14, 16], 4500, 5500), { variant: curl }).result
+    expect(hidden.confident).toBe(false)
+    expect(hidden.reasons).toContain('lost')
+  })
+})
+
+describe('createRepCounter : dernière répétition refusée', () => {
+  // Curls alternés de MM-Fit ; à la dernière répétition, les coudes partent sur le côté (bras balancé).
+  const fixture = loadRepFixture('mmfit-curls-w05-21')
+  const real = decodeFixture(fixture)
+  const counted = play(real, { variant: variant('curl') }).result
+  /** Coudes à hauteur d'épaule, sur le côté, à partir de `from`. */
+  const swung = (from: number) =>
+    real.map((frame) => {
+      const image = frame.image
+      if (frame.t <= from || !image) return frame
+      const out = (elbow: number, shoulder: number, dx: number): ImagePoint => [
+        image[shoulder]![0] + dx,
+        image[shoulder]![1] + 0.01,
+        image[elbow]![2],
+      ]
+      const moved = [...image]
+      moved[13] = out(13, 11, 0.1)
+      moved[14] = out(14, 12, -0.1)
+      return { ...frame, image: moved }
+    })
+
+  it('une dernière répétition refusée (bras balancé) rend le compte à vérifier', () => {
+    expect([counted.reps, counted.confident]).toEqual([10, true])
+    const played = play(swung(counted.repTimes[8]!), { variant: variant('curl') })
+    expect(played.events.at(-1)).toMatchObject({ kind: 'rejected', why: 'posture' })
+    expect(played.result).toMatchObject({ reps: 9, rejected: 1, confident: false, reasons: ['rejected'] })
+  })
+
+  it('compte tous les refus : avant la dernière répétition gardée et après', () => {
+    const played = play(
+      synthSet({ movement: 'squat', reps: [{}, { durationMs: 450 }, {}, { durationMs: 20_000 }], ...STAY }),
+    )
+    expect(played.events.filter((event) => event.kind === 'rejected')).toEqual([
+      expect.objectContaining({ why: 'fast' }),
+      expect.objectContaining({ why: 'slow' }),
+    ])
+    expect(played.result).toMatchObject({ reps: 2, rejected: 2, confident: false })
+  })
+
+  it('une flexion éclair après la série n’en fait pas une répétition ratée', () => {
+    const played = play(synthSet({ movement: 'squat', reps: [{}, {}, {}, { durationMs: 450 }], ...STAY }))
+    expect(played.events.at(-1)).toMatchObject({ kind: 'rejected', why: 'fast' })
+    expect(played.result).toMatchObject({ reps: 3, rejected: 0, confident: true })
   })
 })
 

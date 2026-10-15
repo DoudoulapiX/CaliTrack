@@ -315,6 +315,27 @@ describe('measureFrame', () => {
     expect(bar.signal).toBeCloseTo(60, 0)
   })
 
+  it('curls bras par bras : un bras pas vu rend l’image inutilisable (il ferait la moitié du compte)', () => {
+    for (const arm of [[11, 13, 15], [12, 14, 16], [16]]) {
+      const oneArm = edit(pose('curl', [60, 150]), Object.fromEntries(arm.map((joint) => [joint, hide])))
+      const features = measureFrame(oneArm, spec('curl'), COUNTER_PARAMS)
+      expect(features, String(arm)).toMatchObject({ measured: false, good: false, posture: false })
+      expect(features.missing).toEqual(arm)
+      expect(missingPart(features.missing), String(arm)).toBe(
+        arm.includes(16) || arm.includes(15) ? 'hands' : 'body',
+      )
+    }
+    // Curl à la barre : les deux coudes plient ensemble, un bras suffit à compter.
+    const bar = edit(pose('curl', [60, 60]), { 12: hide, 14: hide, 16: hide })
+    expect(measureFrame(bar, spec('curl', { bothArms: true }), COUNTER_PARAMS)).toMatchObject({
+      measured: true,
+      good: true,
+    })
+    // Squats : une jambe suffit (genou le plus plié des deux).
+    const leg = edit(pose('squat', 100), { 24: hide, 26: hide, 28: hide })
+    expect(measureFrame(leg, spec('squat'), COUNTER_PARAMS)).toMatchObject({ measured: true, good: true })
+  })
+
   it('tractions : moyenne des deux bras, un seul quand l’autre est caché', () => {
     const both = measureFrame(pose('pullup', 90), spec('pullup'), COUNTER_PARAMS)
     expect(both.signal).toBeCloseTo(((both.values[0] ?? 0) + (both.values[1] ?? 0)) / 2)
