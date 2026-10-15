@@ -87,6 +87,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
       open
       tall
       guardClose
+      wrapTitle
       title={counterTitle(exerciseName, state.setIndex)}
       onClose={actions.close}
       footer={footer}

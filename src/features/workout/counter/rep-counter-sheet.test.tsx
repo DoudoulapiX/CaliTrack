@@ -194,6 +194,10 @@ function holdSave({ fail = false } = {}): { release: () => Promise<void> } {
 describe('compteur caméra : conseils et direct', () => {
   it('montre les conseils la première fois, et n’ouvre la caméra qu’au toucher', async () => {
     const { user, sheet } = await openCounter({ guideSeen: false })
+    // Titre sur deux lignes au plus : « série 2 » ne disparaît pas derrière un nom d'exercice long.
+    expect(within(sheet).getByRole('heading', { level: 2, name: `${SQUAT}, série 2` })).toHaveClass(
+      'line-clamp-2',
+    )
     expect(within(sheet).getByText('Compteur caméra · Objectif : 8 à 12')).toBeInTheDocument()
     expect(within(sheet).getByRole('heading', { name: 'Place ton téléphone' })).toBeInTheDocument()
     // Que du texte : la section prend le focus, pour défiler au clavier.

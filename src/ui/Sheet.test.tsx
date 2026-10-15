@@ -47,4 +47,22 @@ describe('Sheet', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(dialog).toHaveAttribute('open')
   })
+
+  it('coupe un titre trop long sur une ligne, ou sur deux avec wrapTitle', () => {
+    const title = 'Tractions prise neutre serrée (poignée en V), série 10'
+    const { rerender } = render(
+      <Sheet open title={title} onClose={vi.fn()}>
+        <p>Contenu</p>
+      </Sheet>,
+    )
+    expect(screen.getByRole('heading', { name: title })).toHaveClass('truncate')
+    rerender(
+      <Sheet open wrapTitle title={title} onClose={vi.fn()}>
+        <p>Contenu</p>
+      </Sheet>,
+    )
+    const heading = screen.getByRole('heading', { name: title })
+    expect(heading).toHaveClass('line-clamp-2')
+    expect(heading).not.toHaveClass('truncate')
+  })
 })

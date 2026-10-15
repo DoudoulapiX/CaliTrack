@@ -15,6 +15,8 @@ export interface SheetProps {
   scrollKey?: string
   /** Échap passe par onClose, qui peut refuser de fermer (sinon la boîte se ferme d'elle-même). */
   guardClose?: boolean
+  /** Titre sur deux lignes au plus, au lieu d'une : sa fin compte (« …, série 2 »). */
+  wrapTitle?: boolean
 }
 
 /** Feuille qui monte du bas de l'écran (boîte de dialogue native, accessible au clavier et aux lecteurs d'écran). */
@@ -27,6 +29,7 @@ export function Sheet({
   tall = false,
   scrollKey,
   guardClose = false,
+  wrapTitle = false,
 }: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -87,7 +90,13 @@ export function Sheet({
       {open && (
         <div className={cn('flex max-h-[inherit] flex-col', tall && 'h-full')}>
           <div className="flex items-center gap-2 border-b border-line px-4 py-2">
-            <h2 id={titleId} className="min-w-0 flex-1 truncate text-[17px] font-semibold">
+            <h2
+              id={titleId}
+              className={cn(
+                'min-w-0 flex-1 text-[17px] font-semibold',
+                wrapTitle ? 'line-clamp-2' : 'truncate',
+              )}
+            >
               {title}
             </h2>
             <button
