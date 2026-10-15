@@ -267,17 +267,25 @@ export function cueFor(
   return parts.length > 0 ? { tone, text: parts.join(', ') } : null
 }
 
+/** Une pause de l'essai (hors du direct) : temps du compteur où elle a commencé, et sa durée en ms. */
+export interface Pause {
+  readonly t: number
+  readonly ms: number
+}
+
 /**
  * Heure (ms depuis 1970) de la dernière répétition, d'après l'heure de la dernière image analysée : le repos
- * se compte depuis là. Sans répétition : rien.
+ * se compte depuis là, pauses comprises (le temps du compteur ne les compte pas). Sans répétition : rien.
  */
 export function lastRepAt(
   repTimes: readonly number[],
   lastFrame: { readonly t: number; readonly at: number } | null,
+  pauses: readonly Pause[] = [],
 ): number | undefined {
   const last = repTimes.at(-1)
   if (last === undefined || !lastFrame) return undefined
-  return lastFrame.at - Math.max(0, lastFrame.t - last)
+  const paused = pauses.filter((pause) => pause.t >= last).reduce((sum, pause) => sum + pause.ms, 0)
+  return lastFrame.at - Math.max(0, lastFrame.t - last) - paused
 }
 
 /** Images par seconde d'un fichier de points, d'après les temps des images (15 sans assez d'images). */

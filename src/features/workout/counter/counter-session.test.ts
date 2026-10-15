@@ -340,6 +340,13 @@ describe('aides du compteur', () => {
     expect(lastRepAt([12_000], { t: 10_000, at: 50_000 })).toBe(50_000)
     expect(lastRepAt([], { t: 10_000, at: 50_000 })).toBeUndefined()
     expect(lastRepAt([1000], null)).toBeUndefined()
+    // Une pause après la dernière répétition (question de fermeture) compte dans le repos ; pas une d'avant.
+    const pauses = [
+      { t: 500, ms: 9000 },
+      { t: 4000, ms: 15_000 },
+      { t: 7000, ms: 2000 },
+    ]
+    expect(lastRepAt([1000, 4000], { t: 10_000, at: 1_700_000_000_000 }, pauses)).toBe(1_699_999_977_000)
   })
 
   it('mesurent les images par seconde d’un fichier de points', () => {

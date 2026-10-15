@@ -283,6 +283,38 @@ describe('compteur caméra : conseils et direct', () => {
     expect(counter().pushed).toHaveLength(11)
   })
 
+  it('ne compte pas le temps passé sur les conseils ou la question de fermeture, sauf dans le repos', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 9, 21, 11, 0))
+    let now = 50_000
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 2 })
+
+    // 20 s sur les conseils de placement, puis 9 s sur la question : le compteur n'en voit rien.
+    await user.click(within(sheet).getByRole('button', { name: 'Conseils de placement' }))
+    now += 20_000
+    t += 20_000
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    frame()
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    now += 9000
+    t += 9000
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+    frame()
+    expect(counter().pushed.map(({ frame: pushed }) => pushed.t)).toEqual([1100, 1200, 1300])
+
+    const finish = vi.spyOn(counter().counter, 'finish')
+    counter().onFinish({ repTimes: [900, 1100] })
+    await user.click(within(sheet).getByRole('button', { name: 'Terminer la série' }))
+    expect(finish).toHaveBeenCalledWith(1301, 'manual')
+    // Le repos part de la dernière répétition : les 29 s de pause depuis en font partie.
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect(within(sheet).getByRole('timer', { name: 'Repos avant la série suivante' })).toHaveTextContent(
+      '1:01',
+    )
+  })
+
   it('ne parle pas de l’écran qui s’éteint quand le téléphone le garde allumé', async () => {
     const lock = Object.assign(new EventTarget(), { released: false, release: () => Promise.resolve() })
     stubProperty(navigator, 'wakeLock', { request: vi.fn(() => Promise.resolve(lock)) })

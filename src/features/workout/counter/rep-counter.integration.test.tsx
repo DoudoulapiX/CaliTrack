@@ -1,4 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
+import type { RepFixture } from '@/content/reps/fixture'
 import { addExercise, freeWorkout } from '@/content/workouts/workout'
 import { db } from '@/db/db'
 import { startWorkout } from '@/db/workouts'
@@ -60,9 +61,25 @@ afterEach(() => {
   Reflect.deleteProperty(globalThis, '__calitrackPoseReplay')
 })
 
-/** Le moteur de l'appli rejouera ce fichier de points de src/test/reps. */
-function replay(name: string): void {
-  ;(globalThis as { __calitrackPoseReplay?: unknown }).__calitrackPoseReplay = loadRepFixture(name)
+/** Le moteur de l'appli rejouera ce fichier de points (de src/test/reps, ou fait à partir de l'un d'eux). */
+function replay(fixture: string | RepFixture): void {
+  ;(globalThis as { __calitrackPoseReplay?: unknown }).__calitrackPoseReplay =
+    typeof fixture === 'string' ? loadRepFixture(fixture) : fixture
+}
+
+/** Le même fichier de points, où la personne reste immobile pendant `ms` à partir de `at` (en ms). */
+function withStill(fixture: RepFixture, at: number, ms: number): RepFixture {
+  const before = fixture.frames.filter(([t]) => t <= at)
+  const still = before.at(-1)
+  if (!still) throw new Error('rien avant ce moment')
+  const hold = Array.from(
+    { length: Math.floor(ms / FRAME_MS) },
+    (_, index) => [still[0] + (index + 1) * FRAME_MS, still[1], still[2]] as const,
+  )
+  const after = fixture.frames
+    .filter(([t]) => t > at)
+    .map(([t, image, world]) => [t + ms, image, world] as const)
+  return { ...fixture, frames: [...before, ...hold, ...after] }
 }
 
 /** Séance libre en cours : 3 séries de l'exercice, 90 s de repos. */
@@ -89,9 +106,9 @@ async function firstSet() {
  * Fait passer les images, 66 ms chacune, tant que la série est en direct ; rend chaque compte affiché
  * (« 2 répétitions »).
  */
-function playSet(sheet: HTMLElement): string[] {
+function playSet(sheet: HTMLElement, frames = MAX_FRAMES): string[] {
   const counts: string[] = []
-  for (let frame = 0; frame < MAX_FRAMES; frame++) {
+  for (let frame = 0; frame < frames; frame++) {
     if (!sheet.querySelector('[aria-label="Consigne"]')) break
     clock += FRAME_MS
     act(() => {
@@ -142,6 +159,33 @@ describe('compteur caméra, tout branché', () => {
     )
     expect(within(card).getByRole('textbox', { name: `${name}, série 1 : répétitions` })).toHaveValue('3')
     expect(screen.getByRole('timer', { name: 'Repos restant' })).toBeInTheDocument()
+  })
+
+  it('le temps passé sur la question de fermeture ne compte pas : la série reprend où elle en était', async () => {
+    // Arrêtée en haut après la 2e répétition, la personne lit la question 15 s, puis repart.
+    replay(withStill(loadRepFixture('synth-squat-3'), 6000, 16_000))
+    const name = 'Squat au poids du corps'
+    const { user, card } = await openWorkout('squat', name)
+    await user.click(within(card).getByRole('button', { name: `Compter à la caméra : ${name}` }))
+    const sheet = await screen.findByRole('dialog', { name: `${name}, série 1` })
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    await within(sheet).findByRole('status', { name: 'Consigne' })
+    // Un peu plus de 6 s de série.
+    expect(playSet(sheet, 92).at(-1)).toBe('2 répétitions')
+
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Fermer sans enregistrer les 2 répétitions ?')).toBeInTheDocument()
+    clock += 15_000
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+    await within(sheet).findByRole('status', { name: 'Consigne' })
+
+    // Ni arrêt, ni image trop saccadée : la 3e répétition compte, et la série s'enregistre toute seule.
+    expect(playSet(sheet).at(-1)).toBe('3 répétitions')
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect(within(sheet).getByRole('heading', { name: /^3\srépétitions$/ })).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await firstSet()).toEqual({ done: true, reps: 3 })
+    })
   })
 
   it('3 tractions rejouées : en essai, rien d’enregistré avant « Enregistrer 3 répétitions »', async () => {
