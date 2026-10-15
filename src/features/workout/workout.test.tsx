@@ -433,7 +433,8 @@ describe('compteur caméra', () => {
 
     await user.click(count)
     const sheet = await screen.findByRole('dialog', { name: 'Pompes, série 2' })
-    expect(within(sheet).getByRole('status')).toHaveTextContent('Préparation du compteur…')
+    // La première fois pour les pompes : où poser le téléphone, la caméra n'est pas encore ouverte.
+    expect(within(sheet).getByRole('heading', { name: 'Place ton téléphone' })).toBeInTheDocument()
     expect(counterSheet.props).toMatchObject({
       exerciseName: 'Pompes',
       variant: { movement: 'pushup', overrides: {} },

@@ -1,11 +1,16 @@
 import type { PendingSet, SetValues } from '@/content/workouts/workout'
-import { FIXTURE_JOINTS } from '@/content/reps/fixture'
 import type { CountedVariant } from '@/content/reps/types'
 import type { Workout, WorkoutExercise, WorkoutSet } from '@/db/types'
+import { Button } from '@/ui/Button'
 import { Sheet } from '@/ui/Sheet'
 import type { CueOptions } from '../cues'
 import type { SaveWorkout } from '../ExerciseCard'
-import { usePoseCamera } from './usePoseCamera'
+import { CounterDebug } from './CounterDebug'
+import { CounterGuide } from './CounterGuide'
+import { CounterLive, CounterStage, EventLine } from './CounterLive'
+import { CounterResult } from './CounterResult'
+import { counterTitle, GUIDE_TEXT, LIVE_LABEL, targetLine, targetMin } from './counter-view'
+import { useRepSession } from './useRepSession'
 
 export interface RepCounterSheetProps {
   readonly workout: Workout
@@ -20,41 +25,90 @@ export interface RepCounterSheetProps {
   readonly onClose: () => void
 }
 
-const ignore = () => undefined
-
-/** Rang de la série comptée : la première à faire, sinon la dernière. */
-function countedIndex(exercise: WorkoutExercise): number {
-  const pending = exercise.sets.findIndex((set) => !set.done)
-  return pending === -1 ? Math.max(0, exercise.sets.length - 1) : pending
-}
-
 /**
- * Le compteur caméra d'une série, en feuille plein écran. Version d'attente : la feuille s'ouvre et se ferme,
- * la caméra ne démarre pas encore. Les props restent celles-ci.
+ * Le compteur caméra d'une série, en feuille plein écran : conseils de placement (la première fois pour ce
+ * mouvement), image de la caméra et compte en direct, puis série enregistrée (et repos) ou compte à vérifier.
  */
-export function RepCounterSheet({ exercise, exerciseName, onClose }: RepCounterSheetProps) {
-  usePoseCamera({
-    open: true,
-    cameraOn: false,
-    analysing: false,
-    facing: 'user',
-    delegate: 'CPU',
-    joints: FIXTURE_JOINTS,
-    onFrame: ignore,
-    onHidden: ignore,
-  })
+export function RepCounterSheet(props: RepCounterSheetProps) {
+  const { exercise, exerciseName, variant, cues } = props
+  const { state, snapshot, camera, wakeLock, prefs, actions, rest, cameraOn, canExport } =
+    useRepSession(props)
+  const movement = variant.movement
+  const { view } = state
+  const line = targetLine(exercise.target)
+  const onStage = view.kind === 'starting' || view.kind === 'live'
+
+  let footer = null
+  if (view.kind === 'guide') {
+    footer = (
+      <Button block size="lg" onClick={actions.openCamera}>
+        {GUIDE_TEXT.open}
+      </Button>
+    )
+  } else if (view.kind === 'live') {
+    footer = (
+      <Button block size="lg" onClick={actions.finish}>
+        {LIVE_LABEL.finish}
+      </Button>
+    )
+  }
 
   return (
     <Sheet
       open
       tall
       guardClose
-      title={`${exerciseName}, série ${String(countedIndex(exercise) + 1)}`}
-      onClose={onClose}
+      title={counterTitle(exerciseName, state.setIndex)}
+      onClose={actions.close}
+      footer={footer}
+      scrollKey={view.kind}
     >
-      <p role="status" className="py-6 text-center text-[15px] text-ink-2">
-        Préparation du compteur…
-      </p>
+      <div className="flex flex-col gap-4">
+        {line && <p className="text-[13px] text-ink-3">{line}</p>}
+        {view.kind === 'guide' && (
+          <CounterGuide
+            movement={movement}
+            voiceOff={!cues.voice}
+            wakeLockUnavailable={wakeLock === 'unavailable'}
+          />
+        )}
+        {cameraOn && (
+          <CounterStage
+            visible={onStage}
+            facing={prefs.facing}
+            videoRef={camera.videoRef}
+            overlayRef={camera.overlayRef}
+            below={view.kind === 'live' && <EventLine snapshot={snapshot} movement={movement} />}
+          >
+            <CounterLive
+              phase={view.kind === 'live' ? 'live' : 'starting'}
+              movement={movement}
+              cameraState={camera.state}
+              snapshot={snapshot}
+              target={targetMin(exercise.target)}
+              wakeLockUnavailable={wakeLock === 'unavailable'}
+              debug={prefs.debug}
+              onSwitchCamera={actions.switchCamera}
+              onGuide={actions.showGuide}
+              onToggleDebug={actions.toggleDebug}
+            />
+          </CounterStage>
+        )}
+        {view.kind !== 'guide' && view.kind !== 'starting' && view.kind !== 'live' && (
+          <CounterResult view={view} rest={rest} actions={actions} />
+        )}
+        {prefs.debug && cameraOn && view.kind !== 'guide' && view.kind !== 'starting' && (
+          <CounterDebug
+            movement={movement}
+            snapshot={snapshot}
+            stats={camera.stats}
+            delegate={prefs.delegate}
+            onDelegate={actions.setDelegate}
+            canExport={canExport}
+            onExport={actions.exportPoints}
+          />
+        )}
+      </div>
     </Sheet>
   )
 }
