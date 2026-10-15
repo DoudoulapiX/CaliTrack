@@ -843,18 +843,35 @@ describe('compteur caméra : fermeture et problèmes', () => {
   })
 
   it('caméra figée : le compteur voit le temps passer et finit la série', async () => {
+    // L'horloge de la page et le minuteur de la caméra figée (1 s) sont menés par le test.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    let now = 50_000
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    const stall = (ms: number) => {
+      now += ms
+      act(() => {
+        vi.advanceTimersByTime(ms)
+      })
+    }
     const { user, sheet } = await openLive()
     frame({ status: 'counting', reps: 3 })
     const tick = vi.spyOn(counter().counter, 'tick')
     counter().end({ reps: 3 })
-    expect(await within(sheet).findByText('Série enregistrée.', {}, { timeout: 3000 })).toBeInTheDocument()
+    // Moins d'une seconde sans image : rien.
+    stall(900)
+    expect(tick).not.toHaveBeenCalled()
+    // Une seconde sans image : le compteur voit le temps passer, et finit la série.
+    stall(200)
+    expect(tick).toHaveBeenCalledTimes(1)
     expect(tick.mock.calls[0]?.[0]).toBeGreaterThan(t)
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
     expect((await squatSets())[1]).toEqual({ done: true, reps: 3 })
 
-    // Un compteur neuf qui n'a encore vu aucune image attend la caméra.
+    // Un compteur neuf qui n'a encore vu aucune image attend la caméra, aussi longtemps qu'il faut.
     const ticks = tick.mock.calls.length
     await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
-    await new Promise((resolve) => setTimeout(resolve, 1300))
+    expect(consigne(sheet)).toBeInTheDocument()
+    stall(5000)
     expect(tick).toHaveBeenCalledTimes(ticks)
     expect(consigne(sheet)).toBeInTheDocument()
   })
