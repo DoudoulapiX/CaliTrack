@@ -24,15 +24,22 @@ export interface NextSet {
   readonly total: number
 }
 
-export type SessionView =
+/** Les écrans de la feuille, hors question de fermeture. */
+export type ScreenView =
   | { readonly kind: 'guide' }
   | { readonly kind: 'starting' }
   | { readonly kind: 'live' }
   | { readonly kind: 'empty' }
-  /** « Fermer sans enregistrer les 7 répétitions ? », puis retour à l'écran d'avant. */
-  | { readonly kind: 'confirmClose'; readonly reps: number; readonly back: 'live' | 'review' }
-  /** Compte à vérifier ; `reps` suit le réglage − / +. */
-  | { readonly kind: 'review'; readonly result: CounterResult; readonly reps: number }
+  /**
+   * Compte à vérifier ; `reps` suit le réglage − / + ; `addedDoubtful` : « Ajouter les 2 mouvements » déjà
+   * touché (il ne revient pas).
+   */
+  | {
+      readonly kind: 'review'
+      readonly result: CounterResult
+      readonly reps: number
+      readonly addedDoubtful: boolean
+    }
   | { readonly kind: 'saving'; readonly reps: number }
   | {
       readonly kind: 'saved'
@@ -43,6 +50,11 @@ export type SessionView =
       readonly corrected: boolean
     }
   | { readonly kind: 'problem'; readonly problem: PoseCameraProblem }
+
+export type SessionView =
+  | ScreenView
+  /** « Fermer sans enregistrer les 7 répétitions ? », puis retour tel quel à l'écran d'avant (`back`). */
+  | { readonly kind: 'confirmClose'; readonly reps: number; readonly back: ScreenView }
 
 /** Un écran d'où « Continuer la série » peut partir. */
 export type ResumeView = Extract<SessionView, { kind: 'review' | 'saved' }>
@@ -78,6 +90,8 @@ export type SessionAction =
   | { type: 'askClose'; reps: number }
   | { type: 'keepCounting' }
   | { type: 'adjust'; reps: number }
+  /** « Ajouter les 2 mouvements » écartés après une pause. */
+  | { type: 'addDoubtful' }
   | { type: 'save' }
   | { type: 'saved'; next: NextSet | null }
   | { type: 'saveFailed' }
@@ -132,7 +146,11 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       return view.kind === 'empty' ? fresh(state, {}) : state
     case 'ended': {
       // Fin automatique en direct, ou caméra coupée pendant les conseils ou la question de fermeture.
-      if (view.kind !== 'live' && view.kind !== 'guide' && view.kind !== 'confirmClose') return state
+      const counting =
+        view.kind === 'live' ||
+        view.kind === 'guide' ||
+        (view.kind === 'confirmClose' && view.back.kind === 'live')
+      if (!counting) return state
       const { result } = action
       // Rien de plus que le compte d'où l'essai est parti : retour à la série enregistrée ou vérifiée.
       if (result.reps + result.doubtful <= state.offset) {
@@ -141,28 +159,31 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       if (result.confident && action.validated) {
         return { ...state, view: { kind: 'saving', reps: result.reps }, result }
       }
-      return { ...state, view: { kind: 'review', result, reps: result.reps }, result }
+      return { ...state, view: { kind: 'review', result, reps: result.reps, addedDoubtful: false }, result }
     }
     case 'askClose':
       if (action.reps <= 0) return state
+      // Depuis les conseils (remontrés pendant le direct), on revient au direct.
       if (view.kind === 'live' || view.kind === 'guide') {
-        return { ...state, view: { kind: 'confirmClose', reps: action.reps, back: 'live' } }
+        return { ...state, view: { kind: 'confirmClose', reps: action.reps, back: { kind: 'live' } } }
       }
       return view.kind === 'review'
-        ? { ...state, view: { kind: 'confirmClose', reps: action.reps, back: 'review' } }
+        ? { ...state, view: { kind: 'confirmClose', reps: action.reps, back: view } }
         : state
     case 'keepCounting':
-      if (view.kind !== 'confirmClose') return state
-      if (view.back === 'review' && state.result) {
-        return { ...state, view: { kind: 'review', result: state.result, reps: view.reps } }
-      }
-      return { ...state, view: { kind: 'live' } }
+      return view.kind === 'confirmClose' ? { ...state, view: view.back } : state
     case 'adjust':
       if (view.kind === 'review') return { ...state, view: { ...view, reps: clampReps(action.reps) } }
       // Correction enregistrée : la série compte désormais ce nombre.
       return view.kind === 'saved' && view.correcting
         ? { ...state, view: { ...view, reps: clampReps(action.reps) } }
         : state
+    case 'addDoubtful':
+      if (view.kind !== 'review' || view.addedDoubtful || view.result.doubtful <= 0) return state
+      return {
+        ...state,
+        view: { ...view, reps: clampReps(view.reps + view.result.doubtful), addedDoubtful: true },
+      }
     case 'save':
       if ((view.kind === 'review' && view.reps > 0) || (view.kind === 'saved' && view.error)) {
         return { ...state, view: { kind: 'saving', reps: view.reps } }

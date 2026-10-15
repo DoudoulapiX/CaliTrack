@@ -465,6 +465,11 @@ describe('compteur caméra : fin de série', () => {
     await user.click(within(sheet).getByRole('button', { name: /^Ajouter les 2\smouvements$/ }))
     expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('9')
     expect(within(sheet).queryByRole('button', { name: /^Ajouter/ })).not.toBeInTheDocument()
+    // Il ne revient pas après la question de fermeture : les 2 mouvements ne s'ajoutent qu'une fois.
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+    expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('9')
+    expect(within(sheet).queryByRole('button', { name: /^Ajouter/ })).not.toBeInTheDocument()
     await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 9\srépétitions$/ }))
     expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
     expect(await squatSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 9 }, { done: false }])

@@ -50,6 +50,8 @@ export interface SessionActions {
   /** « Réessayer » après un problème ou quand rien n'a été compté. */
   readonly retry: () => void
   readonly adjust: (reps: number) => void
+  /** « Ajouter les 2 mouvements » écartés après une pause (une fois). */
+  readonly addDoubtful: () => void
   /** « Enregistrer N répétitions », ou « Réessayer » après un enregistrement raté. */
   readonly save: () => void
   /** « Ne pas enregistrer » : la série se recompte. */
@@ -455,6 +457,9 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     },
     adjust: (reps) => {
       dispatch({ type: 'adjust', reps })
+    },
+    addDoubtful: () => {
+      dispatch({ type: 'addDoubtful' })
     },
     save: () => {
       dispatch({ type: 'save' })
