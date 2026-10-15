@@ -1,23 +1,39 @@
 name: Tests et mise en ligne
 
+# Branche jetable diag-counter-webkit : seulement le diagnostic du compteur caméra sous WebKit.
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
 jobs:
-  check:
-    name: Vérifications
+  diag:
+    name: Diagnostic ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: sonde-30
+            draw: '30'
+            cmd: npx playwright test e2e/diag-mp.spec.ts --project=iphone-webkit --no-deps --workers=1 --retries=0
+          - name: sonde-10
+            draw: '10'
+            cmd: npx playwright test e2e/diag-mp.spec.ts --project=iphone-webkit --no-deps --workers=1 --retries=0
+          - name: mediapipe-seul-30
+            draw: '30'
+            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --workers=1 --repeat-each=4 --retries=0
+          - name: mediapipe-seul-10
+            draw: '10'
+            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --workers=1 --repeat-each=4 --retries=0
+          - name: suite-a
+            draw: '30'
+            cmd: npx playwright test --retries=0
+          - name: suite-b
+            draw: '30'
+            cmd: npx playwright test --retries=0
     steps:
       - uses: actions/checkout@v5
 
@@ -29,54 +45,15 @@ jobs:
       - name: Installation
         run: npm ci
 
-      - name: Types
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Formatage
-        run: npm run format:check
-
-      - name: Tests unitaires
-        run: npm run test
-
       - name: Build
         run: npm run build
 
       - name: Navigateurs de test
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Tests de bout en bout
-        run: npm run e2e
+      - name: Tests
+        run: ${{ matrix.cmd }}
         env:
           CI: 'true'
-
-      - name: Rapport Playwright
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 7
-
-      - name: Paquet GitHub Pages
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist
-
-  deploy:
-    name: Mise en ligne
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: check
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          DIAG_DRAW_FPS: ${{ matrix.draw }}
+          DIAG_SONDE: ${{ startsWith(matrix.name, 'sonde') && '1' || '' }}

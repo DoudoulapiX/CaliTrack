@@ -54,6 +54,14 @@ export default defineConfig({
             name: 'iphone-webkit',
             use: { ...iphone, browserName: 'webkit' as const },
             testIgnore: 'camera.spec.ts',
+            grepInvert: /compteur caméra/,
+          },
+          {
+            name: 'iphone-webkit-camera',
+            use: { ...iphone, browserName: 'webkit' as const },
+            grep: /compteur caméra/,
+            workers: 1,
+            dependencies: ['iphone-chromium', 'iphone-webkit'],
           },
         ]
       : []),

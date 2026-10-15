@@ -28,6 +28,7 @@ export interface PersonCameraOptions {
 interface PersonCameraSetup {
   readonly frames: readonly string[]
   readonly fps: number
+  readonly drawFps: number
   readonly deny: boolean
 }
 
@@ -64,7 +65,7 @@ async function serveClipFrames(page: Page): Promise<void> {
 }
 
 /** Exécuté dans la page avant l'appli : remplace getUserMedia. Autonome (aucune variable du test). */
-function installPersonCamera({ frames, fps, deny }: PersonCameraSetup): void {
+function installPersonCamera({ frames, fps, drawFps, deny }: PersonCameraSetup): void {
   const tracks: MediaStreamTrack[] = []
   const stoppedTracks = new WeakSet<MediaStreamTrack>()
   let startedAt: number | null = null
@@ -96,8 +97,8 @@ function installPersonCamera({ frames, fps, deny }: PersonCameraSetup): void {
     }
     draw()
     // Redessinée sans cesse : le flux d'un canvas n'envoie une image que quand il change.
-    const timer = setInterval(draw, 33)
-    const stream = canvas.captureStream(30)
+    const timer = setInterval(draw, 1000 / drawFps)
+    const stream = canvas.captureStream(drawFps)
     const own = stream.getTracks()
     for (const track of own) {
       const stop = track.stop.bind(track)
@@ -139,7 +140,8 @@ export async function usePersonCamera(
 ): Promise<void> {
   const frames = clip ? clipFrames(clip).map((file) => clipFrameUrl(clip, file)) : []
   if (clip) await serveClipFrames(page)
-  await page.addInitScript(installPersonCamera, { frames, fps, deny })
+  const drawFps = Number(process.env.DIAG_DRAW_FPS ?? 30)
+  await page.addInitScript(installPersonCamera, { frames, fps, drawFps, deny })
 }
 
 /** Lance le clip, à sa cadence ; sa dernière image reste ensuite affichée. */
