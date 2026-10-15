@@ -160,6 +160,21 @@ export async function personCameraStopped(page: Page): Promise<boolean> {
   })
 }
 
+/**
+ * Les requêtes web parties ailleurs que vers l'appli (localhost), de toutes les pages du test : le compteur
+ * caméra n'en fait aucune.
+ */
+export function watchOutside(page: Page): string[] {
+  const outside: string[] = []
+  page.context().on('request', (request) => {
+    const url = new URL(request.url())
+    if ((url.protocol === 'http:' || url.protocol === 'https:') && url.hostname !== 'localhost') {
+      outside.push(request.url())
+    }
+  })
+  return outside
+}
+
 /** L'appli rejouera ce fichier de points (src/test/reps/<nom>.json) à la place de MediaPipe. */
 export async function useReplayedPose(page: Page, fixtureName: string, dir = REPS_DIR): Promise<void> {
   const fixture: unknown = JSON.parse(readFileSync(join(dir, `${fixtureName}.json`), 'utf8'))
