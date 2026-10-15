@@ -1,6 +1,7 @@
 import { useCallback, useRef, type RefObject } from 'react'
 import type { PoseFrame } from '@/content/reps/types'
 import { openCamera, type CameraProblem, type Facing } from '@/lib/camera'
+import type { FrameScheduler } from './frame-loop'
 import { openPoseEngine, type Delegate, type PoseEngineProblem } from './pose-engine'
 
 /*
@@ -9,10 +10,7 @@ import { openPoseEngine, type Delegate, type PoseEngineProblem } from './pose-en
  * Version d'attente : rien ne démarre encore (état « idle »). La vraie version garde ces signatures.
  */
 
-/** Demande d'être rappelé à la prochaine image de la vidéo ; rend de quoi annuler. */
-export interface FrameScheduler {
-  request(video: HTMLVideoElement, callback: () => void): () => void
-}
+export type { FrameScheduler } from './frame-loop'
 
 export type PoseCameraProblem = CameraProblem | PoseEngineProblem | 'crashed' | 'stopped'
 
