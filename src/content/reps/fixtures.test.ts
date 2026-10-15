@@ -49,7 +49,10 @@ describe('fichiers de points (src/test/reps)', () => {
     // Les crédits complets sont dans le README du dossier (licence BSD entière pour Sports2D).
     const readme = readFileSync(join(REP_FIXTURES_DIR, 'README.md'), 'utf8')
     for (const credit of [
-      'Strömbäck, Sheng Huang et Valentin Radu',
+      'David Strömbäck, Sangxia Huang et Valentin Radu',
+      'https://doi.org/10.1145/3432701',
+      // La licence est donnée sur l'enregistrement Zenodo des données (pas sur le site du projet).
+      'https://zenodo.org/records/7672767',
       'CC BY 4.0',
       'Copyright (c) 2022, perfanalytics',
       'EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.',

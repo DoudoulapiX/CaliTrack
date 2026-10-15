@@ -59,10 +59,12 @@ C'est pour cela que l'appli n'analyse aucune image pendant le repos.
 
 ### MM-Fit (fichiers `mmfit-*`)
 
-David Strömbäck, Sheng Huang et Valentin Radu, « MM-Fit: Multimodal Deep Learning for Automatic Exercise
+David Strömbäck, Sangxia Huang et Valentin Radu, « MM-Fit: Multimodal Deep Learning for Automatic Exercise
 Logging across Sensing Devices », Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous
-Technologies (IMWUT), vol. 4, n° 4, 2020. Données : https://mmfit.github.io/, sous licence Creative Commons
-Attribution 4.0 International (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
+Technologies (IMWUT), vol. 4, n° 4, 2020, https://doi.org/10.1145/3432701. Projet et données (dont les poses 2D
+et 3D reprises ici) : https://mmfit.github.io/. Licence : Creative Commons Attribution 4.0 International
+(CC BY 4.0, https://creativecommons.org/licenses/by/4.0/), donnée par les auteurs sur l'enregistrement Zenodo du
+jeu de données (« MM-Fit Dataset », https://zenodo.org/records/7672767).
 
 Changements faits pour CaliTrack : points 2D (OpenPose) et 3D (VideoPose3D) de MM-Fit renumérotés comme ceux de
 MediaPipe (13 points gardés), une image sur deux (15 images par seconde au lieu de 30), visibilité 1 pour un point
