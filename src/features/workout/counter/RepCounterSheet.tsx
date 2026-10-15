@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { PendingSet, SetValues } from '@/content/workouts/workout'
 import type { CountedVariant } from '@/content/reps/types'
 import type { Workout, WorkoutExercise, WorkoutSet } from '@/db/types'
@@ -9,6 +10,7 @@ import { CounterDebug } from './CounterDebug'
 import { CounterGuide } from './CounterGuide'
 import { CounterLive, CounterStage, EventLine } from './CounterLive'
 import { CounterResult } from './CounterResult'
+import type { SessionView } from './counter-session'
 import { counterTitle, GUIDE_TEXT, LIVE_LABEL, targetLine, targetMin } from './counter-view'
 import { useRepSession } from './useRepSession'
 
@@ -26,6 +28,32 @@ export interface RepCounterSheetProps {
 }
 
 /**
+ * Un écran du compteur pour le focus : l'enregistrement en cours et la série enregistrée sont le même écran,
+ * « Corriger » en ouvre un autre.
+ */
+function focusKey(view: SessionView): string {
+  if (view.kind === 'saving') return 'saved'
+  if (view.kind === 'saved' && view.correcting) return 'correcting'
+  return view.kind
+}
+
+/**
+ * Quand l'écran change, le bouton touché disparaît souvent avec lui : le focus passe au premier élément marqué
+ * `data-focus` du nouvel écran (« Enregistrer … » à vérifier, le nombre enregistré, « Terminer la série »…), pour
+ * que VoiceOver et le clavier ne repartent pas du haut de la page. Rien ne bouge à l'ouverture.
+ */
+function useFocusOnScreenChange(key: string) {
+  const ref = useRef<HTMLDivElement>(null)
+  const shown = useRef(key)
+  useEffect(() => {
+    if (shown.current === key) return
+    shown.current = key
+    ref.current?.closest('dialog')?.querySelector<HTMLElement>('[data-focus]')?.focus()
+  }, [key])
+  return ref
+}
+
+/**
  * Le compteur caméra d'une série, en feuille plein écran : conseils de placement (la première fois pour ce
  * mouvement), image de la caméra et compte en direct, puis série enregistrée (et repos) ou compte à vérifier.
  */
@@ -37,6 +65,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
   const { view } = state
   const line = targetLine(exercise.target)
   const onStage = view.kind === 'starting' || view.kind === 'live'
+  const contentRef = useFocusOnScreenChange(focusKey(view))
 
   let footer = null
   if (view.kind === 'guide') {
@@ -47,7 +76,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
     )
   } else if (view.kind === 'live') {
     footer = (
-      <Button block size="lg" onClick={actions.finish}>
+      <Button block size="lg" data-focus onClick={actions.finish}>
         {LIVE_LABEL.finish}
       </Button>
     )
@@ -63,7 +92,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
       footer={footer}
       scrollKey={view.kind}
     >
-      <div className="flex flex-col gap-4">
+      <div ref={contentRef} className="flex flex-col gap-4">
         {line && <p className="text-[13px] text-ink-3">{line}</p>}
         {view.kind === 'guide' && (
           <CounterGuide

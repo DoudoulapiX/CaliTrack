@@ -960,3 +960,54 @@ describe('compteur caméra : infos de réglage', () => {
     expect(within(again).getByRole('region', { name: 'Réglage du compteur' })).toBeInTheDocument()
   })
 })
+
+describe('compteur caméra : focus', () => {
+  it('suit l’écran : le bouton touché disparaît, le focus passe à ce qui vient', async () => {
+    const { user, sheet } = await openCounter({ guideSeen: false })
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    expect(within(sheet).getByRole('status')).toHaveFocus()
+    setCamera({ kind: 'running' })
+    const finish = () => within(sheet).getByRole('button', { name: 'Terminer la série' })
+    expect(finish()).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Conseils de placement' }))
+    expect(within(sheet).getByRole('region', { name: 'Place ton téléphone' })).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    expect(finish()).toHaveFocus()
+
+    // À vérifier : le focus va sur « Enregistrer … », pas sur la page.
+    frame({ status: 'counting', reps: 7 })
+    end({ reps: 7, confident: false, reasons: ['lost'] })
+    const save = () => within(sheet).getByRole('button', { name: /^Enregistrer 7\srépétitions$/ })
+    expect(await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })).toBeInTheDocument()
+    expect(save()).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText(/^Fermer sans enregistrer les 7\srépétitions\s\?$/)).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Revenir à la vérification' }))
+    expect(save()).toHaveFocus()
+
+    // Enregistrée : le nombre, puis la correction et retour.
+    await user.click(save())
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    const heading = within(sheet).getByRole('heading', { name: /^7\srépétitions$/ })
+    expect(heading).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Corriger' }))
+    expect(within(sheet).getByRole('button', { name: 'Enregistrer la correction' })).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Annuler' }))
+    expect(heading).toHaveFocus()
+  })
+
+  it('rien compté ou problème de caméra : le titre, le problème ou « Réessayer »', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'arming' })
+    end({ reps: 0 })
+    expect(await within(sheet).findByRole('heading', { name: 'Aucune répétition comptée' })).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Réessayer' }))
+    expect(within(sheet).getByRole('button', { name: 'Terminer la série' })).toHaveFocus()
+
+    setCamera({ kind: 'problem', problem: 'denied' })
+    expect(within(sheet).getByRole('button', { name: 'Réessayer' })).toHaveFocus()
+    await user.click(within(sheet).getByRole('button', { name: 'Réessayer' }))
+    setCamera({ kind: 'problem', problem: 'unsupported' })
+    expect(within(sheet).getByRole('alert')).toHaveFocus()
+  })
+})

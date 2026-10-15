@@ -56,6 +56,7 @@ function Correction({ reps, actions }: { reps: number; actions: SessionActions }
         block
         size="lg"
         disabled={busy}
+        data-focus
         onClick={() => {
           setBusy(true)
           void actions.saveCorrection(draft).then((ok) => {
@@ -95,7 +96,11 @@ function SavedResult({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col items-center gap-1 text-center">
-        <h3 className="text-ink">
+        <h3
+          tabIndex={-1}
+          data-focus={view.kind === 'saved' && view.correcting ? undefined : true}
+          className="text-ink outline-none"
+        >
           <span className="text-[48px] leading-none font-bold tabular">{view.reps}</span>
           &nbsp;
           <span className="text-[20px] font-semibold">{repsLabel(view.reps)}</span>
@@ -145,7 +150,11 @@ function ReviewResult({ view, actions }: { view: ReviewView; actions: SessionAct
   const { result } = view
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-center text-[32px] leading-tight font-bold text-ink tabular">
+      <h3
+        tabIndex={-1}
+        data-focus={view.reps > 0 ? undefined : true}
+        className="text-center text-[32px] leading-tight font-bold text-ink tabular outline-none"
+      >
         {reviewHeading(result.reps)}
       </h3>
       <div className="text-[15px] text-ink-2">
@@ -171,7 +180,7 @@ function ReviewResult({ view, actions }: { view: ReviewView; actions: SessionAct
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <Button block size="lg" disabled={view.reps <= 0} onClick={actions.save}>
+        <Button block size="lg" disabled={view.reps <= 0} data-focus onClick={actions.save}>
           {saveLabel(view.reps)}
         </Button>
         <Button variant="secondary" block size="lg" onClick={actions.continueSet}>
@@ -202,7 +211,9 @@ export function CounterResult({ view, rest, actions }: CounterResultProps) {
     case 'empty':
       return (
         <div className="flex flex-col gap-4 text-center">
-          <h3 className="text-[20px] font-semibold text-ink">{EMPTY_TEXT.title}</h3>
+          <h3 tabIndex={-1} data-focus className="text-[20px] font-semibold text-ink outline-none">
+            {EMPTY_TEXT.title}
+          </h3>
           <p className="text-[15px] text-ink-2">{EMPTY_TEXT.text}</p>
           <Button block size="lg" onClick={actions.retry}>
             {RESULT_LABEL.retry}
@@ -212,11 +223,16 @@ export function CounterResult({ view, rest, actions }: CounterResultProps) {
     case 'problem':
       return (
         <div className="flex flex-col gap-4">
-          <p role="alert" className="text-center text-[15px] text-ink">
+          <p
+            role="alert"
+            tabIndex={-1}
+            data-focus={canRetry(view.problem) ? undefined : true}
+            className="text-center text-[15px] text-ink outline-none"
+          >
             {PROBLEM_TEXT[view.problem]}
           </p>
           {canRetry(view.problem) && (
-            <Button block size="lg" onClick={actions.retry}>
+            <Button block size="lg" data-focus onClick={actions.retry}>
               {RESULT_LABEL.retry}
             </Button>
           )}
@@ -225,7 +241,7 @@ export function CounterResult({ view, rest, actions }: CounterResultProps) {
     case 'confirmClose':
       return (
         <div className="flex flex-col gap-4">
-          <p className="text-center text-[17px] font-semibold text-ink">
+          <p tabIndex={-1} data-focus className="text-center text-[17px] font-semibold text-ink outline-none">
             {closeQuestion(view.reps, view.saved)}
           </p>
           <div className="flex flex-col gap-2">

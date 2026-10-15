@@ -134,7 +134,9 @@ export function CounterLive({
       {!live && (
         <p
           role="status"
-          className="absolute inset-0 flex items-center justify-center p-6 text-center text-[15px] text-white"
+          tabIndex={-1}
+          data-focus
+          className="absolute inset-0 flex items-center justify-center p-6 text-center text-[15px] text-white outline-none"
         >
           {startingText(cameraState)}
         </p>

@@ -21,6 +21,7 @@ export function CounterGuide({ movement, voiceOff, wakeLockUnavailable, trial = 
     <section
       aria-labelledby="counter-guide-title"
       tabIndex={0}
+      data-focus
       className="flex flex-col gap-3 rounded-xl text-[15px] text-ink-2"
     >
       <h3 id="counter-guide-title" className="text-[20px] font-semibold text-ink">
