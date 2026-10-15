@@ -10,6 +10,9 @@ import {
   SQUATS,
   startFreeWorkout,
 } from './rep-counter-helpers'
+import { dumpOnFailure } from './diag-dump'
+
+dumpOnFailure()
 
 /*
  * Le compteur caméra dans l'appli, avec un squelette rejoué (src/test/reps) à la place de MediaPipe et une

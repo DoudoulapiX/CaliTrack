@@ -8,6 +8,9 @@ import {
   watchOutside,
 } from './person-camera'
 import { openCounter, setDone, setReps, SQUATS, startFreeWorkout } from './rep-counter-helpers'
+import { dumpOnFailure, sampleLoop } from './diag-dump'
+
+dumpOnFailure()
 
 /*
  * Le compteur caméra avec le vrai MediaPipe (WebAssembly et modèle servis par l'appli) sur une vraie vidéo :
@@ -50,7 +53,14 @@ test('compteur caméra : MediaPipe tourne sur le téléphone, rien ne sort de l�
 
   await playPersonCamera(page)
   const playedAt = Date.now()
-  await expect.poll(() => silhouettes(debug), { timeout: 30_000 }).toBeGreaterThanOrEqual(20)
+  const samples = sampleLoop(page)
+  try {
+    await expect.poll(() => silhouettes(debug), { timeout: 30_000 }).toBeGreaterThanOrEqual(20)
+  } catch (error) {
+    console.log(`DIAGSAMPLES ${samples().join(' | ')}`)
+    throw error
+  }
+  samples()
   // Tout le clip, puis encore 3 s sur sa dernière image : personne n'a fait de squat.
   const clipMs = (clipFrames(CLIP).length * 1000) / FPS
   await page.waitForTimeout(Math.max(0, playedAt + clipMs + 3_000 - Date.now()))

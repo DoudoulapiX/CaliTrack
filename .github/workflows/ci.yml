@@ -16,23 +16,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: sonde-30
-            draw: '30'
-            cmd: npx playwright test e2e/diag-mp.spec.ts --project=iphone-webkit --no-deps --workers=1 --retries=0
-          - name: sonde-10
-            draw: '10'
-            cmd: npx playwright test e2e/diag-mp.spec.ts --project=iphone-webkit --no-deps --workers=1 --retries=0
-          - name: mediapipe-seul-30
-            draw: '30'
-            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --workers=1 --repeat-each=4 --retries=0
-          - name: mediapipe-seul-10
-            draw: '10'
-            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --workers=1 --repeat-each=4 --retries=0
-          - name: suite-a
-            draw: '30'
-            cmd: npx playwright test --retries=0
-          - name: suite-b
-            draw: '30'
+          - name: mediapipe-a
+            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
+          - name: mediapipe-b
+            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
+          - name: mediapipe-c
+            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
+          - name: camera-a
+            cmd: npx playwright test --project=iphone-webkit-camera --no-deps --repeat-each=3 --retries=0
+          - name: camera-b
+            cmd: npx playwright test --project=iphone-webkit-camera --no-deps --repeat-each=3 --retries=0
+          - name: suite-c
             cmd: npx playwright test --retries=0
     steps:
       - uses: actions/checkout@v5
@@ -55,5 +49,3 @@ jobs:
         run: ${{ matrix.cmd }}
         env:
           CI: 'true'
-          DIAG_DRAW_FPS: ${{ matrix.draw }}
-          DIAG_SONDE: ${{ startsWith(matrix.name, 'sonde') && '1' || '' }}

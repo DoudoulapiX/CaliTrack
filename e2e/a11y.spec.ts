@@ -4,6 +4,9 @@ import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, solidPng } from './nutr
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
 import { usePersonCamera, useReplayedPose, watchOutside } from './person-camera'
 import { openCounter, PULLUPS, SQUATS, startFreeWorkout } from './rep-counter-helpers'
+import { dumpOnFailure } from './diag-dump'
+
+dumpOnFailure()
 
 for (const colorScheme of ['dark', 'light'] as const) {
   test.describe(`thème ${colorScheme === 'dark' ? 'sombre' : 'clair'}`, () => {

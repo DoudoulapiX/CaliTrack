@@ -156,10 +156,27 @@ export function startFrameLoop({
     cancel = null
   }
 
+  const diag = {
+    runs: 0,
+    notReady: 0,
+    early: 0,
+    analyses: 0,
+    found: 0,
+    errors: 0,
+    lastMs: 0,
+    meanMs: 0,
+    last: 0,
+  }
+  ;(globalThis as { __diagLoop?: unknown }).__diagLoop = diag
   function run() {
     cancel = null
     if (stopped || paused) return
     const start = now()
+    diag.runs++
+    diag.last = Math.round(start)
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) diag.notReady++
+    else if (start < due - early) diag.early++
+    else diag.analyses++
     if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || start < due - early) {
       schedule()
       return
@@ -176,8 +193,12 @@ export function startFrameLoop({
       const step = Math.max(cap, 2 * meanMs + BUSY_MARGIN_MS)
       early = step > cap ? 0 : FRAME_SLACK_MS
       due = due + step > start ? due + step : start + step
+      diag.lastMs = Math.round(ms)
+      diag.meanMs = Math.round(meanMs)
+      if (frame.image) diag.found++
       onFrame(frame, ms)
     } catch (error) {
+      diag.errors++
       halt()
       onError(error)
       return
