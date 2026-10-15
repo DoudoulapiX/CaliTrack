@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
 import { CLAUDE_KEY, fakeClaude, onboard, solidPng } from './nutrition-helpers'
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
+import { usePersonCamera, useReplayedPose } from './person-camera'
+import { openCounter, PULLUPS, SQUATS, startFreeWorkout } from './rep-counter-helpers'
 
 for (const colorScheme of ['dark', 'light'] as const) {
   test.describe(`thème ${colorScheme === 'dark' ? 'sombre' : 'clair'}`, () => {
@@ -560,6 +562,73 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await page.goto('oura/callback#error=access_denied')
         await expect(page.getByRole('heading', { name: 'Accès refusé', level: 2 })).toBeVisible()
         await expectAccessible(page, 'oura refusée')
+      })
+    })
+
+    test.describe(() => {
+      // La caméra des tests et le squelette rejoué passent par des scripts d'init : service worker bloqué.
+      test.use({ serviceWorkers: 'block' })
+      /** Une série rejouée dure 11 s, puis le compteur attend 6 s sans mouvement avant de la finir. */
+      const SET_MS = 25_000
+
+      test('compteur caméra accessible : série comptée', async ({ page }) => {
+        test.slow()
+        await usePersonCamera(page)
+        await useReplayedPose(page, 'synth-squat-3')
+        await onboard(page)
+        await startFreeWorkout(page, [SQUATS])
+
+        const sheet = await openCounter(page, SQUATS)
+        await expect(sheet.getByRole('heading', { name: 'Place ton téléphone' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : conseils')
+        await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
+        await expect(sheet.getByRole('status', { name: 'Consigne' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : en direct')
+        await sheet.getByRole('button', { name: 'Infos de réglage' }).click()
+        await expect(sheet.getByRole('region', { name: 'Réglage du compteur' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : infos de réglage')
+        await sheet.getByRole('button', { name: 'Infos de réglage' }).click()
+        await expect(sheet.getByRole('region', { name: 'Réglage du compteur' })).toBeHidden()
+
+        await expect(sheet.getByText('Série enregistrée.')).toBeVisible({ timeout: SET_MS })
+        await expect(sheet.getByRole('timer', { name: 'Repos avant la série suivante' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : série enregistrée')
+        await sheet.getByRole('button', { name: 'Corriger' }).click()
+        await expect(sheet.getByRole('button', { name: 'Enregistrer la correction' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : correction')
+        await sheet.getByRole('button', { name: 'Fermer' }).click()
+        await expect(sheet).toBeHidden()
+      })
+
+      test('compteur caméra accessible : à vérifier', async ({ page }) => {
+        test.slow()
+        await usePersonCamera(page)
+        await useReplayedPose(page, 'synth-pullup-3')
+        await onboard(page)
+        await startFreeWorkout(page, [PULLUPS])
+
+        const sheet = await openCounter(page, PULLUPS)
+        await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
+        await expect(sheet.getByRole('heading', { name: /^3\srépétitions\s\?$/ })).toBeVisible({
+          timeout: SET_MS,
+        })
+        await expectAccessible(page, 'compteur caméra : à vérifier')
+        await sheet.getByRole('button', { name: 'Fermer' }).click()
+        await expect(sheet.getByRole('button', { name: 'Fermer sans enregistrer' })).toBeVisible()
+        await expectAccessible(page, 'compteur caméra : fermer sans enregistrer')
+        await sheet.getByRole('button', { name: 'Fermer sans enregistrer' }).click()
+        await expect(sheet).toBeHidden()
+      })
+
+      test('compteur caméra accessible : accès refusé', async ({ page }) => {
+        await usePersonCamera(page, { deny: true })
+        await onboard(page)
+        await startFreeWorkout(page, [SQUATS])
+
+        const sheet = await openCounter(page, SQUATS)
+        await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
+        await expect(sheet.getByRole('alert')).toContainText('CaliTrack n’a pas accès à la caméra.')
+        await expectAccessible(page, 'compteur caméra : accès refusé')
       })
     })
   })
