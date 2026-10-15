@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
-import { CLAUDE_KEY, fakeClaude, onboard, solidPng } from './nutrition-helpers'
+import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, solidPng } from './nutrition-helpers'
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
-import { usePersonCamera, useReplayedPose } from './person-camera'
+import { usePersonCamera, useReplayedPose, watchOutside } from './person-camera'
 import { openCounter, PULLUPS, SQUATS, startFreeWorkout } from './rep-counter-helpers'
 
 for (const colorScheme of ['dark', 'light'] as const) {
@@ -573,6 +573,8 @@ for (const colorScheme of ['dark', 'light'] as const) {
 
       test('compteur caméra accessible : série comptée', async ({ page }) => {
         test.slow()
+        const errors = collectErrors(page)
+        const outside = watchOutside(page)
         await usePersonCamera(page)
         await useReplayedPose(page, 'synth-squat-3')
         await onboard(page)
@@ -598,10 +600,15 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await expectAccessible(page, 'compteur caméra : correction')
         await sheet.getByRole('button', { name: 'Fermer' }).click()
         await expect(sheet).toBeHidden()
+        // Rien ne part du téléphone, et la page n'a aucune erreur.
+        expect(outside).toEqual([])
+        expect(errors).toEqual([])
       })
 
       test('compteur caméra accessible : à vérifier', async ({ page }) => {
         test.slow()
+        const errors = collectErrors(page)
+        const outside = watchOutside(page)
         await usePersonCamera(page)
         await useReplayedPose(page, 'synth-pullup-3')
         await onboard(page)
@@ -618,9 +625,13 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await expectAccessible(page, 'compteur caméra : fermer sans enregistrer')
         await sheet.getByRole('button', { name: 'Fermer sans enregistrer' }).click()
         await expect(sheet).toBeHidden()
+        expect(outside).toEqual([])
+        expect(errors).toEqual([])
       })
 
       test('compteur caméra accessible : accès refusé', async ({ page }) => {
+        const errors = collectErrors(page)
+        const outside = watchOutside(page)
         await usePersonCamera(page, { deny: true })
         await onboard(page)
         await startFreeWorkout(page, [SQUATS])
@@ -629,6 +640,8 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
         await expect(sheet.getByRole('alert')).toContainText('CaliTrack n’a pas accès à la caméra.')
         await expectAccessible(page, 'compteur caméra : accès refusé')
+        expect(outside).toEqual([])
+        expect(errors).toEqual([])
       })
     })
   })
