@@ -547,6 +547,38 @@ describe('compteur caméra : fin de série', () => {
     expect((await db.workouts.toArray())[0]?.exercises[1]?.sets[0]).toMatchObject({ done: true, reps: 10 })
   })
 
+  it('variante en essai d’un mouvement validé (curl à l’élastique) : les conseils le disent, le compte se vérifie', async () => {
+    const BAND_CURL = 'Curl à l’élastique'
+    let id = ''
+    const { user, router } = await renderApp('/training', {
+      setup: async () => {
+        const newId = sequentialIds('c')
+        let workout = freeWorkout({ date: '2026-10-21', now: new Date().toISOString(), newId })
+        workout = addExercise(workout, 'curl-band', { restSec: 60, newId, sets: 1, block: 'strength' })
+        id = (await startWorkout(workout)).id
+      },
+    })
+    await router.navigate(`/workout/${id}`)
+    const card = await screen.findByRole('article', { name: BAND_CURL })
+    await user.click(within(card).getByRole('button', { name: `Compter à la caméra : ${BAND_CURL}` }))
+    const sheet = await screen.findByRole('dialog', { name: `${BAND_CURL}, série 1` })
+    expect(
+      within(sheet).getByText(
+        'Ce compteur est encore en essai pour cet exercice : tu vérifieras chaque compte avant de l’enregistrer.',
+      ),
+    ).toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    setCamera({ kind: 'running' })
+    frame({ status: 'counting', reps: 10 })
+    expect(counter().created).toEqual([
+      { variant: { movement: 'curl', overrides: { trial: true } }, offset: 0 },
+    ])
+    // Un compte sûr ne s'enregistre pas tout seul : la variante est en essai (specFor).
+    end({ reps: 10, confident: true, reasons: [] })
+    expect(await within(sheet).findByRole('heading', { name: /^10\srépétitions\s\?$/ })).toBeInTheDocument()
+    expect((await db.workouts.toArray())[0]?.exercises[0]?.sets[0]).toMatchObject({ done: false })
+  })
+
   it('continue la série : le compteur repart du compte vérifié ou enregistré', async () => {
     const { user, sheet } = await openLive()
     frame({ status: 'counting', reps: 7 })

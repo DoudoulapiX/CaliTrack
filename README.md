@@ -125,8 +125,9 @@ comptés.
   **Terminer la série**), la série s'enregistre toute seule et le repos démarre, compté depuis ta dernière
   répétition ; à la fin du repos, le compteur repart pour la série suivante du même exercice.
 - **Vérification** : si le compte est douteux (tu es sorti de l'image, mouvement refusé, téléphone trop
-  lent), rien n'est enregistré avant que tu aies vérifié le nombre. Les pompes, les dips et les tractions
-  restent « en essai » (compte toujours à vérifier) tant qu'ils n'ont pas été validés sur de vraies séries.
+  lent), rien n'est enregistré avant que tu aies vérifié le nombre. Les pompes, les dips, les tractions et les
+  curls (sauf le curl alterné aux haltères) restent « en essai » (compte toujours à vérifier) tant qu'ils n'ont
+  pas été validés sur de vraies séries.
 - **Correction** : un compte se corrige juste après l'enregistrement (**Corriger**), ou plus tard dans la
   séance, comme n'importe quelle série.
 - **Bips et voix** : **Son du minuteur** et **Annonces vocales** (Plus → Réglages → Pendant la séance)
