@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Component, lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
 import { useProfile, useSettings } from '@/app/data-context'
@@ -35,6 +35,7 @@ import { useToast } from '@/ui/toast-context'
 import { useCatalog } from '@/features/library/catalog-context'
 import { ExercisePicker } from '@/features/training/ExercisePicker'
 import { useInventory, useProgram } from '@/features/training/useTraining'
+import { PROBLEM_TEXT } from './counter/counter-view'
 import { unlockCues, type CueOptions } from './cues'
 import { ExerciseActionsSheet } from './ExerciseActionsSheet'
 import { ExerciseCard, type SaveWorkout } from './ExerciseCard'
@@ -53,10 +54,41 @@ import {
   restLeftSec,
 } from './workout-view'
 
-// Le compteur caméra (et MediaPipe derrière lui) ne se charge qu'au premier appui sur « Compter à la caméra ».
-const RepCounterSheet = lazy(async () => ({
-  default: (await import('./counter/RepCounterSheet')).RepCounterSheet,
-}))
+/**
+ * Le compteur caméra (et MediaPipe derrière lui) ne se charge qu'au premier appui sur « Compter à la caméra ».
+ * Après un échec, un nouveau chargement (lazy garde l'échec du précédent).
+ */
+function lazyCounterSheet() {
+  return lazy(async () => ({ default: (await import('./counter/RepCounterSheet')).RepCounterSheet }))
+}
+
+interface CounterSheetBoundaryProps {
+  readonly onClose: () => void
+  readonly children: ReactNode
+}
+
+/**
+ * La feuille du compteur n'a pas pu se charger (sans réseau avant la fin de la mise en cache) : la séance reste
+ * à l'écran, une feuille le dit.
+ */
+class CounterSheetBoundary extends Component<CounterSheetBoundaryProps, { readonly failed: boolean }> {
+  override state = { failed: false }
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true }
+  }
+
+  override render() {
+    if (!this.state.failed) return this.props.children
+    return (
+      <Sheet open title="Compteur caméra" onClose={this.props.onClose}>
+        <p role="alert" className="text-[15px] text-ink">
+          {PROBLEM_TEXT.load}
+        </p>
+      </Sheet>
+    )
+  }
+}
 
 function scrollToElement(element: Element): void {
   element.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
@@ -105,8 +137,9 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
   const [finishing, setFinishing] = useState(false)
   const [abandoning, setAbandoning] = useState(false)
   const [busy, setBusy] = useState(false)
-  // Ligne de la séance comptée à la caméra.
+  // Ligne de la séance comptée à la caméra, et sa feuille (rechargée après un échec).
   const [counting, setCounting] = useState<string | null>(null)
+  const [RepCounterSheet, setRepCounterSheet] = useState(lazyCounterSheet)
   const [forcedLoads, setForcedLoads] = useState<ReadonlySet<string>>(() => new Set())
   // Exercice ajouté : on y descend dès qu'il est affiché.
   const pendingScroll = useRef<string | null>(null)
@@ -397,20 +430,27 @@ export function ActiveWorkout({ workout }: { workout: Workout }) {
       />
 
       {countingExercise && countingVariant && (
-        <Suspense fallback={null}>
-          <RepCounterSheet
-            workout={workout}
-            exercise={countingExercise}
-            exerciseName={catalog.byId.get(countingExercise.exerciseId)?.name ?? 'Exercice supprimé'}
-            variant={countingVariant}
-            cues={cues}
-            onComplete={(set, values, restFrom) => complete(countingExercise, set, values, restFrom)}
-            save={save}
-            onClose={() => {
-              setCounting(null)
-            }}
-          />
-        </Suspense>
+        <CounterSheetBoundary
+          onClose={() => {
+            setRepCounterSheet(lazyCounterSheet())
+            setCounting(null)
+          }}
+        >
+          <Suspense fallback={null}>
+            <RepCounterSheet
+              workout={workout}
+              exercise={countingExercise}
+              exerciseName={catalog.byId.get(countingExercise.exerciseId)?.name ?? 'Exercice supprimé'}
+              variant={countingVariant}
+              cues={cues}
+              onComplete={(set, values, restFrom) => complete(countingExercise, set, values, restFrom)}
+              save={save}
+              onClose={() => {
+                setCounting(null)
+              }}
+            />
+          </Suspense>
+        </CounterSheetBoundary>
       )}
 
       <ConfirmSheet
