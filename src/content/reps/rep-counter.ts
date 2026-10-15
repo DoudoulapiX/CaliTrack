@@ -68,6 +68,12 @@ const FPS_TAU_MS = 1000
 const FPS_MIN_SPAN_MS = 1000
 
 const PHASE_ORDER: readonly Phase[] = ['unknown', 'top', 'down', 'bottom']
+/**
+ * Refus d'une vraie répétition ratée, qui comptent jusqu'à la fin de la série (la dernière répétition est souvent
+ * la plus dure). Pas `fast` : une flexion éclair après la série (MM-Fit w00) n'en est pas une, et une répétition
+ * coupée par un trou d'images est déjà dite perdue ; ni `drift`, ni `anchor` : c'est la personne qui s'en va.
+ */
+const FAILED_ATTEMPTS: readonly RejectReason[] = ['slow', 'posture', 'travel']
 const SIDE_NAME = ['left', 'right'] as const
 
 function sameHint(a: PlacementHint | null, b: PlacementHint | null): boolean {
@@ -210,8 +216,11 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     const windowEnd = lastRep !== null && lastRep >= start ? lastRep : t
     const inWindow = samples.filter((sample) => sample.t >= start && sample.t <= windowEnd)
     const quality = inWindow.length > 0 ? inWindow.filter((sample) => sample.ok).length / inWindow.length : 1
-    const rejected =
-      lastRep === null ? 0 : rejections.filter(({ t: time }) => time >= start && time <= lastRep).length
+    // Après la dernière répétition gardée, seule une vraie répétition ratée compte.
+    const rejected = rejections.filter(
+      ({ t: time, why }) =>
+        time >= start && ((lastRep !== null && time <= lastRep) || FAILED_ATTEMPTS.includes(why)),
+    ).length
     const verdict = judge(
       {
         reps: kept.length,

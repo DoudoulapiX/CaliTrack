@@ -10,7 +10,10 @@ export interface JudgeInput {
   /** Répétitions vues pendant ce passage devant la caméra (sans celles déjà enregistrées, sans les douteuses). */
   readonly reps: number
   readonly doubtful: number
-  /** Mouvements allés jusqu'en bas mais refusés, entre le départ et la dernière répétition. */
+  /**
+   * Mouvements allés jusqu'en bas mais refusés : entre le départ et la dernière répétition, puis jusqu'à la fin
+   * ceux d'une vraie répétition ratée (trop lente, position perdue, course trop courte).
+   */
   readonly rejected: number
   /**
    * Moments où des répétitions ont pu passer sans être vues : trou dans les images plus long que gapResetMs, ou

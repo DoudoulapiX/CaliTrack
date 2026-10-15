@@ -546,6 +546,52 @@ describe.each([
   })
 })
 
+describe('createRepCounter : dernière répétition refusée', () => {
+  // Curls alternés de MM-Fit ; à la dernière répétition, les coudes partent sur le côté (bras balancé).
+  const fixture = loadRepFixture('mmfit-curls-w05-21')
+  const real = decodeFixture(fixture)
+  const counted = play(real, { variant: variant('curl') }).result
+  /** Coudes à hauteur d'épaule, sur le côté, à partir de `from`. */
+  const swung = (from: number) =>
+    real.map((frame) => {
+      const image = frame.image
+      if (frame.t <= from || !image) return frame
+      const out = (elbow: number, shoulder: number, dx: number): ImagePoint => [
+        image[shoulder]![0] + dx,
+        image[shoulder]![1] + 0.01,
+        image[elbow]![2],
+      ]
+      const moved = [...image]
+      moved[13] = out(13, 11, 0.1)
+      moved[14] = out(14, 12, -0.1)
+      return { ...frame, image: moved }
+    })
+
+  it('une dernière répétition refusée (bras balancé) rend le compte à vérifier', () => {
+    expect([counted.reps, counted.confident]).toEqual([10, true])
+    const played = play(swung(counted.repTimes[8]!), { variant: variant('curl') })
+    expect(played.events.at(-1)).toMatchObject({ kind: 'rejected', why: 'posture' })
+    expect(played.result).toMatchObject({ reps: 9, rejected: 1, confident: false, reasons: ['rejected'] })
+  })
+
+  it('compte tous les refus : avant la dernière répétition gardée et après', () => {
+    const played = play(
+      synthSet({ movement: 'squat', reps: [{}, { durationMs: 450 }, {}, { durationMs: 20_000 }], ...STAY }),
+    )
+    expect(played.events.filter((event) => event.kind === 'rejected')).toEqual([
+      expect.objectContaining({ why: 'fast' }),
+      expect.objectContaining({ why: 'slow' }),
+    ])
+    expect(played.result).toMatchObject({ reps: 2, rejected: 2, confident: false })
+  })
+
+  it('une flexion éclair après la série n’en fait pas une répétition ratée', () => {
+    const played = play(synthSet({ movement: 'squat', reps: [{}, {}, {}, { durationMs: 450 }], ...STAY }))
+    expect(played.events.at(-1)).toMatchObject({ kind: 'rejected', why: 'fast' })
+    expect(played.result).toMatchObject({ reps: 3, rejected: 0, confident: true })
+  })
+})
+
 describe('createRepCounter : mouvement hors série', () => {
   // Trois squats, puis la personne fait quelques pas et se baisse pour ramasser quelque chose (MM-Fit w17,
   // série 1) : ses pieds ont bougé depuis la dernière répétition, ce n'est pas un squat de plus.
