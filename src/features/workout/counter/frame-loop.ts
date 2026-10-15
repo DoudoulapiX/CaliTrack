@@ -3,8 +3,13 @@ import type { PoseEngine } from './pose-engine'
 
 /*
  * La boucle d'analyse du compteur : à chaque nouvelle image de la caméra, au plus `maxFps` fois par seconde et
- * jamais plus de la moitié du temps (intervalle d'au moins deux fois la durée moyenne d'une analyse), le moteur
+ * jamais plus de la moitié du temps (une analyse toutes les deux fois sa durée moyenne, à peine plus), le moteur
  * analyse l'image affichée. Une seule analyse à la fois : elle est synchrone.
+ *
+ * Chaque analyse a son heure, un pas après l'heure de la précédente (pas après l'image qui l'a lancée) : avec une
+ * caméra à 30 images par seconde et 60 ms d'analyse (le budget d'un iPhone), le pas de 121 ms donne 8,3 analyses
+ * par seconde en moyenne (une image sur trois ou quatre), et non 7,5 (une sur quatre), sous les 8 qu'il faut au
+ * compteur pour être sûr de lui (COUNTER_PARAMS.minFps).
  */
 
 /** Demande d'être rappelé à la prochaine image de la vidéo ; rend de quoi annuler. */
@@ -53,9 +58,15 @@ export const videoFrameScheduler: FrameScheduler = {
 export const MAX_FPS = 15
 /**
  * Tolérance sur le plafond d'images : une caméra à 30 images par seconde en livre une toutes les 33,3 ms, à
- * quelques millisecondes près ; sans elle, une image sur trois seulement passerait (10 par seconde au lieu de 15).
+ * quelques millisecondes près ; sans elle, une image arrivée un peu tôt attendrait la suivante. Jamais quand le pas
+ * vient de la durée des analyses : la moitié du temps reste un plafond.
  */
 export const FRAME_SLACK_MS = 8
+/**
+ * Repos ajouté à chaque pas qui vient de la durée des analyses : calées sur leur heure (l'attente d'une image ne
+ * s'ajoute pas au pas), elles prendraient tout juste la moitié du temps, un peu plus à la fin de l'une d'elles.
+ */
+const BUSY_MARGIN_MS = 1
 /** Poids de la dernière analyse dans la durée moyenne (moyenne glissante). */
 const EMA_WEIGHT = 0.2
 
@@ -96,7 +107,9 @@ export function startFrameLoop({
   let stopped = false
   let paused = false
   let cancel: (() => void) | null = null
-  let lastRun = Number.NEGATIVE_INFINITY
+  /** Heure de la prochaine analyse, et l'avance tolérée sur elle. */
+  let due = Number.NEGATIVE_INFINITY
+  let early = 0
   let lastT = Number.NEGATIVE_INFINITY
   let meanMs: number | null = null
 
@@ -115,18 +128,22 @@ export function startFrameLoop({
     cancel = null
     if (stopped || paused) return
     const start = now()
-    const interval = Math.max(1000 / maxFps - FRAME_SLACK_MS, 2 * (meanMs ?? 0))
-    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || start - lastRun < interval) {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || start < due - early) {
       schedule()
       return
     }
-    lastRun = start
     const t = Math.max(lastT + 1, Math.round(start))
     lastT = t
     try {
       const frame = engine.detect(video, t)
       const ms = Math.max(0, now() - start)
       meanMs = meanMs === null ? ms : meanMs + EMA_WEIGHT * (ms - meanMs)
+      // Le pas suit la durée moyenne, cette analyse comprise. Un pas après l'heure prévue ; repart de maintenant
+      // après une pause ou une analyse très lente.
+      const cap = 1000 / maxFps
+      const step = Math.max(cap, 2 * meanMs + BUSY_MARGIN_MS)
+      early = step > cap ? 0 : FRAME_SLACK_MS
+      due = due + step > start ? due + step : start + step
       onFrame(frame, ms)
     } catch (error) {
       halt()
