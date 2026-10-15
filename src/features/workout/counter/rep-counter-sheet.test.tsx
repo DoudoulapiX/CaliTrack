@@ -165,6 +165,11 @@ describe('compteur caméra : conseils et direct', () => {
     const { user, sheet } = await openCounter({ guideSeen: false })
     expect(within(sheet).getByText('Compteur caméra · Objectif : 8 à 12')).toBeInTheDocument()
     expect(within(sheet).getByRole('heading', { name: 'Place ton téléphone' })).toBeInTheDocument()
+    // Que du texte : la section prend le focus, pour défiler au clavier.
+    const guide = within(sheet).getByRole('region', { name: 'Place ton téléphone' })
+    expect(guide).toHaveAttribute('tabindex', '0')
+    guide.focus()
+    expect(guide).toHaveFocus()
     expect(
       within(sheet).getByText(/^Pose le téléphone debout, à hauteur de hanches, à 2 ou 3 mètres/),
     ).toBeInTheDocument()

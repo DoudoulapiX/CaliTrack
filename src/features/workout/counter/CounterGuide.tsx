@@ -11,10 +11,18 @@ export interface CounterGuideProps {
   readonly trial?: boolean
 }
 
-/** « Place ton téléphone » : où poser le téléphone pour ce mouvement, et comment marche le compteur. */
+/**
+ * « Place ton téléphone » : où poser le téléphone pour ce mouvement, et comment marche le compteur.
+ * Que du texte (le bouton est en bas de la feuille) : la section prend le focus, pour que le texte qui
+ * dépasse défile aussi au clavier.
+ */
 export function CounterGuide({ movement, voiceOff, wakeLockUnavailable, trial = false }: CounterGuideProps) {
   return (
-    <section aria-labelledby="counter-guide-title" className="flex flex-col gap-3 text-[15px] text-ink-2">
+    <section
+      aria-labelledby="counter-guide-title"
+      tabIndex={0}
+      className="flex flex-col gap-3 rounded-xl text-[15px] text-ink-2"
+    >
       <h3 id="counter-guide-title" className="text-[20px] font-semibold text-ink">
         {GUIDE_TITLE}
       </h3>
