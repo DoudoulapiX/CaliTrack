@@ -85,6 +85,7 @@ describe('mouvements en essai', () => {
   it('les curls sauf l’alterné aux haltères : même compte, à vérifier', () => {
     expect(TRIAL_VARIANTS).toEqual([
       { movement: 'curl', overrides: { trial: true } },
+      { movement: 'curl', overrides: { trial: true, armPairs: true } },
       { movement: 'curl', overrides: { bothArms: true } },
     ])
     const curls = FIXTURES.filter((fixture) => fixture.movement === 'curl')
@@ -92,6 +93,20 @@ describe('mouvements en essai', () => {
     for (const fixture of curls) {
       const result = runFixture(fixture, { variant: TRIAL_VARIANTS[0] })
       expect(result).toMatchObject({ reps: fixture.expected.reps, confident: false, reasons: ['trial'] })
+    }
+  })
+
+  it('le curl marteau alterné compte par paire : la moitié des bras des séries alternées, à vérifier', () => {
+    const curls = FIXTURES.filter((fixture) => fixture.movement === 'curl')
+    for (const fixture of curls) {
+      const result = runFixture(fixture, {
+        variant: { movement: 'curl', overrides: { trial: true, armPairs: true } },
+      })
+      expect(result, fixture.name).toMatchObject({
+        reps: fixture.expected.reps / 2,
+        confident: false,
+        reasons: ['trial'],
+      })
     }
   })
 })

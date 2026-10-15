@@ -62,6 +62,13 @@ describe('specFor', () => {
     expect(specFor({ movement: 'dip', overrides: { maxTorsoTilt: 50 } }).maxTorsoTilt).toBe(50)
     const bar = specFor({ movement: 'curl', overrides: { bothArms: true } })
     expect(bar).toMatchObject({ bothArms: true, sides: 'min' })
+    expect(specFor({ movement: 'curl', overrides: { armPairs: true } })).toEqual({
+      ...SPECS.curl,
+      armPairs: true,
+    })
+    expect(SPECS.curl.armPairs).toBe(false)
+    // Compté par paire seulement quand chaque bras a son propre compte.
+    expect(specFor({ movement: 'squat', overrides: { armPairs: true } }).armPairs).toBe(false)
   })
 
   it('met en essai une variante pas encore vérifiée, et les curls à la barre', () => {

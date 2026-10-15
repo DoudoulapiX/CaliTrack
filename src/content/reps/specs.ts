@@ -86,6 +86,8 @@ export interface MovementSpec {
   readonly minTravel: number
   /** Barre ou barre EZ : les deux coudes plient ensemble, un seul compte. */
   readonly bothArms: boolean
+  /** Compte par bras (`perArm`) : deux bras, l'un après l'autre ou ensemble, font une répétition. */
+  readonly armPairs: boolean
   /** Exercice où le buste est droit : un buste couché veut dire que le téléphone l'est (consigne). */
   readonly upright: boolean
   /** Compte sûr enregistré tout seul ; sinon toujours à vérifier avant d'enregistrer (« en essai »). */
@@ -107,6 +109,7 @@ const COMMON = {
   maxUpperArmTilt: null,
   leaveAnchor: null,
   bothArms: false,
+  armPairs: false,
 } as const
 
 export const SPECS: Readonly<Record<CountedMovement, MovementSpec>> = {
@@ -275,7 +278,7 @@ export const FEET_DRIFT_TORSO = 0.5
 /** Les seuils d'une variante : ceux du mouvement, avec ses réglages propres. */
 export function specFor(variant: CountedVariant): MovementSpec {
   const base = SPECS[variant.movement]
-  const { bodyLine, minTorsoTilt, maxTorsoTilt, bothArms, trial } = variant.overrides
+  const { bodyLine, minTorsoTilt, maxTorsoTilt, bothArms, armPairs, trial } = variant.overrides
   const line = bodyLine ?? base.bodyLine
   return {
     ...base,
@@ -284,6 +287,7 @@ export function specFor(variant: CountedVariant): MovementSpec {
     ...(base.movement === 'pushup'
       ? { bodyLine: line, need: [...ARMS, ...HIPS, ...(line === 'knee' ? KNEES : ANKLES)] }
       : {}),
+    ...(armPairs === true && base.sides === 'perArm' ? { armPairs: true } : {}),
     // Barre : un seul suivi, sur le coude le plus plié ; l'autre doit plier aussi (rep-tracker.ts). En essai tant
     // qu'aucune vraie série à la barre ne vérifie ce suivi (src/test/reps/README.md).
     ...(bothArms === true && base.sides === 'perArm'

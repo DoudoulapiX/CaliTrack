@@ -608,6 +608,20 @@ describe('createRepCounter : curls, un bras pas vu', () => {
     }
   })
 
+  it('curl compté par paire (curl marteau alterné) : un bras puis l’autre font une répétition', () => {
+    const pairs = variant('curl', { armPairs: true })
+    const alternate = play(synthSet({ movement: 'curl', reps: 6, alternate: true, ...STAY }), {
+      variant: pairs,
+    })
+    expect(alternate.result.reps).toBe(3)
+    expect(repEvents(alternate).map((event) => event.reps)).toEqual([1, 2, 3])
+    // Les deux bras ensemble : les deux bras ont travaillé, une répétition chaque fois.
+    expect(play(synthSet({ movement: 'curl', reps: 4, ...STAY }), { variant: pairs }).result.reps).toBe(4)
+    // Un bras de plus à la fin ne fait pas une répétition de plus.
+    const odd = play(synthSet({ movement: 'curl', reps: 5, alternate: true, ...STAY }), { variant: pairs })
+    expect(odd.result.reps).toBe(2)
+  })
+
   it('un bras caché un moment pendant une série alternée : compte à vérifier', () => {
     const frames = synthSet({ movement: 'curl', reps: 6, alternate: true, ...STAY })
     expect(play(frames, { variant: curl }).result).toMatchObject({ reps: 6, confident: true })

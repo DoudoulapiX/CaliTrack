@@ -68,6 +68,23 @@ describe('exercices comptés à la caméra', () => {
   })
 })
 
+describe('répétition comptée', () => {
+  it('suit la fiche de l’exercice : un bras puis l’autre font une répétition quand elle le dit', () => {
+    const saysPairs = (id: string) =>
+      CATALOG.get(id)?.instructions.some((line) =>
+        line.includes('Les deux bras comptent pour une répétition'),
+      ) === true
+    const pairs = counted.filter((id) => COUNTED_EXERCISES[id]?.overrides.armPairs === true)
+    expect(pairs).toEqual(counted.filter(saysPairs))
+    expect(pairs).toEqual(['Alternate_Hammer_Curl'])
+    expect(specFor(COUNTED_EXERCISES.Alternate_Hammer_Curl!)).toMatchObject({
+      armPairs: true,
+      validated: false,
+    })
+    expect(specFor(COUNTED_EXERCISES.Dumbbell_Alternate_Bicep_Curl!).armPairs).toBe(false)
+  })
+})
+
 describe('exercices pas comptés', () => {
   it('existent tous et ne sont pas aussi dans la liste des comptés', () => {
     expect(notCounted.filter((id) => !CATALOG.has(id))).toEqual([])

@@ -33,6 +33,11 @@ export interface VariantOverrides {
   /** Les deux coudes plient ensemble (barre, barre EZ) : un seul compte pour les deux bras. */
   readonly bothArms?: boolean
   /**
+   * Curl alterné compté par paire, comme le dit sa fiche (« Les deux bras comptent pour une répétition ») : un bras
+   * puis l'autre, ou les deux ensemble, font une répétition ; sinon chaque bras compte.
+   */
+  readonly armPairs?: boolean
+  /**
    * Variante encore en essai alors que son mouvement est validé sur une autre (curls : MM-Fit n'a que des curls
    * alternés aux haltères) : jamais sûre, le compte attend toujours la vérification.
    */

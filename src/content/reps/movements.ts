@@ -74,16 +74,17 @@ const PULLUPS = [
 ]
 
 /**
- * Curls aux haltères ou à l'élastique : un bras après l'autre ou les deux ensemble, chaque bras compte. Seul le curl
- * alterné aux haltères est vérifié sur de vraies séries (MM-Fit) ; les autres sont en essai, comme les curls à la
- * barre (specFor), jusqu'à des séries filmées qui les vérifient (npm run reps:add).
+ * Curls aux haltères ou à l'élastique : un bras après l'autre ou les deux ensemble, chaque bras compte (sauf le curl
+ * marteau alterné : sa fiche compte les deux bras pour une répétition). Seul le curl alterné aux haltères est vérifié
+ * sur de vraies séries (MM-Fit) ; les autres sont en essai, comme les curls à la barre (specFor), jusqu'à des séries
+ * filmées qui les vérifient (npm run reps:add).
  */
 const ALTERNATE_CURL = 'Dumbbell_Alternate_Bicep_Curl'
+const PAIRED_CURL = 'Alternate_Hammer_Curl'
 const CURLS = [
   'curl-band',
   'Dumbbell_Bicep_Curl',
   'Hammer_Curls',
-  'Alternate_Hammer_Curl',
   'Cross_Body_Hammer_Curl',
   'Zottman_Curl',
   'Standing_Dumbbell_Reverse_Curl',
@@ -113,6 +114,7 @@ export const COUNTED_EXERCISES: Readonly<Record<string, CountedVariant>> = Objec
   ...all(PULLUPS, variant('pullup')),
   [ALTERNATE_CURL, variant('curl')],
   ...all(CURLS, variant('curl', { trial: true })),
+  [PAIRED_CURL, variant('curl', { trial: true, armPairs: true })],
   ...all(BAR_CURLS, variant('curl', { bothArms: true })),
 ])
 

@@ -114,7 +114,8 @@ foi).
 
 **Compteur caméra** : pendant une séance, le bouton **Compter à la caméra** d'un exercice compte tes
 répétitions en direct. Il connaît les squats, pompes, dips, tractions et curls (y compris alternés, les deux
-bras comptent) et leurs variantes courantes, dont un nouvel exercice : le **Curl à l'élastique**. Les
+bras comptent, sauf au curl marteau alterné, dont la fiche compte un bras puis l'autre pour une répétition) et
+leurs variantes courantes, dont un nouvel exercice : le **Curl à l'élastique**. Les
 exercices sur une seule jambe ou un seul bras (pistol, squat bulgare, traction à un bras…) ne sont pas
 comptés.
 

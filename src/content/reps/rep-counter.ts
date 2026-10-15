@@ -92,6 +92,8 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
   let goAt: number | null = null
   let trackers: RepTracker[] | null = null
   const merger = createArmMerger(params.perArmMergeMs)
+  /** Compté par paire (spec.armPairs) : un bras a fini, la répétition attend l'autre. */
+  let halfRep = false
 
   // Images
   let lastFrameT: number | null = null
@@ -142,6 +144,7 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
   /** resumed : repris en pleine série, après le passage d'une autre personne (voir createRepTracker). */
   function newTrackers(resumed = false): RepTracker[] {
     merger.reset()
+    halfRep = false
     const tracker = () => createRepTracker(spec, params, { resumed })
     return perArm ? [tracker(), tracker()] : [tracker()]
   }
@@ -164,8 +167,12 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
   function onEvent(ev: TrackerEvent | null, arm: Side | null): void {
     if (!ev) return
     if (ev.kind === 'rep') {
-      // Curls à deux bras : le second bras qui finit presque en même temps fait la même répétition.
-      if (arm !== null && !merger.add(arm, ev.t)) return
+      if (arm !== null && spec.armPairs) {
+        // Compté par paire : le second bras, après l'autre ou en même temps, finit la répétition.
+        halfRep = !halfRep
+        if (halfRep) return
+        // Curls à deux bras : le second bras qui finit presque en même temps fait la même répétition.
+      } else if (arm !== null && !merger.add(arm, ev.t)) return
       addRep(ev.t)
     } else if (ev.kind === 'partial') {
       partials++
