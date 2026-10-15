@@ -10,9 +10,9 @@ import type { Page } from '@playwright/test'
  */
 
 /** Les clips : un dossier d'images numérotées (00001.jpg…) et leur SOURCE.txt. */
-export const MEDIA_DIR = join(process.cwd(), 'e2e/media')
+const MEDIA_DIR = join(process.cwd(), 'e2e/media')
 /** Les fichiers de points des vraies séries (src/test/reps), rejoués à la place de MediaPipe. */
-export const REPS_DIR = join(process.cwd(), 'src/test/reps')
+const REPS_DIR = join(process.cwd(), 'src/test/reps')
 
 const FRAME_ROUTE = '/__person-camera/'
 
@@ -47,12 +47,12 @@ export function clipFrames(clip: string): string[] {
 }
 
 /** Adresse (même origine que l'appli) d'une image de clip, servie par usePersonCamera. */
-export function clipFrameUrl(clip: string, file: string): string {
+function clipFrameUrl(clip: string, file: string): string {
   return `${FRAME_ROUTE}${clip}/${file}`
 }
 
 /** Sert les images des clips depuis le disque, sous l'origine de l'appli (jamais « à l'extérieur »). */
-export async function serveClipFrames(page: Page): Promise<void> {
+async function serveClipFrames(page: Page): Promise<void> {
   await page.route(`**${FRAME_ROUTE}**`, (route) => {
     const match = /\/__person-camera\/([\w-]+)\/(\d{5}\.jpg)$/.exec(new URL(route.request().url()).pathname)
     if (!match?.[1] || !match[2]) return route.fulfill({ status: 404 })
@@ -176,8 +176,8 @@ export function watchOutside(page: Page): string[] {
 }
 
 /** L'appli rejouera ce fichier de points (src/test/reps/<nom>.json) à la place de MediaPipe. */
-export async function useReplayedPose(page: Page, fixtureName: string, dir = REPS_DIR): Promise<void> {
-  const fixture: unknown = JSON.parse(readFileSync(join(dir, `${fixtureName}.json`), 'utf8'))
+export async function useReplayedPose(page: Page, fixtureName: string): Promise<void> {
+  const fixture: unknown = JSON.parse(readFileSync(join(REPS_DIR, `${fixtureName}.json`), 'utf8'))
   await page.addInitScript((data) => {
     ;(globalThis as { __calitrackPoseReplay?: unknown }).__calitrackPoseReplay = data
   }, fixture)

@@ -45,7 +45,9 @@ export default defineConfig({
       },
     },
     // WebKit n'a pas de fausse caméra dans Playwright : le scan par la caméra n'y est pas testé, le
-    // code tapé à la main l'est (nutrition.spec.ts).
+    // code tapé à la main l'est (nutrition.spec.ts). Le compteur caméra, lui, y est testé en entier
+    // (rep-counter*.spec.ts, a11y.spec.ts) avec la caméra de e2e/person-camera.ts : le vrai MediaPipe a
+    // tourné sous WebKit dans la CI de GitHub, rien n'est écarté.
     ...(isCI
       ? [
           {
