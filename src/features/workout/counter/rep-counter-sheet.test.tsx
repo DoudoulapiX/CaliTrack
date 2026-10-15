@@ -221,9 +221,13 @@ describe('compteur caméra : conseils et direct', () => {
     // Le moteur se prépare, la caméra attend le toucher.
     expect(camera().options).toMatchObject({ open: true, cameraOn: false, analysing: false, facing: 'user' })
     expect(counter().createRepCounter).not.toHaveBeenCalled()
+    // Pas encore de caméra : le flou derrière la feuille reste.
+    expect(document.documentElement).not.toHaveAttribute('data-camera')
 
     await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
     expect(camera().options).toMatchObject({ cameraOn: true, analysing: false })
+    // Caméra allumée : plus de flou derrière la feuille (index.css), le téléphone garde sa puissance.
+    expect(document.documentElement).toHaveAttribute('data-camera', '')
     expect(within(sheet).getByRole('status')).toHaveTextContent('Préparation du compteur…')
     expectFrenchSpacing()
     setCamera({ kind: 'loading', step: 'camera' })
@@ -248,6 +252,7 @@ describe('compteur caméra : conseils et direct', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
+    expect(document.documentElement).not.toHaveAttribute('data-camera')
     await user.click(screen.getByRole('button', { name: `Compter à la caméra : ${SQUAT}` }))
     const again = await screen.findByRole('dialog', { name: `${SQUAT}, série 2` })
     expect(within(again).queryByRole('heading', { name: 'Place ton téléphone' })).not.toBeInTheDocument()

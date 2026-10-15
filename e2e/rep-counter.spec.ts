@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { collectErrors, onboard } from './nutrition-helpers'
 import { personCameraStopped, usePersonCamera, useReplayedPose, watchOutside } from './person-camera'
 import {
@@ -22,6 +22,24 @@ test.use({ serviceWorkers: 'block' })
 /** Une série rejouée dure 11 s, puis le compteur attend 6 s sans mouvement avant de finir la série. */
 const SET_MS = 25_000
 
+/** Les éléments flous (en-tête, barre d'onglets, fond de la feuille) : leur nom de balise. */
+async function blurred(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const filtered = (style: CSSStyleDeclaration) =>
+      ![undefined, '', 'none'].includes(
+        style.backdropFilter || style.getPropertyValue('-webkit-backdrop-filter'),
+      )
+    const found: string[] = []
+    for (const element of Array.from(document.querySelectorAll('*'))) {
+      if (filtered(getComputedStyle(element))) found.push(element.tagName.toLowerCase())
+    }
+    for (const dialog of Array.from(document.querySelectorAll('dialog[open]'))) {
+      if (filtered(getComputedStyle(dialog, '::backdrop'))) found.push('dialog::backdrop')
+    }
+    return found
+  })
+}
+
 test('compteur caméra : 3 squats comptés, série enregistrée toute seule, repos lancé, compte corrigé', async ({
   page,
 }) => {
@@ -34,7 +52,11 @@ test('compteur caméra : 3 squats comptés, série enregistrée toute seule, rep
 
   const sheet = await openCounter(page, SQUATS)
   await expect(sheet.getByRole('heading', { name: 'Place ton téléphone' })).toBeVisible()
+  expect(await blurred(page)).not.toEqual([])
   await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
+  // Caméra allumée : plus aucun flou derrière la feuille, qui se recalculerait à chaque image.
+  await expect(page.locator('html')).toHaveAttribute('data-camera', '')
+  expect(await blurred(page)).toEqual([])
   await expect(sheet.getByRole('status', { name: 'Répétitions comptées' })).toHaveText(/^3\srépétitions$/, {
     timeout: SET_MS,
   })
@@ -54,6 +76,8 @@ test('compteur caméra : 3 squats comptés, série enregistrée toute seule, rep
   // Une série enregistrée se ferme tout de suite ; la caméra s'éteint, le repos continue.
   await sheet.getByRole('button', { name: 'Fermer' }).click()
   await expect(sheet).toBeHidden()
+  await expect(page.locator('html')).not.toHaveAttribute('data-camera')
+  expect(await blurred(page)).not.toEqual([])
   await expect(setDone(page, SQUATS)).toHaveAttribute('aria-pressed', 'true')
   await expect(setReps(page, SQUATS)).toHaveValue('4')
   await expect(page.getByRole('timer', { name: 'Repos restant' })).toBeVisible()

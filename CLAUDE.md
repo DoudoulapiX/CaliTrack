@@ -82,6 +82,10 @@ d'appareil : `localStorage['calitrack.counter']`.
     (`quietWasmConsole()`).
   - Caméra seulement après un toucher (« Compter à la caméra », ou « Ouvrir la caméra » sous les conseils ;
     testé) ; aucune analyse pendant le repos.
+  - Caméra allumée : aucun flou d'arrière-plan (`useCameraBackdrop` pose `data-camera` sur `<html>`, que
+    `index.css` suit), et l'analyse n'attend jamais l'affichage plus de `STALL_MS` (`frame-loop.ts`). Sous WebKit
+    en CI (rendu logiciel), le flou recalculé à chaque image faisait tomber l'écran, et l'analyse avec lui, à
+    quelques images par seconde.
 - Dans les tests, ces services sont simulés (`src/test/anthropic.ts`, `src/test/oura.ts`, routes
   Playwright dans `e2e/`) : aucun test n'appelle le vrai réseau.
 

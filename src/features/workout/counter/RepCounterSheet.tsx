@@ -12,6 +12,7 @@ import { CounterLive, CounterStage, EventLine } from './CounterLive'
 import { CounterResult } from './CounterResult'
 import type { SessionView } from './counter-session'
 import { counterTitle, GUIDE_TEXT, LIVE_LABEL, targetLine, targetMin } from './counter-view'
+import { useCameraBackdrop } from './useCameraBackdrop'
 import { useRepSession } from './useRepSession'
 
 export interface RepCounterSheetProps {
@@ -61,6 +62,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
   const { exercise, exerciseName, variant, cues } = props
   const { state, snapshot, camera, wakeLock, prefs, actions, rest, cameraOn, canExport, validated } =
     useRepSession(props)
+  useCameraBackdrop(cameraOn)
   const movement = variant.movement
   const { view } = state
   const line = targetLine(exercise.target)
