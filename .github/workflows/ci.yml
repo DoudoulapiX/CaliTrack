@@ -16,18 +16,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: mediapipe-a
-            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
-          - name: mediapipe-b
-            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
-          - name: mediapipe-c
-            cmd: npx playwright test e2e/rep-counter-mediapipe.spec.ts --project=iphone-webkit-camera --no-deps --repeat-each=5 --retries=0
-          - name: camera-a
-            cmd: npx playwright test --project=iphone-webkit-camera --no-deps --repeat-each=3 --retries=0
-          - name: camera-b
-            cmd: npx playwright test --project=iphone-webkit-camera --no-deps --repeat-each=3 --retries=0
-          - name: suite-c
-            cmd: npx playwright test --retries=0
+          - name: crash-a
+          - name: crash-b
+          - name: crash-c
+          - name: crash-d
     steps:
       - uses: actions/checkout@v5
 
@@ -46,6 +38,16 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Tests
-        run: ${{ matrix.cmd }}
+        run: |
+          (while true; do echo "MEM $(date +%T) $(free -m | awk '/Mem/ {print $3"/"$2}')"; sleep 20; done) &
+          DEBUG=pw:browser npx playwright test --project=iphone-webkit-camera --no-deps --repeat-each=3 --retries=0 > run.log 2>&1 || true
+          grep -E "✘|✓|passed|failed|DIAGDUMP" run.log | cut -c1-300
+          echo "---- lignes du navigateur (sans doublons)"
+          grep -E "\[err\]|\[out\]" run.log | sed -E 's/.*\]\[(err|out)\]//' | sort | uniq -c | sort -rn | head -60 | cut -c1-300
+          echo "---- autour des plantages"
+          grep -n -iE "crash|SIG[A-Z]+|segmentation|abort|assert|killed|out of memory" run.log | head -40 | cut -c1-400
+          for n in $(grep -n -iE "Target crashed|crashed" run.log | head -3 | cut -d: -f1); do echo "== avant la ligne $n"; sed -n "$((n-40)),$((n+2))p" run.log | cut -c1-300; done
+          echo "---- dmesg"
+          sudo dmesg | tail -40
         env:
           CI: 'true'
