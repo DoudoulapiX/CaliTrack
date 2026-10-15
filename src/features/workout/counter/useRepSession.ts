@@ -94,6 +94,8 @@ export interface RepSession {
  */
 interface Attempt {
   readonly number: number
+  /** Le compte d'où l'essai part (« Continuer la série »). */
+  readonly offset: number
   readonly counter: RepCounter
   last: CounterSnapshot
   /** Temps de la dernière image donnée au compteur (temps du compteur). */
@@ -161,6 +163,7 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const counter = createRepCounter({ variant: currentProps.variant, offset: current.offset })
     const attempt: Attempt = {
       number: current.attempt,
+      offset: current.offset,
       counter,
       last: counter.snapshot,
       lastT: Number.NEGATIVE_INFINITY,
@@ -207,6 +210,15 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       if (snapshot !== before) {
         const signal = cueFor(before, snapshot, targetMin(currentProps.exercise.target))
         if (signal) cue(signal.tone, currentProps.cues, signal.text)
+        // « Continuer la série » après l'enregistrement : le repos de la série s'arrête à la première répétition
+        // de plus (sans elle, la série reste comme elle était, repos compris).
+        if (
+          latest.current.state.resume?.kind === 'saved' &&
+          before.reps <= attempt.offset &&
+          snapshot.reps > attempt.offset
+        ) {
+          skipRest()
+        }
       }
       const now = Date.now()
       const previous = shownRef.current
@@ -452,7 +464,6 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     },
     continueSet: () => {
       dispatch({ type: 'continueSet' })
-      skipRest()
     },
     nextSet: () => {
       dispatch({ type: 'nextSet' })

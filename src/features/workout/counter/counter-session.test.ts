@@ -42,6 +42,7 @@ describe('séance du compteur caméra', () => {
       setId: 's1',
       setIndex: 0,
       offset: 0,
+      resume: null,
       result: null,
       attempt: 1,
     })
@@ -130,11 +131,6 @@ describe('séance du compteur caméra', () => {
       validated: true,
     })
     expect(empty.view).toEqual({ kind: 'empty' })
-    // « Continuer la série » sans rien de plus : rien à enregistrer non plus.
-    const continued = at({ kind: 'live' }, { offset: 8 })
-    expect(
-      sessionReducer(continued, { type: 'ended', result: counterResult({ reps: 8 }), validated: true }).view,
-    ).toEqual({ kind: 'empty' })
     const retried = sessionReducer({ ...empty, attempt: 3 }, { type: 'retry' })
     expect(retried).toMatchObject({ view: { kind: 'live' }, attempt: 4, result: null, offset: 0 })
   })
@@ -188,12 +184,71 @@ describe('séance du compteur caméra', () => {
       view: { kind: 'live' },
       setId: 's1',
       offset: 8,
+      resume: saved.view,
       attempt: 3,
       result: null,
     })
     const review = at({ kind: 'review', result: UNSURE, reps: 9 }, { attempt: 5 })
-    expect(sessionReducer(review, { type: 'continueSet' })).toMatchObject({ offset: 9, attempt: 6 })
+    expect(sessionReducer(review, { type: 'continueSet' })).toMatchObject({
+      offset: 9,
+      resume: review.view,
+      attempt: 6,
+    })
     expect(sessionReducer(at({ kind: 'empty' }), { type: 'continueSet' }).view).toEqual({ kind: 'empty' })
+  })
+
+  it('revient à la série d’où « Continuer la série » est parti quand rien de plus n’est compté', () => {
+    const nothingMore = (offset: number) =>
+      ({
+        type: 'ended',
+        result: counterResult({ reps: offset, endedBy: 'manual' }),
+        validated: true,
+      }) as const
+
+    // Compte vérifié, pas encore enregistré : il revient tel quel, réglage compris.
+    const review = play(
+      at({ kind: 'live' }, { attempt: 2 }),
+      { type: 'ended', result: UNSURE, validated: true },
+      { type: 'adjust', reps: 8 },
+    )
+    const continued = sessionReducer(review, { type: 'continueSet' })
+    const back = sessionReducer(continued, nothingMore(8))
+    expect(back.view).toEqual(review.view)
+    expect(back).toMatchObject({ offset: 8, attempt: 3, result: { reps: 8 } })
+    // Puis il s'enregistre.
+    expect(play(back, { type: 'save' }, { type: 'saved', next: null })).toMatchObject({
+      offset: 8,
+      resume: null,
+      view: { kind: 'saved', reps: 8 },
+    })
+    // Une caméra coupée sans rien de plus, aussi : le compte vérifié revient.
+    const interrupted = counterResult({ reps: 8, confident: false, reasons: ['interrupted'] })
+    expect(sessionReducer(continued, { type: 'ended', result: interrupted, validated: true }).view).toEqual(
+      review.view,
+    )
+
+    // Série enregistrée : son écran revient (repos, série suivante).
+    const saved = play(at({ kind: 'saving', reps: 10 }), { type: 'saved', next: NEXT })
+    const fromSaved = play(saved, { type: 'correct' }, { type: 'continueSet' })
+    expect(sessionReducer(fromSaved, nothingMore(10)).view).toEqual(saved.view)
+    // Après un réessai (problème de caméra), on y revient encore.
+    const retried = play(
+      fromSaved,
+      { type: 'problem', problem: 'crashed' },
+      { type: 'retry' },
+      { type: 'ready' },
+      nothingMore(10),
+    )
+    expect(retried.view).toEqual(saved.view)
+
+    // Une répétition de plus : la série se vérifie ou s'enregistre comme d'habitude.
+    const more = sessionReducer(fromSaved, {
+      type: 'ended',
+      result: counterResult({ reps: 11 }),
+      validated: true,
+    })
+    expect(more.view).toEqual({ kind: 'saving', reps: 11 })
+    expect(play(more, { type: 'saved', next: NEXT }).resume).toBeNull()
   })
 
   it('passe à la série suivante à la fin du repos ou sur « Série suivante »', () => {
@@ -204,6 +259,7 @@ describe('séance du compteur caméra', () => {
         setId: 's2',
         setIndex: 1,
         offset: 0,
+        resume: null,
         result: null,
         attempt: 3,
       })

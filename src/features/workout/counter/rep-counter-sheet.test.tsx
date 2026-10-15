@@ -526,16 +526,73 @@ describe('compteur caméra : fin de série', () => {
     expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
     expect((await squatSets())[1]).toEqual({ done: true, reps: 9 })
 
-    // Après l'enregistrement : le repos s'arrête, la série reprend à 9 et s'enregistre à nouveau.
+    // Après l'enregistrement : la série reprend à 9 ; le repos s'arrête à la première répétition de plus, et la
+    // série s'enregistre à nouveau.
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toBeInTheDocument()
     await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
-    expect(screen.queryByRole('timer', { name: 'Repos restant' })).not.toBeInTheDocument()
-    frame({ status: 'counting', reps: 12 })
+    frame({ status: 'counting' })
     expect(counter().created.at(-1)?.offset).toBe(9)
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toBeInTheDocument()
+    frame({ reps: 10 })
+    expect(screen.queryByRole('timer', { name: 'Repos restant' })).not.toBeInTheDocument()
+    frame({ reps: 12 })
     end({ reps: 12 })
     await waitFor(async () => {
       expect((await squatSets())[1]).toEqual({ done: true, reps: 12 })
     })
     expect(within(sheet).getByRole('heading', { name: /^12\srépétitions$/ })).toBeInTheDocument()
+  })
+})
+
+describe('compteur caméra : « Continuer la série » sans rien de plus', () => {
+  it('le compte vérifié revient, puis s’enregistre', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 7 })
+    end({ reps: 7, confident: false, reasons: ['lost'] })
+    await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })
+    await user.click(within(sheet).getByRole('button', { name: 'Répétitions : plus' }))
+
+    // « Terminer la série » tout de suite : le compte vérifié revient tel quel (7 comptées, réglé à 8).
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    frame({ status: 'counting' })
+    expect(within(sheet).getByRole('status', { name: 'Répétitions comptées' })).toHaveTextContent('8')
+    await user.click(within(sheet).getByRole('button', { name: 'Terminer la série' }))
+    expect(await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })).toBeInTheDocument()
+    expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('8')
+
+    // Caméra coupée (appli en arrière-plan) avant toute répétition de plus : pareil.
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    frame({ status: 'counting' })
+    camera().hide()
+    expect(await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })).toBeInTheDocument()
+    expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('8')
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
+
+    await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 8\srépétitions$/ }))
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 8 })
+  })
+
+  it('la série enregistrée revient avec son repos, qui enchaîne sur la série suivante', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 10 })
+    end({ reps: 10 })
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    frame({ status: 'counting' })
+    await user.click(within(sheet).getByRole('button', { name: 'Terminer la série' }))
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect(within(sheet).getByRole('heading', { name: /^10\srépétitions$/ })).toBeInTheDocument()
+    expect(within(sheet).getByRole('timer', { name: 'Repos avant la série suivante' })).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toBeInTheDocument()
+    expect(await squatSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 10 }, { done: false }])
+
+    // Fin du repos : le compteur repart pour la série 3.
+    act(() => {
+      skipRest()
+    })
+    expect(await screen.findByRole('dialog', { name: `${SQUAT}, série 3` })).toBeInTheDocument()
   })
 })
 

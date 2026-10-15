@@ -14,6 +14,7 @@ import type { PoseCameraProblem } from './usePoseCamera'
  *                                                  ├──▶ à vérifier ─enregistrer─▶ enregistrement …
  *                                                  └──▶ rien compté ─réessayer─▶ direct
  * Fin du repos ou « Série suivante » : direct pour la série suivante du même exercice.
+ * « Continuer la série » (enregistrée ou à vérifier) : direct, et retour à cet écran si rien de plus n'est compté.
  */
 
 /** La série suivante du même exercice : rang (à partir de 0) et nombre de séries de l'exercice. */
@@ -43,6 +44,9 @@ export type SessionView =
     }
   | { readonly kind: 'problem'; readonly problem: PoseCameraProblem }
 
+/** Un écran d'où « Continuer la série » peut partir. */
+export type ResumeView = Extract<SessionView, { kind: 'review' | 'saved' }>
+
 export interface SessionState {
   readonly view: SessionView
   readonly setId: string
@@ -52,6 +56,11 @@ export interface SessionState {
    * vérifiées avant « Continuer la série ».
    */
   readonly offset: number
+  /**
+   * L'écran d'où « Continuer la série » est parti (série enregistrée, ou compte vérifié pas encore enregistré) :
+   * si l'essai ne compte rien de plus, on y revient, sans rien perdre.
+   */
+  readonly resume: ResumeView | null
   /** Résultat de la dernière série comptée (pour l'export des points). */
   readonly result: CounterResult | null
   /** Numéro de l'essai : chaque nouveau numéro veut un compteur neuf. */
@@ -87,6 +96,7 @@ export function initialSession(args: { setId: string; setIndex: number; guideSee
     setId: args.setId,
     setIndex: args.setIndex,
     offset: 0,
+    resume: null,
     result: null,
     attempt: 1,
   }
@@ -95,7 +105,10 @@ export function initialSession(args: { setId: string; setIndex: number; guideSee
 const clampReps = (reps: number) => Math.min(MAX_REPS, Math.max(0, Math.round(reps)))
 
 /** Un nouvel essai en direct : compteur neuf, qui repart de `offset`. */
-function fresh(state: SessionState, patch: Partial<Pick<SessionState, 'setId' | 'setIndex' | 'offset'>>) {
+function fresh(
+  state: SessionState,
+  patch: Partial<Pick<SessionState, 'setId' | 'setIndex' | 'offset' | 'resume'>>,
+) {
   return { ...state, ...patch, view: { kind: 'live' as const }, result: null, attempt: state.attempt + 1 }
 }
 
@@ -121,7 +134,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       // Fin automatique en direct, ou caméra coupée pendant les conseils ou la question de fermeture.
       if (view.kind !== 'live' && view.kind !== 'guide' && view.kind !== 'confirmClose') return state
       const { result } = action
-      if (result.reps + result.doubtful <= state.offset) return { ...state, view: { kind: 'empty' }, result }
+      // Rien de plus que le compte d'où l'essai est parti : retour à la série enregistrée ou vérifiée.
+      if (result.reps + result.doubtful <= state.offset) {
+        return { ...state, view: state.resume ?? { kind: 'empty' }, result }
+      }
       if (result.confident && action.validated) {
         return { ...state, view: { kind: 'saving', reps: result.reps }, result }
       }
@@ -157,6 +173,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       return {
         ...state,
         offset: view.reps,
+        resume: null,
         view: {
           kind: 'saved',
           reps: view.reps,
@@ -190,16 +207,16 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         ? { ...state, offset: view.reps, view: { ...view, correcting: false, corrected: true } }
         : state
     case 'continueSet':
-      if ((view.kind === 'saved' && !view.error) || view.kind === 'review') {
-        return fresh(state, { offset: view.reps })
+      if (view.kind === 'saved' && !view.error) {
+        return fresh(state, { offset: view.reps, resume: { ...view, correcting: false } })
       }
-      return state
+      return view.kind === 'review' ? fresh(state, { offset: view.reps, resume: view }) : state
     case 'nextSet':
     case 'restOver':
       if (view.kind !== 'saved' || view.error || !view.next) return state
       // La fin du repos n'interrompt pas une correction en cours : « Série suivante » reste là.
       if (action.type === 'restOver' && view.correcting) return state
-      return fresh(state, { setId: view.next.setId, setIndex: view.next.index, offset: 0 })
+      return fresh(state, { setId: view.next.setId, setIndex: view.next.index, offset: 0, resume: null })
     case 'discard':
       return view.kind === 'review' ? fresh(state, {}) : state
   }
