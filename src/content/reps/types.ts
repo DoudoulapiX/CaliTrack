@@ -32,6 +32,11 @@ export interface VariantOverrides {
   readonly maxTorsoTilt?: number
   /** Les deux coudes plient ensemble (barre, barre EZ) : un seul compte pour les deux bras. */
   readonly bothArms?: boolean
+  /**
+   * Variante encore en essai alors que son mouvement est validé sur une autre (curls : MM-Fit n'a que des curls
+   * alternés aux haltères) : jamais sûre, le compte attend toujours la vérification.
+   */
+  readonly trial?: boolean
 }
 
 export interface CountedVariant {

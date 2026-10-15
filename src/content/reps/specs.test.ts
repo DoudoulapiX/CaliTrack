@@ -64,6 +64,20 @@ describe('specFor', () => {
     expect(bar).toMatchObject({ bothArms: true, sides: 'min' })
   })
 
+  it('met en essai une variante pas encore vérifiée, et les curls à la barre', () => {
+    expect(specFor({ movement: 'curl', overrides: { trial: true } })).toEqual({
+      ...SPECS.curl,
+      validated: false,
+    })
+    expect(specFor({ movement: 'squat', overrides: { trial: true } })).toEqual({
+      ...SPECS.squat,
+      validated: false,
+    })
+    expect(specFor({ movement: 'curl', overrides: { bothArms: true } }).validated).toBe(false)
+    expect(specFor({ movement: 'curl', overrides: { trial: false } }).validated).toBe(true)
+    expect(specFor(defaultVariant('curl')).validated).toBe(true)
+  })
+
   it('donne des seuils à chaque exercice compté', () => {
     for (const variant of Object.values(COUNTED_EXERCISES)) {
       expect(specFor(variant).movement).toBe(variant.movement)

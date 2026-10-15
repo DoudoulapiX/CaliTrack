@@ -4,6 +4,7 @@ import type { Exercise } from '@/db/types'
 import { CALITRACK_EXERCISES, FEDB_MERGED_INTO } from '@/content/exercises/calisthenics'
 import { MOVEMENT_LADDERS } from '@/content/programs/ladders'
 import { COUNTED_EXERCISES, countableVariant, NOT_COUNTED } from './movements'
+import { specFor } from './specs'
 import type { CountedMovement } from './types'
 
 const FEDB = JSON.parse(readFileSync(join(process.cwd(), 'src/data/fedb.json'), 'utf8')) as Exercise[]
@@ -54,6 +55,16 @@ describe('exercices comptés à la caméra', () => {
     expect(bar).toHaveLength(8)
     expect(bar.every((id) => COUNTED_EXERCISES[id]?.movement === 'curl')).toBe(true)
     expect(COUNTED_EXERCISES['Dumbbell_Alternate_Bicep_Curl']).toEqual({ movement: 'curl', overrides: {} })
+  })
+
+  it('s’enregistrent sans vérification seulement si la variante est vérifiée : squats et curl alterné', () => {
+    const validated = (movement: CountedMovement) =>
+      idsOf(movement).filter((id) => specFor(COUNTED_EXERCISES[id]!).validated)
+    expect(validated('squat')).toEqual(idsOf('squat'))
+    // Les curls de MM-Fit sont tous alternés aux haltères : ni curls simultanés, ni élastique, ni barre.
+    expect(validated('curl')).toEqual(['Dumbbell_Alternate_Bicep_Curl'])
+    expect(idsOf('curl').filter((id) => COUNTED_EXERCISES[id]?.overrides.trial === true)).toHaveLength(9)
+    for (const movement of ['pushup', 'dip', 'pullup'] as const) expect(validated(movement)).toEqual([])
   })
 })
 

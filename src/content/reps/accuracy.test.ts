@@ -1,6 +1,7 @@
 import { loadRepFixtures } from '@/test/reps-fixtures'
 import { accuracyTable, formatMisses, runFixture, runFixtures, type FixtureRun } from './evaluate'
-import { COUNTED_MOVEMENTS, defaultVariant, SPECS } from './specs'
+import { COUNTED_EXERCISES } from './movements'
+import { COUNTED_MOVEMENTS, defaultVariant, SPECS, specFor } from './specs'
 
 /*
  * Cibles de justesse (conception, 6.5), jamais assouplies : changer un seuil de specs.ts doit les garder toutes.
@@ -13,6 +14,14 @@ import { COUNTED_MOVEMENTS, defaultVariant, SPECS } from './specs'
 const FIXTURES = loadRepFixtures()
 const VALIDATED = COUNTED_MOVEMENTS.filter((movement) => SPECS[movement].validated)
 const TRIAL = COUNTED_MOVEMENTS.filter((movement) => !SPECS[movement].validated)
+/** Les variantes de COUNTED_EXERCISES en essai alors que leur mouvement est validé, chacune une fois. */
+const TRIAL_VARIANTS = [
+  ...new Map(
+    Object.values(COUNTED_EXERCISES)
+      .filter((variant) => SPECS[variant.movement].validated && !specFor(variant).validated)
+      .map((variant) => [JSON.stringify(variant), variant]),
+  ).values(),
+]
 
 const cache = new Map<number, FixtureRun[]>()
 /** Toutes les séries rejouées à cette cadence (15 : toutes les images des fichiers). */
@@ -61,5 +70,28 @@ describe('mouvements en essai', () => {
       (fixture) => runFixture(fixture, { variant: defaultVariant(movement) }).confident,
     ).map((fixture) => fixture.name)
     expect(sure).toEqual([])
+  })
+
+  it.each(TRIAL_VARIANTS)(
+    'variante en essai d’un mouvement validé %j : jamais sûre, sur aucun fichier',
+    (variant) => {
+      const sure = FIXTURES.filter((fixture) => runFixture(fixture, { variant }).confident).map(
+        (fixture) => fixture.name,
+      )
+      expect(sure).toEqual([])
+    },
+  )
+
+  it('les curls sauf l’alterné aux haltères : même compte, à vérifier', () => {
+    expect(TRIAL_VARIANTS).toEqual([
+      { movement: 'curl', overrides: { trial: true } },
+      { movement: 'curl', overrides: { bothArms: true } },
+    ])
+    const curls = FIXTURES.filter((fixture) => fixture.movement === 'curl')
+    expect(curls.length).toBeGreaterThan(0)
+    for (const fixture of curls) {
+      const result = runFixture(fixture, { variant: TRIAL_VARIANTS[0] })
+      expect(result).toMatchObject({ reps: fixture.expected.reps, confident: false, reasons: ['trial'] })
+    }
   })
 })

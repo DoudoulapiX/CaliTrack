@@ -9,7 +9,8 @@ jamais une image ni une vidéo. Les tests les rejouent dans le compteur (`src/co
   (squats, curls), au moins 90 % de comptes exacts, tous à une répétition près, erreur moyenne d'au plus 0,15,
   au plus 2 % de comptes sûrs mais faux (aucun sur les fichiers `split: 'check'`) ; rien sur les fichiers
   négatifs, quel que soit le mouvement ; jamais de compte sûr pour un mouvement en essai (pompes, dips,
-  tractions) ;
+  tractions), ni pour une variante en essai d'un mouvement validé (tous les curls sauf
+  `Dumbbell_Alternate_Bicep_Curl`, le seul que MM-Fit filme) ;
 - `npm run reps:eval` imprime le tableau de justesse et la liste des séries mal comptées.
 
 Le dossier reste sous 3 Mo (vérifié par `fixtures.test.ts`). Prettier ne touche pas aux `.json`.

@@ -275,7 +275,7 @@ export const FEET_DRIFT_TORSO = 0.5
 /** Les seuils d'une variante : ceux du mouvement, avec ses réglages propres. */
 export function specFor(variant: CountedVariant): MovementSpec {
   const base = SPECS[variant.movement]
-  const { bodyLine, minTorsoTilt, maxTorsoTilt, bothArms } = variant.overrides
+  const { bodyLine, minTorsoTilt, maxTorsoTilt, bothArms, trial } = variant.overrides
   const line = bodyLine ?? base.bodyLine
   return {
     ...base,
@@ -284,8 +284,12 @@ export function specFor(variant: CountedVariant): MovementSpec {
     ...(base.movement === 'pushup'
       ? { bodyLine: line, need: [...ARMS, ...HIPS, ...(line === 'knee' ? KNEES : ANKLES)] }
       : {}),
-    // Barre : un seul suivi, sur le coude le plus plié ; l'autre doit plier aussi (rep-tracker.ts).
-    ...(bothArms === true && base.sides === 'perArm' ? ({ bothArms: true, sides: 'min' } as const) : {}),
+    // Barre : un seul suivi, sur le coude le plus plié ; l'autre doit plier aussi (rep-tracker.ts). En essai tant
+    // qu'aucune vraie série à la barre ne vérifie ce suivi (src/test/reps/README.md).
+    ...(bothArms === true && base.sides === 'perArm'
+      ? ({ bothArms: true, sides: 'min', validated: false } as const)
+      : {}),
+    ...(trial === true ? { validated: false } : {}),
   }
 }
 
