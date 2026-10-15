@@ -165,7 +165,7 @@ function ReviewResult({ view, actions }: { view: ReviewView; actions: SessionAct
           onChange={actions.adjust}
         />
         {result.doubtful > 0 && !view.addedDoubtful && (
-          <Button variant="soft" size="sm" onClick={actions.addDoubtful}>
+          <Button variant="soft" onClick={actions.addDoubtful}>
             {addDoubtfulLabel(result.doubtful)}
           </Button>
         )}
