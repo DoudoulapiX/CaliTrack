@@ -546,6 +546,50 @@ describe.each([
   })
 })
 
+describe('createRepCounter : curls, un bras pas vu', () => {
+  const curl = variant('curl')
+  /** Les points d'un bras (épaule, coude, poignet) à peine sous la visibilité utile, de `from` à `to`. */
+  const dimArm = (frames: readonly PoseFrame[], joints: readonly number[], from = 0, to = Infinity) =>
+    frames.map((frame) =>
+      frame.image && frame.t >= from && frame.t < to
+        ? {
+            ...frame,
+            image: frame.image.map(([x, y, v], joint): ImagePoint => [
+              x,
+              y,
+              joints.includes(joint) ? 0.45 : v,
+            ]),
+          }
+        : frame,
+    )
+
+  it('une vraie série de curls alternés (MM-Fit), un bras caché tout du long : jamais la moitié, sûre', () => {
+    const real = decodeFixture(loadRepFixture('mmfit-curls-w05-21'))
+    for (const arm of [
+      [11, 13, 15],
+      [12, 14, 16],
+    ]) {
+      const played = play(dimArm(real, arm), { variant: curl })
+      expect(played.result.confident, String(arm)).toBe(false)
+      // La consigne le dit presque tout du long : on ne voit pas les mains.
+      const hands = played.snapshots.filter((snapshot) => snapshot.hint?.kind === 'out')
+      expect(hands.length, String(arm)).toBeGreaterThan(played.snapshots.length * 0.8)
+      expect(hands.map((snapshot) => snapshot.hint)).toEqual(
+        hands.map(() => ({ kind: 'out', part: 'hands' })),
+      )
+    }
+  })
+
+  it('un bras caché un moment pendant une série alternée : compte à vérifier', () => {
+    const frames = synthSet({ movement: 'curl', reps: 6, alternate: true, ...STAY })
+    expect(play(frames, { variant: curl }).result).toMatchObject({ reps: 6, confident: true })
+    // Le bras droit (deuxième répétition, de 4 s à 6 s) caché de 4,5 s à 5,5 s.
+    const hidden = play(dimArm(frames, [12, 14, 16], 4500, 5500), { variant: curl }).result
+    expect(hidden.confident).toBe(false)
+    expect(hidden.reasons).toContain('lost')
+  })
+})
+
 describe('createRepCounter : dernière répétition refusée', () => {
   // Curls alternés de MM-Fit ; à la dernière répétition, les coudes partent sur le côté (bras balancé).
   const fixture = loadRepFixture('mmfit-curls-w05-21')

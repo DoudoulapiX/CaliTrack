@@ -260,7 +260,7 @@ export interface FrameFeatures {
   readonly pair: number | null
   /** Points utiles qui manquent. */
   readonly missing: readonly number[]
-  /** Assez de points pour mesurer. */
+  /** Assez de points pour mesurer (les deux bras pour un compte par bras). */
   readonly measured: boolean
   /** Bon angle de vue. */
   readonly view: boolean
@@ -346,7 +346,9 @@ export function measureFrame(
     spec.sides === 'best' &&
     side !== null &&
     missing.every((joint) => jointSide(joint) !== null && jointSide(joint) !== side)
-  const measured = signal !== null && (missing.length <= MISSING_JOINTS_ALLOWED || sideComplete)
+  // Un compte par bras (curls) : un bras pas vu ferait la moitié du compte sans rien dire, il faut les deux.
+  const armsSeen = spec.sides !== 'perArm' || (left !== null && right !== null)
+  const measured = signal !== null && armsSeen && (missing.length <= MISSING_JOINTS_ALLOWED || sideComplete)
   const view = torsoKnown && viewOk(spec, body, params)
   const good = measured && view
   const arms = [armOk(spec, body, 0), armOk(spec, body, 1)] as const
