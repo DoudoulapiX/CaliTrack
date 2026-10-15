@@ -45,6 +45,12 @@ export type TrackerEvent =
       readonly durationMs: number
       readonly min: number
     }
+  /**
+   * Des répétitions ont pu passer sans être vues : trou dans les images plus long que gapResetMs (le mouvement en
+   * cours est perdu, et une répétition entière a pu s'y faire), ou suivi repris en pleine série (`resumed`) sur
+   * une personne qui n'est pas en haut du mouvement.
+   */
+  | { readonly kind: 'lost'; readonly t: number }
 
 export interface RepTracker {
   /** Une image utilisable ; rend l'évènement de fin de mouvement, s'il y en a un. */
@@ -82,7 +88,19 @@ interface Movement {
   moverMax: number | null
 }
 
-export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepTracker {
+export interface TrackerOptions {
+  /**
+   * Suivi repris en pleine série (une autre personne vient de passer) : si la première image ne montre pas la
+   * personne en haut du mouvement, celui qu'elle faisait est perdu.
+   */
+  readonly resumed?: boolean
+}
+
+export function createRepTracker(
+  spec: TrackerSpec,
+  params: TrackerParams,
+  { resumed = false }: TrackerOptions = {},
+): RepTracker {
   let value: number | null = null
   let lastT: number | null = null
   let phase: Phase = 'unknown'
@@ -130,8 +148,11 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
   return {
     step(input) {
       const { t } = input
+      const first = lastT === null
       const dt = lastT === null ? 0 : t - lastT
       const reset = lastT !== null && dt > params.gapResetMs
+      // Une répétition (minRepMs) tient dans un tel trou : ce qui s'y est passé n'est pas compté, il faut le dire.
+      const lost: TrackerEvent | null = reset && phase !== 'unknown' ? { kind: 'lost', t } : null
       if (reset) {
         // Trou dans les images : le lissage et le mouvement en cours repartent de zéro (pas de répétition à
         // cheval sur un trou).
@@ -148,7 +169,7 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
       const crossing = reset ? t : t - dt / 2
       if (phase === 'unknown') {
         if (v >= spec.extended) phase = 'top'
-        return null
+        return first && resumed && phase === 'unknown' ? { kind: 'lost', t } : null
       }
       if (phase === 'top' && v < spec.extended) {
         phase = 'down'
@@ -197,7 +218,7 @@ export function createRepTracker(spec: TrackerSpec, params: TrackerParams): RepT
           return event
         }
       }
-      return null
+      return lost
     },
     get phase() {
       return phase

@@ -4,6 +4,7 @@ const SURE: JudgeInput = {
   reps: 10,
   doubtful: 0,
   rejected: 0,
+  lost: 0,
   quality: 0.95,
   fps: 14,
   endedBy: 'idle',
@@ -19,6 +20,7 @@ describe('judge', () => {
 
   it.each([
     [{ quality: 0.84 }, 'lost'],
+    [{ lost: 1 }, 'lost'],
     [{ doubtful: 2 }, 'doubtful'],
     [{ rejected: 1 }, 'rejected'],
     [{ reps: 1 }, 'fewReps'],
@@ -34,6 +36,7 @@ describe('judge', () => {
       reps: 1,
       doubtful: 1,
       rejected: 1,
+      lost: 1,
       quality: 0.5,
       fps: 5,
       endedBy: 'interrupted',

@@ -1,6 +1,7 @@
 import { project, SYNTH_CAMERAS, synthPose, synthSet, type SynthSetOptions } from '@/test/pose-synth'
+import { loadRepFixture } from '@/test/reps-fixtures'
 import { idleLimit } from './cadence'
-import { decimate } from './fixture'
+import { decimate, decodeFixture } from './fixture'
 import { createRepCounter, type RepCounterOptions } from './rep-counter'
 import type {
   CountedMovement,
@@ -9,6 +10,7 @@ import type {
   CounterResult,
   CounterSnapshot,
   CounterStatus,
+  ImagePoint,
   PoseFrame,
   RepEvent,
 } from './types'
@@ -333,6 +335,73 @@ describe('createRepCounter : suite de série, temps et images vides', () => {
   })
 })
 
+/** Une autre personne, un quart de largeur plus loin dans l'image, à la place de la bonne de `from` à `to`. */
+function elsewhere(frames: readonly PoseFrame[], from: number, to: number): PoseFrame[] {
+  return frames.map((frame) =>
+    frame.t >= from && frame.t < to && frame.image
+      ? { ...frame, image: frame.image.map(([x, y, v]): ImagePoint => [x + 0.25, y, v]) }
+      : frame,
+  )
+}
+
+/** Les images de `from` à `to` remplacées par des images sans personne. */
+function nobodyBetween(frames: readonly PoseFrame[], from: number, to: number): PoseFrame[] {
+  return frames.map((frame) => (frame.t >= from && frame.t < to ? nobody(frame.t) : frame))
+}
+
+describe('createRepCounter : répétitions perdues de vue', () => {
+  // Cinq squats de 2 s toutes les 2,5 s à partir de 1,5 s : la troisième de 6,5 s à 8,5 s (en bas à 7,5 s).
+  const frames = synthSet({ movement: 'squat', reps: 5, ...STAY })
+  const sure = (played: Played) => [played.result.reps, played.result.confident, played.result.reasons]
+
+  it('un trou d’images en pleine répétition : la répétition est perdue, le compte à vérifier', () => {
+    // Caméra figée 1,5 s (aucune image), ou personne trouvée pendant 1,5 s.
+    const stalled = play(frames.filter((frame) => frame.t < 6900 || frame.t >= 8400))
+    expect(sure(stalled)).toEqual([4, false, ['lost']])
+    expect(sure(play(nobodyBetween(frames, 6900, 8400)))).toEqual([4, false, ['lost']])
+  })
+
+  it('un trou d’images en haut, entre deux répétitions : une répétition a pu s’y faire, compte à vérifier', () => {
+    // Pendant la pause après la deuxième répétition, un peu plus longtemps que gapResetMs.
+    expect(sure(play(frames.filter((frame) => frame.t < 5800 || frame.t > 6600)))).toEqual([
+      5,
+      false,
+      ['lost'],
+    ])
+  })
+
+  it('un court trou d’images ne change rien', () => {
+    expect(sure(play(nobodyBetween(frames, 7000, 7400)))).toEqual([5, true, []])
+  })
+
+  it('une autre personne deux images en pleine répétition : perdue, compte à vérifier', () => {
+    expect(sure(play(elsewhere(frames, 7400, 7534)))).toEqual([4, false, ['lost']])
+    // Juste au moment où la personne remonte en haut.
+    expect(sure(play(elsewhere(frames, 8200, 8334)))).toEqual([4, false, ['lost']])
+  })
+
+  it('une autre personne deux images pendant que la personne attend en haut : rien de perdu', () => {
+    expect(sure(play(elsewhere(frames, 6067, 6200)))).toEqual([5, true, []])
+  })
+
+  it('une vraie série (MM-Fit) : 1,5 s sans image ou deux images d’une autre personne, jamais 9 sûr pour 10', () => {
+    const fixture = loadRepFixture('mmfit-squats-w08-2')
+    const real = decodeFixture(fixture)
+    const counted = play(real).result
+    expect([counted.reps, counted.confident]).toEqual([10, true])
+    // Au milieu de chaque répétition, entre deux répétitions comptées.
+    const middles = counted.repTimes.slice(1).map((t, i) => (counted.repTimes[i]! + t) / 2)
+    for (const middle of middles) {
+      const stalled = play(real.filter((frame) => frame.t < middle - 750 || frame.t > middle + 750)).result
+      const switched = play(elsewhere(real, middle, middle + 134)).result
+      for (const result of [stalled, switched]) {
+        expect(result.reps === fixture.expected.reps || !result.confident, String(middle)).toBe(true)
+        if (result.reps !== fixture.expected.reps) expect(result.reasons).toContain('lost')
+      }
+    }
+  })
+})
+
 describe('createRepCounter : consignes', () => {
   it('commence par chercher quelqu’un, puis suit la première image sans attendre', () => {
     const counter = createRepCounter({ variant: SQUAT })
@@ -452,6 +521,7 @@ describe.each([
     const played = run({ reps: 4, switchAt: 5000 })
     expect(played.result.reps).toBe(3)
     expect(played.result.endedBy).toBe('idle')
+    expect(played.result.reasons).toContain('lost')
   })
 
   it('supporte des images sans personne pendant la série, et termine quand elle part', () => {

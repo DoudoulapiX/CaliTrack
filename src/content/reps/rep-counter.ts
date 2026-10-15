@@ -110,8 +110,10 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
   const repTimes: number[] = []
   let reps = 0
   let partials = 0
-  const rejectedTimes: number[] = []
+  const rejections: { readonly t: number; readonly why: RejectReason }[] = []
   let lastReject: RejectReason | null = null
+  /** Moments où des répétitions ont pu passer sans être vues (trou dans les images, autre personne). */
+  const lostTimes: number[] = []
   let lastRepAt: number | null = null
   let event: (RepEvent & { readonly id: number }) | null = null
   let eventId = 0
@@ -131,11 +133,11 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     event = { ...next, id: eventId }
   }
 
-  function newTrackers(): RepTracker[] {
+  /** resumed : repris en pleine série, après le passage d'une autre personne (voir createRepTracker). */
+  function newTrackers(resumed = false): RepTracker[] {
     merger.reset()
-    return perArm
-      ? [createRepTracker(spec, params), createRepTracker(spec, params)]
-      : [createRepTracker(spec, params)]
+    const tracker = () => createRepTracker(spec, params, { resumed })
+    return perArm ? [tracker(), tracker()] : [tracker()]
   }
 
   function allAtTop(): boolean {
@@ -162,8 +164,10 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     } else if (ev.kind === 'partial') {
       partials++
       emit({ kind: 'partial', t: ev.t })
+    } else if (ev.kind === 'lost') {
+      lostTimes.push(ev.t)
     } else {
-      rejectedTimes.push(ev.t)
+      rejections.push({ t: ev.t, why: ev.why })
       lastReject = ev.why
       emit({ kind: 'rejected', t: ev.t, why: ev.why })
     }
@@ -207,12 +211,13 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     const inWindow = samples.filter((sample) => sample.t >= start && sample.t <= windowEnd)
     const quality = inWindow.length > 0 ? inWindow.filter((sample) => sample.ok).length / inWindow.length : 1
     const rejected =
-      lastRep === null ? 0 : rejectedTimes.filter((time) => time >= start && time <= lastRep).length
+      lastRep === null ? 0 : rejections.filter(({ t: time }) => time >= start && time <= lastRep).length
     const verdict = judge(
       {
         reps: kept.length,
         doubtful: doubtful.length,
         rejected,
+        lost: lostTimes.filter((time) => time >= start).length,
         quality,
         fps: fpsSinceGo(),
         endedBy: why,
@@ -333,7 +338,12 @@ export function createRepCounter(options: RepCounterOptions): RepCounter {
     if (good && body?.hip && lastHip && lastHipT !== null && t - lastHipT < params.jumpWindowMs) {
       if (distance(body.hip, lastHip) / body.torso > params.jumpTorso) {
         if (status === 'counting') {
-          trackers = newTrackers()
+          // Le mouvement en cours est perdu ; les nouveaux suivis le disent aussi s'ils ne trouvent pas la
+          // personne en haut (au retour de la bonne personne, en plein mouvement).
+          if (trackers?.some((tracker) => tracker.phase === 'down' || tracker.phase === 'bottom')) {
+            lostTimes.push(t)
+          }
+          trackers = newTrackers(true)
           // Les mains de la nouvelle personne servent de nouvelle place.
           anchorHome = bodyPoint(body, spec.anchor, null)
         }
