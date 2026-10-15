@@ -51,8 +51,8 @@ commencent au milieu de la première répétition et sont comptées sur leurs 9 
 
 Les quatre fichiers négatifs, eux, sont des moments où rien n'est compté. Sur les 458 moments de 30 s de MM-Fit
 essayés (276 repos, 57 jumping jacks, 65 abdominaux, 60 développés épaules), squats, pompes, dips et tractions
-comptent au plus un mouvement en tout chacun, jamais sûr ; les curls en comptent dans 89 moments, presque toujours
-un seul (jamais sûr), mais 9 repos donnent 2 à 5 curls sûrs (bras pliés debout, coudes au corps, comme un curl).
+comptent au plus un mouvement en tout chacun, jamais sûr ; les curls en comptent dans 88 moments, presque toujours
+un seul (jamais sûr), mais 8 repos donnent 2 à 5 curls sûrs (bras pliés debout, coudes au corps, comme un curl).
 C'est pour cela que l'appli n'analyse aucune image pendant le repos.
 
 ## Crédits
