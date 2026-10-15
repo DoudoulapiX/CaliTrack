@@ -11,7 +11,9 @@ import {
   lastRepAt,
   measuredFps,
   nextInExercise,
+  savedOffset,
   sessionReducer,
+  unsavedReps,
   type SessionAction,
   type SessionState,
   type SessionView,
@@ -118,7 +120,9 @@ describe('séance du compteur caméra', () => {
     expect(sessionReducer(trial, { type: 'addDoubtful' })).toBe(trial)
     expect(sessionReducer(at({ kind: 'live' }), { type: 'addDoubtful' }).view).toEqual({ kind: 'live' })
     // Gardé par la question de fermeture : il ne revient pas après « Continuer à compter ».
-    expect(play(added, { type: 'askClose', reps: 9 }, { type: 'keepCounting' }).view).toEqual(added.view)
+    expect(play(added, { type: 'askClose', reps: 9, saved: 0 }, { type: 'keepCounting' }).view).toEqual(
+      added.view,
+    )
 
     // Réglé, puis enregistré : jamais 0, jamais plus de 500.
     const adjusted = play(review, { type: 'adjust', reps: 9 })
@@ -149,7 +153,7 @@ describe('séance du compteur caméra', () => {
     const interrupted = counterResult({ reps: 4, confident: false, reasons: ['interrupted'] })
     for (const view of [
       { kind: 'guide' },
-      { kind: 'confirmClose', reps: 4, back: { kind: 'live' } },
+      { kind: 'confirmClose', reps: 4, saved: 0, back: { kind: 'live' } },
     ] as const) {
       expect(
         sessionReducer(at(view), { type: 'ended', result: interrupted, validated: true }).view,
@@ -157,6 +161,14 @@ describe('séance du compteur caméra', () => {
     }
     const saved = at({ kind: 'saving', reps: 2 })
     expect(sessionReducer(saved, { type: 'ended', result: SURE, validated: true })).toBe(saved)
+    // Question posée depuis la vérification : aucun essai ne tourne.
+    const fromReview = at({
+      kind: 'confirmClose',
+      reps: 7,
+      saved: 0,
+      back: { kind: 'review', result: UNSURE, reps: 7, addedDoubtful: false },
+    })
+    expect(sessionReducer(fromReview, { type: 'ended', result: SURE, validated: true })).toBe(fromReview)
   })
 
   it('montre une erreur d’enregistrement, puis réessaie', () => {
@@ -286,28 +298,42 @@ describe('séance du compteur caméra', () => {
     expect(sessionReducer(correcting, { type: 'nextSet' }).setId).toBe('s2')
   })
 
-  it('demande avant de fermer seulement quand des répétitions ne sont pas enregistrées', () => {
+  it('demande avant de fermer quand des répétitions ne sont pas enregistrées, puis revient tel quel', () => {
     const live = at({ kind: 'live' })
-    expect(sessionReducer(live, { type: 'askClose', reps: 0 })).toBe(live)
-    const confirm = sessionReducer(live, { type: 'askClose', reps: 7 })
-    expect(confirm.view).toEqual({ kind: 'confirmClose', reps: 7, back: { kind: 'live' } })
+    expect(sessionReducer(live, { type: 'askClose', reps: 0, saved: 0 })).toBe(live)
+    const confirm = sessionReducer(live, { type: 'askClose', reps: 7, saved: 0 })
+    expect(confirm.view).toEqual({ kind: 'confirmClose', reps: 7, saved: 0, back: { kind: 'live' } })
     expect(sessionReducer(confirm, { type: 'keepCounting' }).view).toEqual({ kind: 'live' })
-    expect(sessionReducer(at({ kind: 'guide' }), { type: 'askClose', reps: 2 }).view).toMatchObject({
+    // Depuis les conseils remontrés pendant le direct : retour au direct.
+    expect(sessionReducer(at({ kind: 'guide' }), { type: 'askClose', reps: 2, saved: 10 }).view).toEqual({
+      kind: 'confirmClose',
+      reps: 2,
+      saved: 10,
       back: { kind: 'live' },
     })
 
-    const review = at({ kind: 'review', result: UNSURE, reps: 9, addedDoubtful: false }, { result: UNSURE })
-    const fromReview = sessionReducer(review, { type: 'askClose', reps: 9 })
-    expect(fromReview.view).toEqual({ kind: 'confirmClose', reps: 9, back: review.view })
-    expect(sessionReducer(fromReview, { type: 'keepCounting' }).view).toEqual(review.view)
-
+    // Vérification, enregistrement raté, préparation, problème : retour à l'écran tel qu'il était.
     for (const view of [
+      { kind: 'review', result: UNSURE, reps: 9, addedDoubtful: true },
+      { kind: 'saved', reps: 6, next: null, error: true, correcting: false, corrected: false },
+      { kind: 'starting' },
+      { kind: 'problem', problem: 'crashed' },
       { kind: 'empty' },
-      { kind: 'saving', reps: 3 },
-      { kind: 'problem', problem: 'error' },
     ] as const) {
-      expect(sessionReducer(at(view), { type: 'askClose', reps: 3 }).view).toEqual(view)
+      const asked = sessionReducer(at(view), { type: 'askClose', reps: 3, saved: 0 })
+      expect(asked.view).toEqual({ kind: 'confirmClose', reps: 3, saved: 0, back: view })
+      expect(sessionReducer(asked, { type: 'keepCounting' }).view).toEqual(view)
     }
+
+    // Pas pendant un enregistrement, ni après lui, ni deux fois.
+    for (const view of [
+      { kind: 'saving', reps: 3 },
+      { kind: 'saved', reps: 3, next: null, error: false, correcting: false, corrected: false },
+    ] as const) {
+      const state = at(view)
+      expect(sessionReducer(state, { type: 'askClose', reps: 3, saved: 0 })).toBe(state)
+    }
+    expect(sessionReducer(confirm, { type: 'askClose', reps: 4, saved: 0 })).toBe(confirm)
     expect(sessionReducer(live, { type: 'keepCounting' })).toBe(live)
   })
 
@@ -355,6 +381,53 @@ describe('aides du compteur', () => {
     expect(nextInExercise(pending(exercise, 2), 'row')).toEqual({ setId: 'c', index: 2, total: 3 })
     expect(nextInExercise(pending({ ...exercise, id: 'other' }, 1), 'row')).toBeNull()
     expect(nextInExercise(null, 'row')).toBeNull()
+  })
+
+  it('disent ce que fermer ferait perdre', () => {
+    const savedView = {
+      kind: 'saved',
+      reps: 10,
+      next: NEXT,
+      error: false,
+      correcting: false,
+      corrected: false,
+    } as const
+    const reviewView = { kind: 'review', result: UNSURE, reps: 8, addedDoubtful: false } as const
+    // Série neuve : tout ce qui est compté.
+    expect(unsavedReps(at({ kind: 'live' }), 6)).toEqual({ reps: 6, saved: 0 })
+    expect(unsavedReps(at({ kind: 'live' }), null)).toEqual({ reps: 0, saved: 0 })
+    expect(unsavedReps(at({ kind: 'guide' }), 2)).toEqual({ reps: 2, saved: 0 })
+    expect(unsavedReps(at(reviewView), null)).toEqual({ reps: 8, saved: 0 })
+    // Enregistrée : rien ; enregistrement raté : tout.
+    expect(unsavedReps(at(savedView), null)).toEqual({ reps: 0, saved: 10 })
+    expect(unsavedReps(at({ ...savedView, error: true }), null)).toEqual({ reps: 10, saved: 0 })
+    expect(unsavedReps(at({ kind: 'saving', reps: 4 }), null)).toEqual({ reps: 4, saved: 0 })
+
+    // « Continuer la série » depuis la série enregistrée : seulement les répétitions de plus.
+    const continued = { offset: 10, resume: savedView }
+    expect(unsavedReps(at({ kind: 'live' }, continued), 12)).toEqual({ reps: 2, saved: 10 })
+    expect(unsavedReps(at({ kind: 'live' }, continued), null)).toEqual({ reps: 0, saved: 10 })
+    expect(unsavedReps(at({ kind: 'problem', problem: 'crashed' }, continued), null)).toEqual({
+      reps: 0,
+      saved: 10,
+    })
+    expect(unsavedReps(at({ ...reviewView, reps: 13 }, continued), null)).toEqual({ reps: 3, saved: 10 })
+    expect(unsavedReps(at({ ...reviewView, reps: 9 }, continued), null)).toEqual({ reps: 0, saved: 10 })
+    expect(savedOffset(at({ kind: 'live' }, continued))).toBe(10)
+
+    // Depuis un compte vérifié pas encore enregistré : il est perdu aussi, où qu'on soit.
+    const checked = { offset: 8, resume: reviewView }
+    expect(savedOffset(at({ kind: 'live' }, checked))).toBe(0)
+    expect(unsavedReps(at({ kind: 'live' }, checked), 8)).toEqual({ reps: 8, saved: 0 })
+    for (const view of [{ kind: 'starting' }, { kind: 'problem', problem: 'denied' }] as const) {
+      expect(unsavedReps(at(view, checked), null)).toEqual({ reps: 8, saved: 0 })
+    }
+
+    // La question en cours garde son compte.
+    expect(unsavedReps(at({ kind: 'confirmClose', reps: 2, saved: 10, back: { kind: 'live' } }), 5)).toEqual({
+      reps: 2,
+      saved: 10,
+    })
   })
 
   it('retiennent le compte de la série pour l’export des points', () => {

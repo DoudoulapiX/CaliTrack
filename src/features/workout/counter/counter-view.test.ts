@@ -18,6 +18,7 @@ import {
   debugLines,
   DEBUG_TEXT,
   EMPTY_TEXT,
+  keepLabel,
   eventText,
   exportFileName,
   GUIDE_CHECKLIST,
@@ -126,6 +127,7 @@ function everyText(): string[] {
   }
   for (const reps of [0, 1, 2, 12]) {
     texts.push(repsText(reps), reviewHeading(reps), saveLabel(reps), closeQuestion(Math.max(1, reps)))
+    texts.push(closeQuestion(Math.max(1, reps), 10))
     texts.push(addDoubtfulLabel(Math.max(1, reps)), targetLine({ kind: 'reps', min: reps, max: 12 }) ?? '')
   }
   for (const count of [1, 2]) {
@@ -186,6 +188,15 @@ describe('textes du compteur caméra', () => {
     expect(saveLabel(9)).toBe(`Enregistrer 9${NBSP}répétitions`)
     expect(closeQuestion(7)).toBe(`Fermer sans enregistrer les 7${NBSP}répétitions${NBSP}?`)
     expect(closeQuestion(1)).toBe(`Fermer sans enregistrer 1${NBSP}répétition${NBSP}?`)
+    // Série déjà enregistrée : seulement ce qui s'y ajoute.
+    expect(closeQuestion(2, 10)).toBe(`Fermer sans enregistrer les 2${NBSP}répétitions de plus${NBSP}?`)
+    expect(closeQuestion(1, 10)).toBe(`Fermer sans enregistrer 1${NBSP}répétition de plus${NBSP}?`)
+    // Le bouton qui garde la feuille ouverte dit où il ramène.
+    expect(keepLabel('live')).toBe('Continuer à compter')
+    expect(keepLabel('starting')).toBe('Continuer à compter')
+    expect(keepLabel('review')).toBe('Revenir à la vérification')
+    expect(keepLabel('saved')).toBe('Ne pas fermer')
+    expect(keepLabel('problem')).toBe('Ne pas fermer')
     expect(addDoubtfulLabel(2)).toBe(`Ajouter les 2${NBSP}mouvements`)
     expect(addDoubtfulLabel(1)).toBe('Ajouter le mouvement')
     expect(CUE_TEXT.saved(12)).toBe('12 répétitions enregistrées')

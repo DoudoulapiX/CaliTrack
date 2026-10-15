@@ -1,4 +1,5 @@
-import { act, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import type { Mock } from 'vitest'
 import { repFixtureSchema } from '@/content/reps/fixture'
 import type { CounterResult, CounterSnapshot } from '@/content/reps/types'
 import { addExercise, completeSet, freeWorkout } from '@/content/workouts/workout'
@@ -159,6 +160,36 @@ async function openLive() {
 }
 
 const consigne = (sheet: HTMLElement) => within(sheet).getByRole('status', { name: 'Consigne' })
+
+/** Échap sur la feuille : rend l'évènement (empêché ou non). */
+function cancel(sheet: HTMLElement): Event {
+  const event = new Event('cancel', { cancelable: true })
+  fireEvent(sheet, event)
+  return event
+}
+
+/**
+ * Le prochain enregistrement de la séance attend `release()` ; il échoue alors avec `fail`, sinon il se fait.
+ */
+function holdSave({ fail = false } = {}): { release: () => Promise<void> } {
+  let open: () => void = () => undefined
+  const gate = new Promise<void>((resolve) => {
+    open = resolve
+  })
+  const real = db.transaction.bind(db) as unknown as (...args: unknown[]) => Promise<unknown>
+  const transaction = vi.spyOn(db, 'transaction') as unknown as Mock<(...args: unknown[]) => Promise<unknown>>
+  transaction.mockImplementationOnce(async (...args) => {
+    await gate
+    if (fail) throw new Error('disque plein')
+    return real(...args)
+  })
+  return {
+    release: async () => {
+      open()
+      await gate
+    },
+  }
+}
 
 describe('compteur caméra : conseils et direct', () => {
   it('montre les conseils la première fois, et n’ouvre la caméra qu’au toucher', async () => {
@@ -467,7 +498,7 @@ describe('compteur caméra : fin de série', () => {
     expect(within(sheet).queryByRole('button', { name: /^Ajouter/ })).not.toBeInTheDocument()
     // Il ne revient pas après la question de fermeture : les 2 mouvements ne s'ajoutent qu'une fois.
     await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
-    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+    await user.click(within(sheet).getByRole('button', { name: 'Revenir à la vérification' }))
     expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('9')
     expect(within(sheet).queryByRole('button', { name: /^Ajouter/ })).not.toBeInTheDocument()
     await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 9\srépétitions$/ }))
@@ -578,6 +609,29 @@ describe('compteur caméra : « Continuer la série » sans rien de plus', () =>
     expect((await squatSets())[1]).toEqual({ done: true, reps: 8 })
   })
 
+  it('un problème de caméra ne fait pas perdre le compte vérifié', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 7 })
+    end({ reps: 7, confident: false, reasons: ['lost'] })
+    await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })
+    // La caméra s'arrête pendant la vérification : le problème se voit au retour en direct.
+    setCamera({ kind: 'problem', problem: 'crashed' })
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    expect(within(sheet).getByRole('alert')).toHaveTextContent('Le compteur s’est arrêté. Réessaie.')
+
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Fermer sans enregistrer les 7 répétitions ?')).toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: 'Ne pas fermer' }))
+    await user.click(within(sheet).getByRole('button', { name: 'Réessayer' }))
+    setCamera({ kind: 'running' })
+    frame({ status: 'counting' })
+    await user.click(within(sheet).getByRole('button', { name: 'Terminer la série' }))
+    expect(await within(sheet).findByRole('heading', { name: /^7\srépétitions\s\?$/ })).toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 7\srépétitions$/ }))
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 7 })
+  })
+
   it('la série enregistrée revient avec son repos, qui enchaîne sur la série suivante', async () => {
     const { user, sheet } = await openLive()
     frame({ status: 'counting', reps: 10 })
@@ -611,14 +665,22 @@ describe('compteur caméra : fermeture et problèmes', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
     expect(consigne(sheet)).toBeInTheDocument()
 
-    // Compte à vérifier : la question revient à la vérification, nombre réglé gardé.
+    // Compte à vérifier : la question revient à la vérification (elle le dit), nombre réglé gardé.
     end({ reps: 3, confident: false, reasons: ['lost'] })
     await within(sheet).findByRole('heading', { name: /^3\srépétitions\s\?$/ })
     await user.click(within(sheet).getByRole('button', { name: 'Répétitions : plus' }))
     await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
     expect(within(sheet).getByText('Fermer sans enregistrer les 4 répétitions ?')).toBeInTheDocument()
-    await user.click(within(sheet).getByRole('button', { name: 'Continuer à compter' }))
+    expect(within(sheet).queryByRole('button', { name: 'Continuer à compter' })).not.toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: 'Revenir à la vérification' }))
     expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('4')
+
+    // Un deuxième toucher sur la croix, ou Échap, ne répond pas à la question à la place de la personne.
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(cancel(sheet).defaultPrevented).toBe(true)
+    expect(within(sheet).getByText('Fermer sans enregistrer les 4 répétitions ?')).toBeInTheDocument()
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
 
     await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
     await user.click(within(sheet).getByRole('button', { name: 'Fermer sans enregistrer' }))
@@ -626,6 +688,55 @@ describe('compteur caméra : fermeture et problèmes', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
     expect((await squatSets())[1]).toEqual({ done: false, reps: null })
+  })
+
+  it('fermée pendant l’enregistrement, attend qu’il réussisse ; s’il échoue, demande avant de fermer', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 10 })
+    const failing = holdSave({ fail: true })
+    end({ reps: 10 })
+    expect(await within(sheet).findByText('Enregistrement…')).toBeInTheDocument()
+    // Ni question, ni fermeture tant que l'enregistrement n'a pas abouti.
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Enregistrement…')).toBeInTheDocument()
+    await act(failing.release)
+    expect(await within(sheet).findByText('La série n’a pas pu être enregistrée.')).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: `${SQUAT}, série 2` })).toBe(sheet)
+
+    // Pas enregistrée : fermer demande d'abord.
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Fermer sans enregistrer les 10 répétitions ?')).toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: 'Ne pas fermer' }))
+    expect(within(sheet).getByText('La série n’a pas pu être enregistrée.')).toBeInTheDocument()
+
+    // Réessayer, puis fermer pendant l'enregistrement : la feuille se ferme quand il a réussi.
+    const saving = holdSave()
+    await user.click(within(sheet).getByRole('button', { name: 'Réessayer' }))
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(screen.getByRole('dialog', { name: `${SQUAT}, série 2` })).toBeInTheDocument()
+    await act(saving.release)
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 10 })
+  })
+
+  it('après « Continuer la série », ne parle que des répétitions de plus', async () => {
+    const { user, sheet } = await openLive()
+    frame({ status: 'counting', reps: 10 })
+    end({ reps: 10 })
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    frame({ status: 'counting', reps: 12 })
+
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    expect(within(sheet).getByText('Fermer sans enregistrer les 2 répétitions de plus ?')).toBeInTheDocument()
+    expectFrenchSpacing()
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer sans enregistrer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 10 })
   })
 
   it('ferme tout de suite une série enregistrée', async () => {

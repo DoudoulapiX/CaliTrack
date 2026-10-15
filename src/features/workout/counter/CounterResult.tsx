@@ -11,6 +11,7 @@ import {
   CLOSE_LABEL,
   closeQuestion,
   EMPTY_TEXT,
+  keepLabel,
   MAX_REPS,
   nextText,
   PROBLEM_TEXT,
@@ -224,10 +225,12 @@ export function CounterResult({ view, rest, actions }: CounterResultProps) {
     case 'confirmClose':
       return (
         <div className="flex flex-col gap-4">
-          <p className="text-center text-[17px] font-semibold text-ink">{closeQuestion(view.reps)}</p>
+          <p className="text-center text-[17px] font-semibold text-ink">
+            {closeQuestion(view.reps, view.saved)}
+          </p>
           <div className="flex flex-col gap-2">
             <Button block size="lg" onClick={actions.keepCounting}>
-              {CLOSE_LABEL.keep}
+              {keepLabel(view.back.kind)}
             </Button>
             <Button variant="danger" block size="lg" onClick={actions.closeNow}>
               {CLOSE_LABEL.close}

@@ -12,6 +12,7 @@ import type {
 } from '@/content/reps/types'
 import type { SlotTarget } from '@/db/types'
 import { frenchSpacing, keepTogether, lowerFirst } from '@/lib/typography'
+import type { ScreenView } from './counter-session'
 import type { Delegate } from './pose-engine'
 import type { PoseCameraProblem, PoseCameraState, PoseCameraStats } from './usePoseCamera'
 
@@ -329,15 +330,35 @@ export function canRetry(problem: PoseCameraProblem): boolean {
   return problem !== 'unavailable' && problem !== 'unsupported'
 }
 
-/** « Fermer sans enregistrer les 7 répétitions ? » */
-export function closeQuestion(reps: number): string {
-  return frenchSpacing(`Fermer sans enregistrer ${reps > 1 ? 'les ' : ''}${repsText(reps)} ?`)
+/**
+ * « Fermer sans enregistrer les 7 répétitions ? » ; « … les 2 répétitions de plus ? » quand la série est déjà
+ * enregistrée (`saved` répétitions, qui restent).
+ */
+export function closeQuestion(reps: number, saved = 0): string {
+  const more = saved > 0 ? ' de plus' : ''
+  return frenchSpacing(`Fermer sans enregistrer ${reps > 1 ? 'les ' : ''}${repsText(reps)}${more} ?`)
 }
 
 export const CLOSE_LABEL = {
   keep: 'Continuer à compter',
+  review: 'Revenir à la vérification',
+  stay: 'Ne pas fermer',
   close: 'Fermer sans enregistrer',
 } as const
+
+/** Le bouton qui garde la feuille ouverte dit où il ramène : au direct, à la vérification, ou à l'écran d'avant. */
+export function keepLabel(back: ScreenView['kind']): string {
+  switch (back) {
+    case 'guide':
+    case 'starting':
+    case 'live':
+      return CLOSE_LABEL.keep
+    case 'review':
+      return CLOSE_LABEL.review
+    default:
+      return CLOSE_LABEL.stay
+  }
+}
 
 /** Ce que disent la voix et les bips (sans espace insécable : c'est lu, pas affiché). */
 export const CUE_TEXT = {

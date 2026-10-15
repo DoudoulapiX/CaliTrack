@@ -19,7 +19,9 @@ import {
   lastRepAt,
   measuredFps,
   nextInExercise,
+  savedOffset,
   sessionReducer,
+  unsavedReps,
   type Pause,
   type SessionState,
   type SessionView,
@@ -42,8 +44,12 @@ export interface SessionActions {
   readonly showGuide: () => void
   /** « Terminer la série ». */
   readonly finish: () => void
-  /** Croix, Échap ou fond : demande d'abord s'il reste des répétitions pas enregistrées. */
+  /**
+   * Croix, Échap ou fond : demande d'abord s'il reste des répétitions pas enregistrées ; pendant un
+   * enregistrement, ferme quand il a réussi ; pendant la question, ne fait rien (seuls ses boutons choisissent).
+   */
   readonly close: () => void
+  /** Garde la feuille ouverte : retour à l'écran d'avant la question. */
   readonly keepCounting: () => void
   /** « Fermer sans enregistrer ». */
   readonly closeNow: () => void
@@ -186,13 +192,6 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     return Math.round(frame.t + Math.max(1, now - frame.perf))
   }, [])
 
-  /** Répétitions de la série déjà enregistrées (0 si elle n'est pas cochée). */
-  const savedReps = useCallback((): number => {
-    const { state: current, props: currentProps } = latest.current
-    const set = currentProps.exercise.sets.find((s) => s.id === current.setId)
-    return set?.done ? (set.reps ?? 0) : 0
-  }, [])
-
   /** Fin de l'essai (automatique, « Terminer la série », caméra coupée) : une seule fois par essai. */
   const settle = useCallback((attempt: Attempt, result: CounterResult) => {
     if (settledRef.current === attempt.number) return
@@ -274,10 +273,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const attempt = attemptRef.current
     if (view.kind !== 'live' && view.kind !== 'guide' && view.kind !== 'confirmClose') return false
     if (attempt?.number !== number || attempt.counter.result) return false
-    if (attempt.last.reps <= savedReps()) return false
+    if (attempt.last.reps <= savedOffset(latest.current.state)) return false
     settle(attempt, attempt.counter.finish(counterNow(), 'interrupted'))
     return true
-  }, [counterNow, savedReps, settle])
+  }, [counterNow, settle])
 
   const onHidden = useCallback(() => {
     interrupt()
@@ -357,8 +356,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     }
   }, [isLive, counterNow, publish])
 
-  // Enregistrement de la série : une fois par entrée dans l'écran « enregistrement ».
+  // Enregistrement de la série : une fois par entrée dans l'écran « enregistrement ». Fermée pendant ce temps, la
+  // feuille se ferme quand il a réussi ; s'il échoue, elle reste ouverte sur l'erreur.
   const savingFor = useRef<SessionView | null>(null)
+  const closeWhenSaved = useRef(false)
   useEffect(() => {
     const { view } = state
     if (view.kind !== 'saving' || savingFor.current === view) return
@@ -378,8 +379,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       (next) => {
         dispatch({ type: 'saved', next: nextInExercise(next, row.id) })
         if (auto) cue('go', options, CUE_TEXT.saved(view.reps))
+        if (closeWhenSaved.current) latest.current.props.onClose()
       },
       () => {
+        closeWhenSaved.current = false
         dispatch({ type: 'saveFailed' })
       },
     )
@@ -411,12 +414,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     }
   }, [state.view, resting])
 
-  const shownReps = (): number => {
-    const { view } = latest.current.state
-    if (view.kind === 'review') return view.reps
-    if (view.kind !== 'live' && view.kind !== 'guide') return 0
+  /** Le compte de l'essai en cours, s'il a commencé. */
+  const liveReps = (): number | null => {
     const attempt = attemptRef.current
-    return attempt?.number === latest.current.state.attempt ? attempt.last.reps : 0
+    return attempt?.number === latest.current.state.attempt ? attempt.last.reps : null
   }
 
   const actions: SessionActions = {
@@ -436,12 +437,15 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       settle(attempt, attempt.counter.finish(counterNow(), 'manual'))
     },
     close: () => {
-      if (latest.current.state.view.kind === 'confirmClose') {
-        onClose()
+      const { state: current } = latest.current
+      // Un deuxième toucher sur la croix ou le fond ne répond pas à la question à la place de la personne.
+      if (current.view.kind === 'confirmClose') return
+      if (current.view.kind === 'saving') {
+        closeWhenSaved.current = true
         return
       }
-      const reps = shownReps()
-      if (reps > savedReps()) dispatch({ type: 'askClose', reps })
+      const unsaved = unsavedReps(current, liveReps())
+      if (unsaved.reps > 0) dispatch({ type: 'askClose', ...unsaved })
       else onClose()
     },
     keepCounting: () => {

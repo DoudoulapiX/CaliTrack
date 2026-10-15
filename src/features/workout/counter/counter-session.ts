@@ -53,8 +53,16 @@ export type ScreenView =
 
 export type SessionView =
   | ScreenView
-  /** « Fermer sans enregistrer les 7 répétitions ? », puis retour tel quel à l'écran d'avant (`back`). */
-  | { readonly kind: 'confirmClose'; readonly reps: number; readonly back: ScreenView }
+  /**
+   * « Fermer sans enregistrer les 7 répétitions ? » (`reps` pas enregistrées, au-delà des `saved` déjà
+   * enregistrées de la série), puis retour tel quel à l'écran d'avant (`back`).
+   */
+  | {
+      readonly kind: 'confirmClose'
+      readonly reps: number
+      readonly saved: number
+      readonly back: ScreenView
+    }
 
 /** Un écran d'où « Continuer la série » peut partir. */
 export type ResumeView = Extract<SessionView, { kind: 'review' | 'saved' }>
@@ -87,7 +95,7 @@ export type SessionAction =
   | { type: 'problem'; problem: PoseCameraProblem }
   | { type: 'retry' }
   | { type: 'ended'; result: CounterResult; validated: boolean }
-  | { type: 'askClose'; reps: number }
+  | { type: 'askClose'; reps: number; saved: number }
   | { type: 'keepCounting' }
   | { type: 'adjust'; reps: number }
   /** « Ajouter les 2 mouvements » écartés après une pause. */
@@ -161,15 +169,15 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       }
       return { ...state, view: { kind: 'review', result, reps: result.reps, addedDoubtful: false }, result }
     }
-    case 'askClose':
-      if (action.reps <= 0) return state
+    case 'askClose': {
+      // Ni pendant un enregistrement, ni après lui (s'il a réussi), ni deux fois.
+      const settled =
+        view.kind === 'confirmClose' || view.kind === 'saving' || (view.kind === 'saved' && !view.error)
+      if (action.reps <= 0 || settled) return state
       // Depuis les conseils (remontrés pendant le direct), on revient au direct.
-      if (view.kind === 'live' || view.kind === 'guide') {
-        return { ...state, view: { kind: 'confirmClose', reps: action.reps, back: { kind: 'live' } } }
-      }
-      return view.kind === 'review'
-        ? { ...state, view: { kind: 'confirmClose', reps: action.reps, back: view } }
-        : state
+      const back = view.kind === 'guide' ? { kind: 'live' as const } : view
+      return { ...state, view: { kind: 'confirmClose', reps: action.reps, saved: action.saved, back } }
+    }
     case 'keepCounting':
       return view.kind === 'confirmClose' ? { ...state, view: view.back } : state
     case 'adjust':
@@ -241,6 +249,39 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case 'discard':
       return view.kind === 'review' ? fresh(state, {}) : state
   }
+}
+
+/** Répétitions de la série déjà enregistrées d'où le compte est reparti (« Continuer la série »). */
+export function savedOffset(state: SessionState): number {
+  return state.resume?.kind === 'saved' ? state.resume.reps : 0
+}
+
+/**
+ * Ce que fermer la feuille ferait perdre : les répétitions comptées ou vérifiées pas encore enregistrées
+ * (`reps`), au-delà des `saved` déjà enregistrées de la série. `live` : le compte de l'essai en cours, s'il a
+ * commencé.
+ */
+export function unsavedReps(state: SessionState, live: number | null): { reps: number; saved: number } {
+  const { view } = state
+  if (view.kind === 'confirmClose') return { reps: view.reps, saved: view.saved }
+  if (view.kind === 'saved' && !view.error) return { reps: 0, saved: view.reps }
+  const saved = savedOffset(state)
+  let counted: number
+  switch (view.kind) {
+    case 'live':
+    case 'guide':
+      counted = live ?? state.offset
+      break
+    case 'review':
+    case 'saving':
+    case 'saved':
+      counted = view.reps
+      break
+    default:
+      // Préparation, problème, rien compté : le compte d'où le prochain essai repartira.
+      counted = state.offset
+  }
+  return { reps: Math.max(0, counted - saved), saved }
 }
 
 /**
