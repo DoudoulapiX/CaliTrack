@@ -429,7 +429,7 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       dispatch({ type: 'openCamera' })
       setCameraOn(true)
       if (!prefs.guides.includes(movement)) {
-        setPrefs(writeCounterPrefs({ guides: [...prefs.guides, movement] }))
+        setPrefs(writeCounterPrefs(prefs, { guides: [...prefs.guides, movement] }))
       }
     },
     showGuide: () => {
@@ -500,13 +500,13 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
       return true
     },
     switchCamera: () => {
-      setPrefs(writeCounterPrefs({ facing: prefs.facing === 'user' ? 'environment' : 'user' }))
+      setPrefs(writeCounterPrefs(prefs, { facing: prefs.facing === 'user' ? 'environment' : 'user' }))
     },
     toggleDebug: () => {
-      setPrefs(writeCounterPrefs({ debug: !prefs.debug }))
+      setPrefs(writeCounterPrefs(prefs, { debug: !prefs.debug }))
     },
     setDelegate: (delegate) => {
-      setPrefs(writeCounterPrefs({ delegate }))
+      setPrefs(writeCounterPrefs(prefs, { delegate }))
     },
     exportPoints: () => {
       const { result } = state

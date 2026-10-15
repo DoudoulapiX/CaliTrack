@@ -47,9 +47,13 @@ export function readCounterPrefs(): CounterPrefs {
   }
 }
 
-/** Change quelques préférences et rend le tout (gardé si le stockage le permet). */
-export function writeCounterPrefs(patch: Partial<CounterPrefs>): CounterPrefs {
-  const merged = { ...readCounterPrefs(), ...patch }
+/**
+ * Change quelques préférences de `prefs` (celles en cours) et rend le tout, gardé si le stockage le permet. On part
+ * de celles en cours, pas de ce qui est gardé : un stockage qui refuse d'écrire ne ramène pas les autres aux valeurs
+ * par défaut (la caméra de face en pleine série).
+ */
+export function writeCounterPrefs(prefs: CounterPrefs, patch: Partial<CounterPrefs>): CounterPrefs {
+  const merged = { ...prefs, ...patch }
   const next: CounterPrefs = { ...merged, guides: [...new Set(merged.guides)] }
   try {
     localStorage.setItem(KEY, JSON.stringify(next))

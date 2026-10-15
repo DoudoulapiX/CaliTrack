@@ -9,14 +9,15 @@ describe('préférences du compteur caméra', () => {
   })
 
   it('se gardent sur le téléphone et se relisent', () => {
-    expect(writeCounterPrefs({ guides: ['squat'], debug: true })).toEqual({
+    const first = writeCounterPrefs(readCounterPrefs(), { guides: ['squat'], debug: true })
+    expect(first).toEqual({
       guides: ['squat'],
       facing: 'user',
       debug: true,
       delegate: 'CPU',
     })
-    // Chaque écriture part de ce qui est gardé ; un mouvement n'est noté qu'une fois.
-    writeCounterPrefs({ facing: 'environment', delegate: 'GPU', guides: ['squat', 'pullup', 'squat'] })
+    // Chaque écriture part des préférences en cours ; un mouvement n'est noté qu'une fois.
+    writeCounterPrefs(first, { facing: 'environment', delegate: 'GPU', guides: ['squat', 'pullup', 'squat'] })
     expect(readCounterPrefs()).toEqual({
       guides: ['squat', 'pullup'],
       facing: 'environment',
@@ -41,12 +42,19 @@ describe('préférences du compteur caméra', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('Plein', 'QuotaExceededError')
     })
-    expect(writeCounterPrefs({ debug: true })).toEqual({ ...DEFAULT_COUNTER_PREFS, debug: true })
+    const debug = writeCounterPrefs(DEFAULT_COUNTER_PREFS, { debug: true })
+    expect(debug).toEqual({ ...DEFAULT_COUNTER_PREFS, debug: true })
     expect(readCounterPrefs()).toEqual(DEFAULT_COUNTER_PREFS)
+    // Rien de gardé : la suite part quand même des préférences en cours, pas des valeurs par défaut.
+    expect(writeCounterPrefs(debug, { facing: 'environment' })).toEqual({
+      ...DEFAULT_COUNTER_PREFS,
+      debug: true,
+      facing: 'environment',
+    })
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new DOMException('Interdit', 'SecurityError')
     })
     expect(readCounterPrefs()).toEqual(DEFAULT_COUNTER_PREFS)
-    expect(writeCounterPrefs({ facing: 'environment' }).facing).toBe('environment')
+    expect(writeCounterPrefs(DEFAULT_COUNTER_PREFS, { facing: 'environment' }).facing).toBe('environment')
   })
 })

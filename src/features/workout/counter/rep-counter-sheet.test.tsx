@@ -867,6 +867,54 @@ describe('compteur caméra : fermeture et problèmes', () => {
   })
 })
 
+describe('compteur caméra : caméra de dos', () => {
+  const preview = (sheet: HTMLElement) => within(sheet).getByLabelText('Image de la caméra').parentElement
+
+  it('« Changer de caméra » passe à la caméra de dos, sans effet miroir, et s’en souvient', async () => {
+    const { user, sheet } = await openLive()
+    expect(camera().options?.facing).toBe('user')
+    expect(preview(sheet)).toHaveClass('-scale-x-100')
+    await user.click(within(sheet).getByRole('button', { name: 'Changer de caméra' }))
+    expect(camera().options?.facing).toBe('environment')
+    expect(preview(sheet)).not.toHaveClass('-scale-x-100')
+    expect(JSON.parse(localStorage.getItem('calitrack.counter') ?? '{}')).toMatchObject({
+      facing: 'environment',
+    })
+    // Et retour à la caméra de face.
+    await user.click(within(sheet).getByRole('button', { name: 'Changer de caméra' }))
+    expect(camera().options?.facing).toBe('user')
+    await user.click(within(sheet).getByRole('button', { name: 'Changer de caméra' }))
+
+    // Rouverte : caméra de dos d'emblée.
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: `Compter à la caméra : ${SQUAT}` }))
+    const again = await screen.findByRole('dialog', { name: `${SQUAT}, série 2` })
+    expect(camera().options?.facing).toBe('environment')
+    setCamera({ kind: 'running' })
+    await within(again).findByRole('status', { name: 'Consigne' })
+    expect(preview(again)).not.toHaveClass('-scale-x-100')
+  })
+
+  it('stockage qui refuse d’écrire : les autres réglages ne font pas revenir la caméra de face', async () => {
+    const { user, sheet } = await openLive()
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Plein', 'QuotaExceededError')
+    })
+    await user.click(within(sheet).getByRole('button', { name: 'Changer de caméra' }))
+    expect(camera().options?.facing).toBe('environment')
+    await user.click(within(sheet).getByRole('button', { name: 'Infos de réglage' }))
+    expect(within(sheet).getByRole('button', { name: 'Infos de réglage' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(camera().options?.facing).toBe('environment')
+    expect(preview(sheet)).not.toHaveClass('-scale-x-100')
+  })
+})
+
 describe('compteur caméra : infos de réglage', () => {
   it('se gardent sur le téléphone, et exportent les points de la série', async () => {
     const { user, sheet } = await openLive()
