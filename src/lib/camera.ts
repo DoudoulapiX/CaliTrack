@@ -5,13 +5,14 @@
 
 export type CameraProblem = 'denied' | 'unavailable' | 'error'
 
-/** Pourquoi la caméra n'a pas démarré : accès refusé, pas de caméra, ou autre souci. */
+/**
+ * Pourquoi la caméra n'a pas démarré : accès refusé, pas de caméra, ou autre souci. Une caméra prise par une autre
+ * appli ou un appel (NotReadableError) existe bien : c'est un souci passager, à réessayer.
+ */
 export function cameraProblem(error: unknown): CameraProblem {
   const name = error instanceof Error || error instanceof DOMException ? error.name : ''
   if (name === 'NotAllowedError' || name === 'SecurityError') return 'denied'
-  if (name === 'NotFoundError' || name === 'OverconstrainedError' || name === 'NotReadableError') {
-    return 'unavailable'
-  }
+  if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'unavailable'
   return 'error'
 }
 

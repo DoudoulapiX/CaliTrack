@@ -14,10 +14,11 @@ describe('problèmes de caméra', () => {
   it('reconnaît l’absence de caméra utilisable', () => {
     expect(cameraProblem(new DOMException('aucune', 'NotFoundError'))).toBe('unavailable')
     expect(cameraProblem(new DOMException('contraintes', 'OverconstrainedError'))).toBe('unavailable')
-    expect(cameraProblem(new DOMException('occupée', 'NotReadableError'))).toBe('unavailable')
   })
 
-  it('classe le reste comme une erreur', () => {
+  it('classe le reste comme une erreur, dont une caméra prise par une autre appli ou un appel', () => {
+    // Passager : la caméra existe, réessayer peut suffire.
+    expect(cameraProblem(new DOMException('occupée', 'NotReadableError'))).toBe('error')
     expect(cameraProblem(new DOMException('arrêt', 'AbortError'))).toBe('error')
     expect(cameraProblem(new Error('autre'))).toBe('error')
     expect(cameraProblem('texte')).toBe('error')

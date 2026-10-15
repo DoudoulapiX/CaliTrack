@@ -462,6 +462,15 @@ describe('caméra du compteur : changements et problèmes', () => {
     expect(camera().state).toEqual({ kind: 'problem', problem: 'error' })
   })
 
+  it('caméra prise par une autre appli ou un appel : erreur, qu’on peut réessayer', async () => {
+    const { camera } = setup({
+      options: { cameraOn: true },
+      openCamera: () => Promise.reject(new DOMException('Caméra occupée', 'NotReadableError')),
+    })
+    await settle()
+    expect(camera().state).toEqual({ kind: 'problem', problem: 'error' })
+  })
+
   it('caméra ouverte sans vidéo où l’afficher : erreur, et la caméra est coupée', async () => {
     const { camera, media } = setup({ withVideo: false, options: { cameraOn: true } })
     await settle()
