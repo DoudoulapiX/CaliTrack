@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { loadRepFixture, loadRepFixtures, REP_FIXTURES_DIR } from '@/test/reps-fixtures'
 import { runFixture } from './evaluate'
@@ -45,6 +45,17 @@ describe('fichiers de points (src/test/reps)', () => {
       if (fixture.name.startsWith('sports2d-')) {
         expect(fixture.licence).toContain('BSD-3-Clause')
       }
+    }
+    // Les crédits complets sont dans le README du dossier (licence BSD entière pour Sports2D).
+    const readme = readFileSync(join(REP_FIXTURES_DIR, 'README.md'), 'utf8')
+    for (const credit of [
+      'Strömbäck, Sheng Huang et Valentin Radu',
+      'CC BY 4.0',
+      'Copyright (c) 2022, perfanalytics',
+      'EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.',
+      'npm run reps:add',
+    ]) {
+      expect(readme).toContain(credit)
     }
   })
 
