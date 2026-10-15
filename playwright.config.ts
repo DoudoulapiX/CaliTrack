@@ -8,6 +8,8 @@ const isCI = Boolean(process.env.CI)
 
 // Les tests visent un iPhone : Chromium en local, Chromium et WebKit (le moteur de Safari) en CI.
 const iphone = devices['iPhone 13']
+/** Les tests du compteur caméra : leur titre commence par « compteur caméra ». */
+const CAMERA_COUNTER = /compteur caméra/
 
 export default defineConfig({
   testDir: './e2e',
@@ -46,14 +48,24 @@ export default defineConfig({
     },
     // WebKit n'a pas de fausse caméra dans Playwright : le scan par la caméra n'y est pas testé, le
     // code tapé à la main l'est (nutrition.spec.ts). Le compteur caméra, lui, y est testé en entier
-    // (rep-counter*.spec.ts, a11y.spec.ts) avec la caméra de e2e/person-camera.ts : le vrai MediaPipe a
-    // tourné sous WebKit dans la CI de GitHub, rien n'est écarté.
+    // (rep-counter*.spec.ts, a11y.spec.ts) avec la caméra de e2e/person-camera.ts, vrai MediaPipe compris.
+    // WebKit dessine la page sans carte graphique dans la CI : un test du compteur qui partage la machine
+    // avec d'autres n'y analyse plus que 2 ou 3 images par seconde, sous les 8 qu'il faut au compteur.
+    // Les tests « compteur caméra » de WebKit passent donc après tous les autres, un à la fois.
     ...(isCI
       ? [
           {
             name: 'iphone-webkit',
             use: { ...iphone, browserName: 'webkit' as const },
             testIgnore: 'camera.spec.ts',
+            grepInvert: CAMERA_COUNTER,
+          },
+          {
+            name: 'iphone-webkit-camera',
+            use: { ...iphone, browserName: 'webkit' as const },
+            grep: CAMERA_COUNTER,
+            workers: 1,
+            dependencies: ['iphone-chromium', 'iphone-webkit'],
           },
         ]
       : []),
