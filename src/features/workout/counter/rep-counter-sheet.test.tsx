@@ -101,32 +101,35 @@ function setCamera(state: PoseCameraState): void {
 }
 
 /**
- * Séance libre : 3 séries de pompes (8 à 12, la première faite, 90 s de repos), puis une série de squats.
+ * Séance libre : 3 séries de squats (8 à 12, la première faite, 90 s de repos ; compteur validé), puis une
+ * série de pompes (compteur en essai).
  */
 async function saveWorkout(): Promise<Workout> {
   const newId = sequentialIds('r')
   let workout = freeWorkout({ date: '2026-10-21', now: new Date().toISOString(), newId })
-  workout = addExercise(workout, 'pushup', {
+  workout = addExercise(workout, 'squat', {
     restSec: 90,
     newId,
     sets: 3,
     block: 'strength',
     target: { kind: 'reps', min: 8, max: 12 },
   })
-  workout = addExercise(workout, 'squat', { restSec: 60, newId, sets: 1, block: 'strength' })
-  const [pushups] = workout.exercises
-  workout = completeSet(workout, pushups!.id, pushups!.sets[0]!.id, { reps: 8 }, new Date().toISOString())
+  workout = addExercise(workout, 'pushup', { restSec: 60, newId, sets: 1, block: 'strength' })
+  const [squats] = workout.exercises
+  workout = completeSet(workout, squats!.id, squats!.sets[0]!.id, { reps: 8 }, new Date().toISOString())
   return startWorkout(workout)
 }
 
-async function pushupSets() {
+const SQUAT = 'Squat au poids du corps'
+
+async function squatSets() {
   const [workout] = (await db.workouts.toArray()).filter((w) => w.status === 'active')
   return workout?.exercises[0]?.sets.map((set) => ({ done: set.done, reps: set.reps })) ?? []
 }
 
-/** Ouvre la séance puis le compteur des pompes ; `guideSeen` : les conseils des pompes sont déjà vus. */
-async function openCounter({ guideSeen = true } = {}) {
-  if (guideSeen) localStorage.setItem('calitrack.counter', JSON.stringify({ guides: ['pushup'] }))
+/** Ouvre la séance ; `guideSeen` : les conseils des squats sont déjà vus. */
+async function openWorkout({ guideSeen = true } = {}) {
+  if (guideSeen) localStorage.setItem('calitrack.counter', JSON.stringify({ guides: ['squat'] }))
   let id = ''
   const app = await renderApp('/training', {
     setup: async () => {
@@ -134,9 +137,16 @@ async function openCounter({ guideSeen = true } = {}) {
     },
   })
   await app.router.navigate(`/workout/${id}`)
-  const card = await screen.findByRole('article', { name: 'Pompes' })
-  await app.user.click(within(card).getByRole('button', { name: 'Compter à la caméra : Pompes' }))
-  const sheet = await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+  await screen.findByRole('article', { name: SQUAT })
+  return app
+}
+
+/** Ouvre la séance puis le compteur des squats. */
+async function openCounter({ guideSeen = true } = {}) {
+  const app = await openWorkout({ guideSeen })
+  const card = screen.getByRole('article', { name: SQUAT })
+  await app.user.click(within(card).getByRole('button', { name: `Compter à la caméra : ${SQUAT}` }))
+  const sheet = await screen.findByRole('dialog', { name: `${SQUAT}, série 2` })
   return { ...app, sheet }
 }
 
@@ -155,7 +165,11 @@ describe('compteur caméra : conseils et direct', () => {
     const { user, sheet } = await openCounter({ guideSeen: false })
     expect(within(sheet).getByText('Compteur caméra · Objectif : 8 à 12')).toBeInTheDocument()
     expect(within(sheet).getByRole('heading', { name: 'Place ton téléphone' })).toBeInTheDocument()
-    expect(within(sheet).getByText(/^Pose le téléphone debout au sol, à 2 ou 3 mètres/)).toBeInTheDocument()
+    expect(
+      within(sheet).getByText(/^Pose le téléphone debout, à hauteur de hanches, à 2 ou 3 mètres/),
+    ).toBeInTheDocument()
+    // Squats validés : pas de mention « en essai ».
+    expect(within(sheet).queryByText(/en essai/)).not.toBeInTheDocument()
     expect(within(sheet).getByText('En mode silencieux, l’iPhone peut couper les bips.')).toBeInTheDocument()
     // Annonces vocales coupées (réglage par défaut), écran qui peut s'éteindre (pas de verrou dans jsdom).
     expect(within(sheet).getByText(/^Pour entendre le compte, active Annonces vocales/)).toBeInTheDocument()
@@ -176,10 +190,10 @@ describe('compteur caméra : conseils et direct', () => {
     expect(within(sheet).getByRole('status')).toHaveTextContent('Ouverture de la caméra…')
     expect(within(sheet).getByLabelText('Image de la caméra')).toBeInTheDocument()
     setCamera({ kind: 'running' })
-    expect(consigne(sheet)).toHaveTextContent('Mets-toi en planche, bras tendus.')
+    expect(consigne(sheet)).toHaveTextContent('Tiens-toi debout, face au téléphone.')
     expect(camera().options).toMatchObject({ cameraOn: true, analysing: true })
     expect(JSON.parse(localStorage.getItem('calitrack.counter') ?? '{}')).toMatchObject({
-      guides: ['pushup'],
+      guides: ['squat'],
     })
 
     // « Conseils de placement » les remontre ; on revient au direct, caméra toujours ouverte.
@@ -194,11 +208,11 @@ describe('compteur caméra : conseils et direct', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
-    const again = await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    await user.click(screen.getByRole('button', { name: `Compter à la caméra : ${SQUAT}` }))
+    const again = await screen.findByRole('dialog', { name: `${SQUAT}, série 2` })
     expect(within(again).queryByRole('heading', { name: 'Place ton téléphone' })).not.toBeInTheDocument()
     expect(camera().options).toMatchObject({ cameraOn: true })
-    expect(await pushupSets()).toEqual([
+    expect(await squatSets()).toEqual([
       { done: true, reps: 8 },
       { done: false, reps: null },
       { done: false, reps: null },
@@ -235,7 +249,7 @@ describe('compteur caméra : conseils et direct', () => {
     expect(count()).toHaveTextContent('3 répétitions')
     expect(within(sheet).getByText('Pas assez bas : pas comptée.')).toBeInTheDocument()
     frame({ event: { id: 2, kind: 'rejected', t, why: 'anchor' } })
-    expect(within(sheet).getByText('Tes mains ont bougé : pas comptée.')).toBeInTheDocument()
+    expect(within(sheet).getByText('Tes pieds ont bougé : pas comptée.')).toBeInTheDocument()
     // Une répétition comptée n'a pas de ligne ; la ligne s'efface après 2 s.
     frame({ reps: 4, event: { id: 3, kind: 'rep', t, reps: 4 } })
     expect(within(sheet).queryByText(/pas comptée/)).not.toBeInTheDocument()
@@ -260,7 +274,7 @@ describe('compteur caméra : conseils et direct', () => {
     // Pas de verrou d'écran dans jsdom : le conseil s'affiche sous la consigne.
     expect(within(sheet).getByText(/^L’écran risque de s’éteindre pendant la série/)).toBeInTheDocument()
     expectFrenchSpacing()
-    expect(counter().created).toEqual([{ variant: { movement: 'pushup', overrides: {} }, offset: 0 }])
+    expect(counter().created).toEqual([{ variant: { movement: 'squat', overrides: {} }, offset: 0 }])
     expect(counter().pushed).toHaveLength(11)
   })
 
@@ -296,7 +310,7 @@ describe('compteur caméra : fin de série', () => {
       { sound: true, voice: false },
       '10 répétitions enregistrées',
     )
-    expect(await pushupSets()).toEqual([
+    expect(await squatSets()).toEqual([
       { done: true, reps: 8 },
       { done: true, reps: 10 },
       { done: false, reps: null },
@@ -309,17 +323,17 @@ describe('compteur caméra : fin de série', () => {
     act(() => {
       skipRest()
     })
-    const next = await screen.findByRole('dialog', { name: 'Pompes, série 3' })
-    expect(consigne(next)).toHaveTextContent('Mets-toi en planche, bras tendus.')
+    const next = await screen.findByRole('dialog', { name: `${SQUAT}, série 3` })
+    expect(consigne(next)).toHaveTextContent('Tiens-toi debout, face au téléphone.')
     frame({ status: 'counting', reps: 9 })
     expect(counter().created.map((options) => options.offset)).toEqual([0, 0])
 
-    // Dernière série des pompes : rien après dans cet exercice.
+    // Dernière série des squats : rien après dans cet exercice.
     end({ reps: 9, repTimes: [t - 200] })
     expect(await within(next).findByText('Série enregistrée.')).toBeInTheDocument()
     expect(within(next).getByText('C’était la dernière série de cet exercice.')).toBeInTheDocument()
     expect(within(next).queryByRole('button', { name: 'Série suivante' })).not.toBeInTheDocument()
-    expect(await pushupSets()).toEqual([
+    expect(await squatSets()).toEqual([
       { done: true, reps: 8 },
       { done: true, reps: 10 },
       { done: true, reps: 9 },
@@ -334,10 +348,10 @@ describe('compteur caméra : fin de série', () => {
     expect(screen.getByRole('timer', { name: 'Repos restant' })).toBeInTheDocument()
 
     await user.click(within(sheet).getByRole('button', { name: 'Série suivante' }))
-    const next = await screen.findByRole('dialog', { name: 'Pompes, série 3' })
+    const next = await screen.findByRole('dialog', { name: `${SQUAT}, série 3` })
     expect(consigne(next)).toBeInTheDocument()
     expect(screen.queryByRole('timer', { name: 'Repos restant' })).not.toBeInTheDocument()
-    expect(await pushupSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 11 }, { done: false }])
+    expect(await squatSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 11 }, { done: false }])
   })
 
   it('enregistrement raté : la série se réenregistre, la correction le dit', async () => {
@@ -347,12 +361,12 @@ describe('compteur caméra : fin de série', () => {
     end({ reps: 10 })
     expect(await within(sheet).findByText('La série n’a pas pu être enregistrée.')).toBeInTheDocument()
     expect(within(sheet).queryByRole('button', { name: 'Corriger' })).not.toBeInTheDocument()
-    expect((await pushupSets())[1]).toEqual({ done: false, reps: null })
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
     expectFrenchSpacing()
 
     await user.click(within(sheet).getByRole('button', { name: 'Réessayer' }))
     expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
-    expect((await pushupSets())[1]).toEqual({ done: true, reps: 10 })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 10 })
 
     await user.click(within(sheet).getByRole('button', { name: 'Corriger' }))
     await user.click(within(sheet).getByRole('button', { name: 'Répétitions : moins' }))
@@ -361,10 +375,10 @@ describe('compteur caméra : fin de série', () => {
     expect(await within(sheet).findByRole('alert')).toHaveTextContent(
       'La correction n’a pas pu être enregistrée.',
     )
-    expect((await pushupSets())[1]).toEqual({ done: true, reps: 10 })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 10 })
     await user.click(within(sheet).getByRole('button', { name: 'Enregistrer la correction' }))
     expect(await within(sheet).findByText('Correction enregistrée.')).toBeInTheDocument()
-    expect((await pushupSets())[1]).toEqual({ done: true, reps: 9 })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 9 })
   })
 
   it('corrige le nombre enregistré : la série reste faite', async () => {
@@ -385,7 +399,7 @@ describe('compteur caméra : fin de série', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Enregistrer la correction' }))
     expect(await within(sheet).findByText('Correction enregistrée.')).toBeInTheDocument()
     expect(within(sheet).getByRole('heading', { name: /^11\srépétitions$/ })).toBeInTheDocument()
-    expect(await pushupSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 11 }, { done: false }])
+    expect(await squatSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 11 }, { done: false }])
     expectFrenchSpacing()
   })
 
@@ -409,20 +423,34 @@ describe('compteur caméra : fin de série', () => {
       'Compte à vérifier',
     )
     expectFrenchSpacing()
-    expect((await pushupSets())[1]).toEqual({ done: false, reps: null })
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
 
     await user.click(within(sheet).getByRole('button', { name: /^Ajouter les 2\smouvements$/ }))
     expect(within(sheet).getByRole('group', { name: 'Répétitions' })).toHaveTextContent('9')
     expect(within(sheet).queryByRole('button', { name: /^Ajouter/ })).not.toBeInTheDocument()
     await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 9\srépétitions$/ }))
     expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
-    expect(await pushupSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 9 }, { done: false }])
+    expect(await squatSets()).toMatchObject([{ reps: 8 }, { done: true, reps: 9 }, { done: false }])
     // Vérifié à la main : pas d'annonce « enregistrées ».
     expect(vi.mocked(cue)).not.toHaveBeenCalledWith('go', expect.anything(), '9 répétitions enregistrées')
   })
 
-  it('mouvement en essai : chaque compte se vérifie, et peut se refaire', async () => {
-    const { user, sheet } = await openLive()
+  it('mouvement en essai : chaque compte se vérifie, même sûr, et peut se refaire', async () => {
+    const { user } = await openWorkout()
+    const pushups = screen.getByRole('article', { name: 'Pompes' })
+    await user.click(within(pushups).getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Pompes, série 1' })
+    // Les conseils (première fois pour les pompes) préviennent que le compteur est en essai.
+    expect(
+      within(sheet).getByText(
+        'Ce compteur est encore en essai pour cet exercice : tu vérifieras chaque compte avant de l’enregistrer.',
+      ),
+    ).toBeInTheDocument()
+    expectFrenchSpacing()
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    setCamera({ kind: 'running' })
+    expect(consigne(sheet)).toHaveTextContent('Mets-toi en planche, bras tendus.')
+
     frame({ status: 'counting', reps: 1 })
     end({ reps: 1, confident: false, reasons: ['fewReps', 'trial'] })
     expect(await within(sheet).findByRole('heading', { name: /^1\srépétition\s\?$/ })).toBeInTheDocument()
@@ -436,9 +464,14 @@ describe('compteur caméra : fin de série', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Ne pas enregistrer' }))
     expect(consigne(sheet)).toBeInTheDocument()
     frame({ status: 'counting', reps: 10 })
+    // Même un compte sûr attend la vérification : les pompes ne sont pas validées (specs.ts).
     end({ reps: 10, confident: true, reasons: [] })
-    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect(await within(sheet).findByRole('heading', { name: /^10\srépétitions\s\?$/ })).toBeInTheDocument()
     expect(counter().created).toHaveLength(2)
+    expect((await db.workouts.toArray())[0]?.exercises[1]?.sets[0]).toMatchObject({ done: false })
+    await user.click(within(sheet).getByRole('button', { name: /^Enregistrer 10\srépétitions$/ }))
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+    expect((await db.workouts.toArray())[0]?.exercises[1]?.sets[0]).toMatchObject({ done: true, reps: 10 })
   })
 
   it('continue la série : le compteur repart du compte vérifié ou enregistré', async () => {
@@ -454,7 +487,7 @@ describe('compteur caméra : fin de série', () => {
     expect(within(sheet).getByRole('status', { name: 'Répétitions comptées' })).toHaveTextContent('9')
     end({ reps: 9 })
     expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
-    expect((await pushupSets())[1]).toEqual({ done: true, reps: 9 })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 9 })
 
     // Après l'enregistrement : le repos s'arrête, la série reprend à 9 et s'enregistre à nouveau.
     await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
@@ -463,7 +496,7 @@ describe('compteur caméra : fin de série', () => {
     expect(counter().created.at(-1)?.offset).toBe(9)
     end({ reps: 12 })
     await waitFor(async () => {
-      expect((await pushupSets())[1]).toEqual({ done: true, reps: 12 })
+      expect((await squatSets())[1]).toEqual({ done: true, reps: 12 })
     })
     expect(within(sheet).getByRole('heading', { name: /^12\srépétitions$/ })).toBeInTheDocument()
   })
@@ -493,7 +526,7 @@ describe('compteur caméra : fermeture et problèmes', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    expect((await pushupSets())[1]).toEqual({ done: false, reps: null })
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
   })
 
   it('ferme tout de suite une série enregistrée', async () => {
@@ -541,7 +574,7 @@ describe('compteur caméra : fermeture et problèmes', () => {
     expect(consigne(sheet)).toBeInTheDocument()
     frame()
     expect(counter().created).toHaveLength(2)
-    expect((await pushupSets())[1]).toEqual({ done: false, reps: null })
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
   })
 
   it('caméra coupée en pleine série : le compte passe à vérifier', async () => {
@@ -550,7 +583,7 @@ describe('compteur caméra : fermeture et problèmes', () => {
     camera().hide()
     expect(await within(sheet).findByRole('heading', { name: /^4\srépétitions\s\?$/ })).toBeInTheDocument()
     expect(within(sheet).getByText('la caméra s’est coupée pendant la série.')).toBeInTheDocument()
-    expect((await pushupSets())[1]).toEqual({ done: false, reps: null })
+    expect((await squatSets())[1]).toEqual({ done: false, reps: null })
   })
 
   it('caméra figée : le compteur voit le temps passer et finit la série', async () => {
@@ -560,7 +593,7 @@ describe('compteur caméra : fermeture et problèmes', () => {
     counter().end({ reps: 3 })
     expect(await within(sheet).findByText('Série enregistrée.', {}, { timeout: 3000 })).toBeInTheDocument()
     expect(tick.mock.calls[0]?.[0]).toBeGreaterThan(t)
-    expect((await pushupSets())[1]).toEqual({ done: true, reps: 3 })
+    expect((await squatSets())[1]).toEqual({ done: true, reps: 3 })
 
     // Un compteur neuf qui n'a encore vu aucune image attend la caméra.
     const ticks = tick.mock.calls.length
@@ -616,7 +649,7 @@ describe('compteur caméra : infos de réglage', () => {
       'Calcul : processeur',
       'Silhouette trouvée : 74 images sur 77',
       'Lumière : 132 sur 255',
-      'Mesure : coude 152° (seuils 120° et 150°)',
+      'Mesure : genou 152° (seuils 120° et 150°)',
       'Phase : en haut',
       'Côté suivi : gauche',
       'Visibilité : 0,92',
@@ -641,13 +674,13 @@ describe('compteur caméra : infos de réglage', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Exporter les points de la série' }))
     expect(vi.mocked(shareOrDownload)).toHaveBeenCalledTimes(1)
     const file = vi.mocked(shareOrDownload).mock.calls[0]![0]
-    expect(file.name).toMatch(/^calitrack-points-pushup-\d{4}-\d{2}-\d{2}-\d{4}\.json$/)
+    expect(file.name).toMatch(/^calitrack-points-squat-\d{4}-\d{2}-\d{2}-\d{4}\.json$/)
     expect(file.type).toBe('application/json')
     const parsed = repFixtureSchema.safeParse(JSON.parse(await file.text()))
     expect(parsed.success).toBe(true)
     expect(parsed.data).toMatchObject({
-      movement: 'pushup',
-      exerciseId: 'pushup',
+      movement: 'squat',
+      exerciseId: 'squat',
       kind: 'set',
       expected: { reps: 3 },
       split: 'check',
@@ -664,8 +697,8 @@ describe('compteur caméra : infos de réglage', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
-    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
-    const again = await screen.findByRole('dialog', { name: 'Pompes, série 3' })
+    await user.click(screen.getByRole('button', { name: `Compter à la caméra : ${SQUAT}` }))
+    const again = await screen.findByRole('dialog', { name: `${SQUAT}, série 3` })
     expect(camera().options?.delegate).toBe('GPU')
     setCamera({ kind: 'running' })
     expect(within(again).getByRole('button', { name: 'Infos de réglage' })).toHaveAttribute(

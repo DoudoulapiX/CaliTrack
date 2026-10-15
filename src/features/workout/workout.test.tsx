@@ -1,4 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
+import type { Mock } from 'vitest'
 import { addSession, addSlot, emptyProgram, newSession, newSlot } from '@/content/programs/edit'
 import { schemeFor } from '@/content/programs/schemes'
 import { addExercise, completeSet, freeWorkout } from '@/content/workouts/workout'
@@ -29,6 +30,17 @@ vi.mock('./counter/RepCounterSheet', async (importOriginal) => {
   }
 })
 
+// Le moteur de squelette du compteur, qui se charge dès l'ouverture de la feuille : factice, jamais MediaPipe.
+const pose = vi.hoisted(() => ({ engines: [] as { readonly detect: Mock; readonly close: Mock }[] }))
+vi.mock('./counter/pose-engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./counter/pose-engine')>()),
+  openPoseEngine: () => {
+    const engine = { delegate: 'CPU', detect: vi.fn(), close: vi.fn() }
+    pose.engines.push(engine)
+    return Promise.resolve(engine)
+  },
+}))
+
 const PROGRAM_ID = 'w-1'
 const SESSION_ID = 'w-2'
 const SESSION_PATH = `/training/programs/${PROGRAM_ID}/sessions/${SESSION_ID}`
@@ -36,6 +48,7 @@ const SESSION_PATH = `/training/programs/${PROGRAM_ID}/sessions/${SESSION_ID}`
 afterEach(() => {
   skipRest()
   counterSheet.props = null
+  pose.engines = []
 })
 
 /** Programme fait main : une figure (tractions poitrine à la barre), puis des pompes et des dips. */
@@ -439,10 +452,18 @@ describe('compteur caméra', () => {
       exerciseName: 'Pompes',
       variant: { movement: 'pushup', overrides: {} },
     })
+    // Le moteur se prépare pendant les conseils ; il n'analyse rien tant que la caméra n'est pas ouverte.
+    await waitFor(() => {
+      expect(pose.engines).toHaveLength(1)
+    })
+    const engine = pose.engines[0]!
     await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: 'Pompes, série 2' })).not.toBeInTheDocument()
     })
+    // Feuille fermée : moteur libéré.
+    expect(engine.close).toHaveBeenCalledTimes(1)
+    expect(engine.detect).not.toHaveBeenCalled()
     // Rien n'a été coché.
     expect((await activeWorkout()).exercises[0]?.sets.map((set) => set.done)).toEqual([true, false, false])
   })

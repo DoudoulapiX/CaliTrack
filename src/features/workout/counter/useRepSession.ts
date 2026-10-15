@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState }
 import { format } from 'date-fns'
 import { FIXTURE_JOINTS } from '@/content/reps/fixture'
 import { createRepCounter, type RepCounter } from '@/content/reps/rep-counter'
+import { SPECS } from '@/content/reps/specs'
 import type { CounterResult, CounterSnapshot, PoseFrame } from '@/content/reps/types'
 import { updateSet } from '@/content/workouts/workout'
 import { jsonFile, shareOrDownload } from '@/lib/files'
@@ -79,6 +80,11 @@ export interface RepSession {
   readonly cameraOn: boolean
   /** Une série finie a des points à exporter. */
   readonly canExport: boolean
+  /**
+   * Mouvement validé (specs.ts) : un compte sûr s'enregistre tout seul. Sinon, « en essai » : chaque compte se
+   * vérifie avant d'être enregistré, et les conseils le disent.
+   */
+  readonly validated: boolean
 }
 
 /** Un essai : un compteur neuf, et ce qu'il a rendu en dernier. */
@@ -164,8 +170,10 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
   const settle = useCallback((attempt: Attempt, result: CounterResult) => {
     if (settledRef.current === attempt.number) return
     settledRef.current = attempt.number
-    // Un mouvement pas encore validé rend un compte jamais sûr, avec la raison « trial ».
-    dispatch({ type: 'ended', result, validated: !result.reasons.includes('trial') })
+    // Le compteur rend déjà un compte jamais sûr (raison « trial ») pour un mouvement en essai ; la feuille
+    // s'en tient en plus à specs.ts, pour que ce mouvement ne s'enregistre jamais sans vérification.
+    const validated = SPECS[latest.current.props.variant.movement].validated
+    dispatch({ type: 'ended', result, validated })
   }, [])
 
   /** Ce que le compteur vient de rendre : signal sonore, écran, fin de série. */
@@ -465,5 +473,6 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     canExport:
       state.result !== null &&
       (view === 'saved' || view === 'saving' || view === 'review' || view === 'empty'),
+    validated: SPECS[movement].validated,
   }
 }

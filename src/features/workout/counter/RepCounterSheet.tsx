@@ -31,7 +31,7 @@ export interface RepCounterSheetProps {
  */
 export function RepCounterSheet(props: RepCounterSheetProps) {
   const { exercise, exerciseName, variant, cues } = props
-  const { state, snapshot, camera, wakeLock, prefs, actions, rest, cameraOn, canExport } =
+  const { state, snapshot, camera, wakeLock, prefs, actions, rest, cameraOn, canExport, validated } =
     useRepSession(props)
   const movement = variant.movement
   const { view } = state
@@ -70,6 +70,7 @@ export function RepCounterSheet(props: RepCounterSheetProps) {
             movement={movement}
             voiceOff={!cues.voice}
             wakeLockUnavailable={wakeLock === 'unavailable'}
+            trial={!validated}
           />
         )}
         {cameraOn && (
