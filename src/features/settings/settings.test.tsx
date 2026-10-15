@@ -143,6 +143,13 @@ describe('réglages', () => {
     const sound = await screen.findByRole('switch', { name: 'Son du minuteur' })
     const voice = screen.getByRole('switch', { name: 'Annonces vocales' })
     const screenOn = screen.getByRole('switch', { name: 'Écran toujours allumé' })
+    // Les bips et la voix servent aussi au compteur caméra (l'iPhone ne vibre pas pour une appli web).
+    expect(sound).toHaveAccessibleDescription(
+      'Bips à la fin du repos, et à chaque répétition comptée par la caméra.',
+    )
+    expect(voice).toHaveAccessibleDescription(
+      'La série suivante et les répétitions comptées, dites à voix haute.',
+    )
     expect(sound).toBeChecked()
     expect(voice).not.toBeChecked()
     expect(screenOn).toBeChecked()

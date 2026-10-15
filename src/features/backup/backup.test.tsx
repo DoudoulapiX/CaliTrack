@@ -152,6 +152,20 @@ describe('écran À propos', () => {
     ).toHaveTextContent(
       /CaliTrack ne garde aucune de ces photos, pas même celles de ton corps pour le coach physique\./,
     )
+    // Le compteur caméra : l'image reste sur l'iPhone ; MediaPipe et les données de test sont cités.
+    expect(
+      screen.getByText(/Le compteur de répétitions regarde l’image de la caméra sur l’iPhone même/),
+    ).toHaveTextContent(/aucune image n’est envoyée ni enregistrée\./)
+    expect(
+      screen.getByRole('link', {
+        name: /^Compteur de répétitions.*MediaPipe Pose Landmarker de Google.*licence Apache 2\.0\.$/,
+      }),
+    ).toHaveAttribute('href', 'https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker')
+    expect(
+      screen.getByRole('link', {
+        name: /^Données de test du compteur.*MM-Fit \(Strömbäck, Huang et Radu, 2020\), licence CC BY 4\.0\s; démo de Sports2D, licence BSD-3-Clause\.$/,
+      }),
+    ).toHaveAttribute('href', 'https://mmfit.github.io/')
     expectFrenchSpacing()
     // Dans Safari, pas encore sur l'écran d'accueil : les étapes pour l'y mettre.
     expect(screen.getByText(/Sur l’écran d’accueil\s»/)).toBeInTheDocument()
