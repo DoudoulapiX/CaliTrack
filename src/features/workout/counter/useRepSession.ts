@@ -166,8 +166,9 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     const { state: current, props: currentProps } = latest.current
     const existing = attemptRef.current
     if (existing?.number === current.attempt) return existing
-    // Nouvelle série : les points de la précédente sont oubliés (« Continuer la série » les garde).
-    if (current.offset === 0) recorder.clear()
+    // Les points gardés sont ceux de l'essai : un compteur neuf les rejoue depuis le début (« Continuer la
+    // série » compris, son compte attendu étant ce qu'il ajoute).
+    recorder.clear()
     const counter = createRepCounter({ variant: currentProps.variant, offset: current.offset })
     const attempt: Attempt = {
       number: current.attempt,
@@ -507,6 +508,7 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
     exportPoints: () => {
       const { result } = state
       if (!result) return
+      const from = attemptRef.current?.offset ?? 0
       const at = new Date()
       const name = exportFileName(movement, at)
       const frame = lastFrameRef.current
@@ -516,13 +518,13 @@ export function useRepSession(props: RepCounterSheetProps): RepSession {
         movement,
         exerciseId: exercise.exerciseId,
         kind: 'set',
-        // Le compte attendu : celui enregistré (ou vérifié), pas celui du compteur.
-        expected: { reps: expectedReps(state) },
+        // Le compte attendu : celui enregistré (ou vérifié), pas celui du compteur, moins celui d'où l'essai part.
+        expected: { reps: expectedReps(state, from) },
         split: 'check',
         source: `Compteur caméra de CaliTrack, ${exerciseName}, ${format(at, 'yyyy-MM-dd HH:mm')}`,
         licence: 'À préciser avant d’ajouter le fichier au dépôt',
         estimator: `mediapipe-0.10.35-lite-${delegate.toLowerCase()}`,
-        notes: `Compté par l’appli : ${String(result.reps)}, ${result.confident ? 'sûr' : `à vérifier (${result.reasons.join(', ')})`}, fin : ${result.endedBy}`,
+        notes: `Compté par l’appli : ${String(result.reps - from)}${from > 0 ? ` de plus que ${String(from)}` : ''}, ${result.confident ? 'sûr' : `à vérifier (${result.reasons.join(', ')})`}, fin : ${result.endedBy}`,
         fps: 15,
         width: frame?.width ?? 640,
         height: frame?.height ?? 480,

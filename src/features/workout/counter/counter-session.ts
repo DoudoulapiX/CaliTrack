@@ -285,13 +285,15 @@ export function unsavedReps(state: SessionState, live: number | null): { reps: n
 }
 
 /**
- * Le compte retenu pour la série (fichier de points exporté) : enregistré, en cours d'enregistrement ou
- * vérifié ; sinon celui d'où repart le compteur.
+ * Le compte attendu d'un fichier de points exporté, qui ne garde que l'essai parti de `from` répétitions : celui
+ * de la série (enregistré, en cours d'enregistrement ou vérifié ; sinon celui d'où repart le compteur), moins
+ * `from`.
  */
-export function expectedReps(state: SessionState): number {
+export function expectedReps(state: SessionState, from: number): number {
   const { view } = state
-  if (view.kind === 'saved' || view.kind === 'saving' || view.kind === 'review') return view.reps
-  return state.offset
+  const total =
+    view.kind === 'saved' || view.kind === 'saving' || view.kind === 'review' ? view.reps : state.offset
+  return Math.max(0, total - from)
 }
 
 /** La série comptée à l'ouverture : la première à faire, sinon la dernière. */

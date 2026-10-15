@@ -1,7 +1,9 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
-import type { RepFixture } from '@/content/reps/fixture'
+import { runFixture } from '@/content/reps/evaluate'
+import { repFixtureSchema, type RepFixture } from '@/content/reps/fixture'
 import { addExercise, freeWorkout } from '@/content/workouts/workout'
 import { db } from '@/db/db'
+import { shareOrDownload } from '@/lib/files'
 import { startWorkout } from '@/db/workouts'
 import { sequentialIds } from '@/test/fixtures'
 import {
@@ -23,6 +25,11 @@ import type { FrameScheduler } from './frame-loop'
  * points, comme les tests de bout en bout (window.__calitrackPoseReplay). Seules changent la cadence des images,
  * que le test fait passer une à une, et l'horloge des images, qui avance de 66 ms à chaque image.
  */
+
+vi.mock('@/lib/files', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/files')>()),
+  shareOrDownload: vi.fn(() => Promise.resolve('downloaded' as const)),
+}))
 
 const loop = vi.hoisted(() => ({ scheduler: null as FrameScheduler | null }))
 vi.mock('./frame-loop', async (importOriginal) => ({
@@ -65,6 +72,14 @@ afterEach(() => {
 function replay(fixture: string | RepFixture): void {
   ;(globalThis as { __calitrackPoseReplay?: unknown }).__calitrackPoseReplay =
     typeof fixture === 'string' ? loadRepFixture(fixture) : fixture
+}
+
+/** Le fichier de points deux fois de suite, la personne restant immobile `ms` entre les deux. */
+function twice(fixture: RepFixture, ms: number): RepFixture {
+  const end = fixture.frames.at(-1)?.[0] ?? 0
+  const first = withStill(fixture, end, ms)
+  const second = fixture.frames.map(([t, image, world]) => [t + end + ms, image, world] as const)
+  return { ...first, frames: [...first.frames, ...second] }
 }
 
 /** Le même fichier de points, où la personne reste immobile pendant `ms` à partir de `at` (en ms). */
@@ -186,6 +201,35 @@ describe('compteur caméra, tout branché', () => {
     await waitFor(async () => {
       expect(await firstSet()).toEqual({ done: true, reps: 3 })
     })
+  })
+
+  it('« Continuer la série » : les points exportés sont ceux de l’essai, qui se rejouent au bon compte', async () => {
+    replay(twice(loadRepFixture('synth-squat-3'), 15_000))
+    const name = 'Squat au poids du corps'
+    const { user, card } = await openWorkout('squat', name)
+    await user.click(within(card).getByRole('button', { name: `Compter à la caméra : ${name}` }))
+    const sheet = await screen.findByRole('dialog', { name: `${name}, série 1` })
+    await user.click(within(sheet).getByRole('button', { name: 'Ouvrir la caméra' }))
+    await within(sheet).findByRole('status', { name: 'Consigne' })
+    await user.click(within(sheet).getByRole('button', { name: 'Infos de réglage' }))
+    expect(playSet(sheet).at(-1)).toBe('3 répétitions')
+    expect(await within(sheet).findByText('Série enregistrée.')).toBeInTheDocument()
+
+    // Trois de plus : la série passe à 6.
+    await user.click(within(sheet).getByRole('button', { name: 'Continuer la série' }))
+    await within(sheet).findByRole('status', { name: 'Consigne' })
+    expect(playSet(sheet).at(-1)).toBe('6 répétitions')
+    expect(await within(sheet).findByRole('heading', { name: /^6\srépétitions$/ })).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await firstSet()).toEqual({ done: true, reps: 6 })
+    })
+
+    await user.click(within(sheet).getByRole('button', { name: 'Exporter les points de la série' }))
+    const file = vi.mocked(shareOrDownload).mock.calls[0]![0]
+    const exported = repFixtureSchema.parse(JSON.parse(await file.text()))
+    // Les 3 répétitions de cet essai, que le compteur retrouve en rejouant le fichier depuis le début.
+    expect(exported.expected).toEqual({ reps: 3 })
+    expect(runFixture(exported)).toMatchObject({ reps: 3, confident: true })
   })
 
   it('3 tractions rejouées : en essai, rien d’enregistré avant « Enregistrer 3 répétitions »', async () => {

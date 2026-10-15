@@ -430,16 +430,26 @@ describe('aides du compteur', () => {
     })
   })
 
-  it('retiennent le compte de la série pour l’export des points', () => {
+  it('retiennent le compte de l’essai pour l’export des points', () => {
     expect(
       expectedReps(
         at({ kind: 'saved', reps: 11, next: null, error: false, correcting: false, corrected: true }),
+        0,
       ),
     ).toBe(11)
-    expect(expectedReps(at({ kind: 'saving', reps: 4 }))).toBe(4)
-    expect(expectedReps(at({ kind: 'review', result: UNSURE, reps: 9, addedDoubtful: false }))).toBe(9)
-    expect(expectedReps(at({ kind: 'empty' }, { offset: 8 }))).toBe(8)
-    expect(expectedReps(at({ kind: 'empty' }))).toBe(0)
+    expect(expectedReps(at({ kind: 'saving', reps: 4 }), 0)).toBe(4)
+    expect(expectedReps(at({ kind: 'review', result: UNSURE, reps: 9, addedDoubtful: false }), 0)).toBe(9)
+    expect(expectedReps(at({ kind: 'empty' }), 0)).toBe(0)
+    // « Continuer la série » : seulement ce que l'essai ajoute.
+    expect(
+      expectedReps(
+        at({ kind: 'saved', reps: 12, next: null, error: false, correcting: false, corrected: false }),
+        10,
+      ),
+    ).toBe(2)
+    expect(expectedReps(at({ kind: 'empty' }, { offset: 8 }), 8)).toBe(0)
+    // Réglé plus bas que le compte d'où l'essai est parti : rien de plus.
+    expect(expectedReps(at({ kind: 'review', result: UNSURE, reps: 7, addedDoubtful: false }), 8)).toBe(0)
   })
 
   it('ne rafraîchissent l’écran que quand ce qui s’y voit change', () => {
