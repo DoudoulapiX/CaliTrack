@@ -111,11 +111,10 @@ export function CounterLive({
             <CircleHelp size={20} aria-hidden />
           </IconButton>
           <IconButton
-            variant="filled"
+            variant={debug ? 'accent' : 'filled'}
             label={LIVE_LABEL.debug}
             aria-pressed={debug}
             onClick={onToggleDebug}
-            className={cn(debug && 'bg-accent text-accent-ink active:bg-accent')}
           >
             <Gauge size={20} aria-hidden />
           </IconButton>
@@ -125,7 +124,7 @@ export function CounterLive({
         <p
           role="status"
           aria-label="Répétitions comptées"
-          className="absolute bottom-3 left-4 leading-none text-white"
+          className="absolute bottom-3 left-3 rounded-2xl bg-black/60 px-3 py-2 leading-none text-white"
         >
           <span className="text-[min(30vw,15dvh)] leading-none font-bold tabular text-white">{reps}</span>
           &nbsp;
