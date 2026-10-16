@@ -1,7 +1,8 @@
 import { useId, useState } from 'react'
-import { Check, Ellipsis, Plus, Timer } from 'lucide-react'
+import { Camera, Check, Ellipsis, Plus, Timer } from 'lucide-react'
 import { needsLoad } from '@/content/programs/edit'
 import { formatRest } from '@/content/programs/format'
+import { countableVariant } from '@/content/reps/movements'
 import {
   measureOf,
   setValue,
@@ -198,6 +199,8 @@ export interface ExerciseCardProps {
   onReopen: (set: WorkoutSet) => void
   onAddSet: () => void
   onOptions: () => void
+  /** Compte la première série à faire avec la caméra (séance en cours, exercice compté). */
+  onCount?: () => void
 }
 
 /** Un exercice de la séance : ses séries à remplir et à cocher. */
@@ -213,6 +216,7 @@ export function ExerciseCard({
   onReopen,
   onAddSet,
   onOptions,
+  onCount,
 }: ExerciseCardProps) {
   const headingId = useId()
   const name = definition?.name ?? 'Exercice supprimé'
@@ -224,6 +228,10 @@ export function ExerciseCard({
   const detail = [prescriptionOf(exercise, unit, definition?.unilateral), formatRest(exercise.restSec)]
     .filter(Boolean)
     .join(' · ')
+  const countable =
+    onCount !== undefined &&
+    countableVariant(exercise.exerciseId, measure) !== null &&
+    exercise.sets.some((set) => !set.done)
 
   return (
     <article
@@ -279,15 +287,22 @@ export function ExerciseCard({
           />
         ))}
       </ol>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="mt-2"
-        icon={<Plus size={16} aria-hidden />}
-        onClick={onAddSet}
-      >
-        Ajouter une série
-      </Button>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Button variant="ghost" size="sm" icon={<Plus size={16} aria-hidden />} onClick={onAddSet}>
+          Ajouter une série
+        </Button>
+        {countable && (
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<Camera size={16} aria-hidden />}
+            aria-label={`Compter à la caméra : ${name}`}
+            onClick={onCount}
+          >
+            Compter à la caméra
+          </Button>
+        )}
+      </div>
     </article>
   )
 }

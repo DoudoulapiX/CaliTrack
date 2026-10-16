@@ -52,11 +52,12 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Le lecteur de codes-barres (WebAssembly) aussi : le scan marche hors ligne pour les produits connus.
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,wasm}'],
+        // Le lecteur de codes-barres et le compteur caméra (WebAssembly, modèle .task) aussi : ils marchent hors ligne.
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,wasm,task}'],
         globIgnores: ['ex/**', 'splash/**'],
         navigateFallback: 'index.html',
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        // Le WebAssembly de MediaPipe pèse 10,6 Mio : seul fichier au-dessus de 6 Mio (vérifié par scripts/postbuild.mjs).
+        maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

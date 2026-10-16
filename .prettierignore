@@ -10,3 +10,4 @@ scripts/.cache
 src/data/*.json
 scripts/i18n/**/*.json
 scripts/source
+src/test/reps/*.json

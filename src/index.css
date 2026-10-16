@@ -122,6 +122,16 @@
   }
 }
 
+/*
+ * Caméra du compteur allumée (useCameraBackdrop) : aucun flou derrière la feuille. WebKit recalcule le flou à
+ * chaque image de la vidéo ; sans lui, l'image et le squelette suivent la caméra.
+ */
+:root[data-camera] *,
+:root[data-camera] ::backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 @layer utilities {
   .pt-safe {
     padding-top: var(--safe-top);

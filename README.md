@@ -19,7 +19,8 @@ une mise à jour).
 Les données sont gardées dans l'appli, sur l'iPhone. Rien ne part ailleurs, sauf quand tu te sers de ces
 fonctions : la photo d'un repas (envoyée à Anthropic avec ta clé Claude), les demandes au coach IA et
 leurs photos (envoyées à Anthropic de la même façon), un code-barres scanné (cherché sur Open Food Facts)
-et la lecture de ta bague (demandée à Oura par ton relais). Pour ne rien perdre :
+et la lecture de ta bague (demandée à Oura par ton relais). Le compteur de répétitions analyse l'image de
+la caméra sur l'iPhone même : aucune image n'est envoyée ni enregistrée. Pour ne rien perdre :
 
 - **Plus → Sauvegarde → Enregistrer dans Fichiers** crée un fichier avec toutes tes données (de
   préférence dans iCloud Drive). Un rappel s'affiche sur l'accueil quand la dernière sauvegarde date.
@@ -109,7 +110,37 @@ coach physique), compte environ 6,72 $ avec Opus 5.5 (le modèle par défaut), 3
 mois : ce qu'ont coûté les demandes faites sur cet iPhone, calculé sur place (ta facture Anthropic fait
 foi).
 
-L'étape suivante ajoute le comptage des répétitions à la caméra.
+## Ce que fait la quatrième étape
+
+**Compteur caméra** : pendant une séance, le bouton **Compter à la caméra** d'un exercice compte tes
+répétitions en direct. Il connaît les squats, pompes, dips, tractions et curls (y compris alternés, les deux
+bras comptent, sauf au curl marteau alterné, dont la fiche compte un bras puis l'autre pour une répétition) et
+leurs variantes courantes, dont un nouvel exercice : le **Curl à l'élastique**. Les
+exercices sur une seule jambe ou un seul bras (pistol, squat bulgare, traction à un bras…) ne sont pas
+comptés.
+
+- **Placement** : l'écran « Place ton téléphone » dit où le poser pour chaque mouvement (à 2 ou 3 mètres
+  environ, de profil pour les pompes et les dips) : tout ton corps dans l'image, de la lumière face à toi et
+  personne d'autre dans l'image.
+- **Comptage** : le compte démarre quand tu restes une seconde en position. Quand tu t'arrêtes (ou avec
+  **Terminer la série**), la série s'enregistre toute seule et le repos démarre, compté depuis ta dernière
+  répétition ; à la fin du repos, le compteur repart pour la série suivante du même exercice.
+- **Vérification** : si le compte est douteux (tu es sorti de l'image, mouvement refusé, téléphone trop
+  lent), rien n'est enregistré avant que tu aies vérifié le nombre. Les pompes, les dips, les tractions et les
+  curls (sauf le curl alterné aux haltères) restent « en essai » (compte toujours à vérifier) tant qu'ils n'ont
+  pas été validés sur de vraies séries.
+- **Correction** : un compte se corrige juste après l'enregistrement (**Corriger**), ou plus tard dans la
+  séance, comme n'importe quelle série.
+- **Bips et voix** : **Son du minuteur** et **Annonces vocales** (Plus → Réglages → Pendant la séance)
+  annoncent chaque répétition. En mode silencieux, l'iPhone peut couper les bips.
+- **Infos de réglage** (pendant le comptage) : ce que voit le compteur, et l'export des points du squelette
+  de la dernière série (sans aucune image), pour régler le compteur quand il se trompe.
+
+La détection du squelette (MediaPipe) tourne sur l'iPhone : l'image ne quitte jamais le téléphone. Le
+compteur est téléchargé avec l'appli (environ 17 Mo, une seule fois par version de MediaPipe), puis marche
+sans connexion. Il faut iOS 16.4 ou plus récent. Ouverte depuis l'écran d'accueil, l'appli garde l'écran
+allumé pendant le comptage à partir d'iOS 18.4 ; avant, règle Verrouillage automatique sur « Jamais »
+(Réglages de l'iPhone → Luminosité et affichage).
 
 ## Développement
 
@@ -143,6 +174,11 @@ Chaque envoi sur `main` les repasse, puis met l'appli en ligne sur GitHub Pages.
   Etalab 2.0, avec les portions de l'étude INCA3.
 - Produits scannés : [Open Food Facts](https://world.openfoodfacts.org), base ouverte sous licence ODbL.
 - Lecture des codes-barres : [zxing-wasm](https://github.com/Sec-ant/zxing-wasm), licence MIT.
+- Compteur de répétitions :
+  [MediaPipe Pose Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) de
+  Google et son modèle BlazePose GHUM, licence Apache 2.0.
+- Données de test du compteur : [MM-Fit](https://mmfit.github.io/) (Strömbäck, Huang et Radu, 2020), licence
+  CC BY 4.0, et la démo de [Sports2D](https://github.com/davidpagnon/Sports2D), licence BSD-3-Clause.
 - Icônes : [Lucide](https://lucide.dev), licence ISC.
 - Équivalences Fontainebleau des couleurs Vertical'Art : d'après la table publique de Kaskad Coaching, à
   titre indicatif.

@@ -15,6 +15,7 @@ import {
   loadToDisplay,
   prescriptionOf,
   recordsLine,
+  restLeftSec,
   rpeLabel,
   typedLoad,
   workoutSubtitle,
@@ -189,5 +190,27 @@ describe('écrans de séance', () => {
     workout = completeSet(workout, dips.id, dips.sets[1]!.id, { reps: 5, loadKg: 15 }, NOW)
     const records = exerciseRecords([workout]).get('dip')
     expect(records && recordsLine(records, 'kg')).toBe('8 rép. · 15 kg × 5')
+  })
+})
+
+describe('restLeftSec', () => {
+  it('retire du repos prévu le temps passé depuis la fin de la série, à la seconde près', () => {
+    expect(restLeftSec(90)).toBe(90)
+    expect(restLeftSec(90, 10_000, 10_000)).toBe(90)
+    expect(restLeftSec(90, 10_000, 22_400)).toBe(78)
+    expect(restLeftSec(90, 10_000, 22_600)).toBe(77)
+    // Plus long que le repos : rien à attendre (le minuteur ne part pas).
+    expect(restLeftSec(60, 0, 75_000)).toBe(-15)
+    // Horloge en retard sur la fin notée : pas de repos rallongé.
+    expect(restLeftSec(60, 5_000, 1_000)).toBe(60)
+  })
+
+  it('compte depuis maintenant par défaut', () => {
+    vi.setSystemTime(new Date(2026, 9, 21, 11, 0, 30))
+    try {
+      expect(restLeftSec(120, new Date(2026, 9, 21, 11, 0).getTime())).toBe(90)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
