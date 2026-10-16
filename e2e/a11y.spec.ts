@@ -571,12 +571,12 @@ for (const colorScheme of ['dark', 'light'] as const) {
       /** Une série rejouée dure 11 s, puis le compteur attend 6 s sans mouvement avant de la finir. */
       const SET_MS = 25_000
 
-      test('compteur caméra accessible : série comptée', async ({ page }) => {
-        test.slow()
+      test('compteur caméra accessible : en direct', async ({ page }) => {
         const errors = collectErrors(page)
         const outside = watchOutside(page)
         await usePersonCamera(page)
-        await useReplayedPose(page, 'synth-squat-3')
+        // Quelqu'un qui marche : rien à compter, l'écran reste en direct le temps des vérifications.
+        await useReplayedPose(page, 'sports2d-walk')
         await onboard(page)
         await startFreeWorkout(page, [SQUATS])
 
@@ -591,7 +591,26 @@ for (const colorScheme of ['dark', 'light'] as const) {
         await expectAccessible(page, 'compteur caméra : infos de réglage')
         await sheet.getByRole('button', { name: 'Infos de réglage' }).click()
         await expect(sheet.getByRole('region', { name: 'Réglage du compteur' })).toBeHidden()
+        // Rien de compté : la feuille se ferme tout de suite.
+        await sheet.getByRole('button', { name: 'Fermer' }).click()
+        await expect(sheet).toBeHidden()
+        expect(outside).toEqual([])
+        expect(errors).toEqual([])
+      })
 
+      test('compteur caméra accessible : série comptée', async ({ page }) => {
+        test.slow()
+        const errors = collectErrors(page)
+        const outside = watchOutside(page)
+        await usePersonCamera(page)
+        await useReplayedPose(page, 'synth-squat-3')
+        await onboard(page)
+        await startFreeWorkout(page, [SQUATS])
+
+        const sheet = await openCounter(page, SQUATS)
+        // Aucune vérification pendant la série : le rejeu suit l'horloge, et une page occupée par axe lui fait
+        // sauter des images, comme un téléphone qui peine à suivre (la série serait alors à vérifier).
+        await sheet.getByRole('button', { name: 'Ouvrir la caméra' }).click()
         await expect(sheet.getByText('Série enregistrée.')).toBeVisible({ timeout: SET_MS })
         await expect(sheet.getByRole('timer', { name: 'Repos avant la série suivante' })).toBeVisible()
         await expectAccessible(page, 'compteur caméra : série enregistrée')

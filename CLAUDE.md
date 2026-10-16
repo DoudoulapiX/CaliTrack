@@ -116,7 +116,9 @@ d'appareil : `localStorage['calitrack.counter']`.
   remplace la caméra par les images d'un clip de `e2e/media/` (dessinées depuis des ImageBitmap : avec des
   `<img>`, la pose se fige sous WebKit), lancé par `playPersonCamera(page)` ; `useReplayedPose(page, nom)`
   fait rejouer un fichier de `src/test/reps/` à la place de MediaPipe (`window.__calitrackPoseReplay`, posé
-  seulement par les tests). Le vrai MediaPipe et les specs rejouées tournent dans Chromium et WebKit. En CI,
+  seulement par les tests). Le rejeu suit l'horloge : pas d'`expectAccessible` pendant une série qui doit
+  être comptée (axe occupe la page, des images sautent et la série passe « à vérifier »). Le vrai MediaPipe
+  et les specs rejouées tournent dans Chromium et WebKit. En CI,
   les tests de WebKit dont le titre contient « compteur caméra » forment le projet `iphone-webkit-camera`,
   lancé après les autres et un test à la fois : sans carte graphique, une machine partagée n'y analyse plus
   assez d'images. Un nouveau test du compteur garde « compteur caméra » dans son titre. Le WebKit de
