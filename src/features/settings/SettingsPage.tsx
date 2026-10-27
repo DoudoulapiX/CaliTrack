@@ -171,7 +171,7 @@ export function SettingsPage() {
           <li>
             <Toggle
               label="Son du minuteur"
-              description="Bips et vibrations à la fin du repos."
+              description="Bips à la fin du repos, et à chaque répétition comptée par la caméra."
               checked={settings.restTimerSound}
               onChange={(restTimerSound) => {
                 save({ restTimerSound })
@@ -181,7 +181,7 @@ export function SettingsPage() {
           <li>
             <Toggle
               label="Annonces vocales"
-              description="La série suivante, dite à voix haute."
+              description="La série suivante et les répétitions comptées, dites à voix haute."
               checked={settings.voiceCues}
               onChange={(voiceCues) => {
                 save({ voiceCues })

@@ -13,10 +13,24 @@ export interface SheetProps {
   tall?: boolean
   /** Change quand la feuille passe à un autre écran (liste, puis réglages) : on revient en haut. */
   scrollKey?: string
+  /** Échap passe par onClose, qui peut refuser de fermer (sinon la boîte se ferme d'elle-même). */
+  guardClose?: boolean
+  /** Titre sur deux lignes au plus, au lieu d'une : sa fin compte (« …, série 2 »). */
+  wrapTitle?: boolean
 }
 
 /** Feuille qui monte du bas de l'écran (boîte de dialogue native, accessible au clavier et aux lecteurs d'écran). */
-export function Sheet({ open, onClose, title, children, footer, tall = false, scrollKey }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  tall = false,
+  scrollKey,
+  guardClose = false,
+  wrapTitle = false,
+}: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -56,6 +70,14 @@ export function Sheet({ open, onClose, title, children, footer, tall = false, sc
         document.documentElement.style.overflow = ''
         onCloseRef.current()
       }}
+      onCancel={
+        guardClose
+          ? (e) => {
+              e.preventDefault()
+              onCloseRef.current()
+            }
+          : undefined
+      }
       onClick={(e) => {
         if (e.target === e.currentTarget) onCloseRef.current()
       }}
@@ -68,7 +90,13 @@ export function Sheet({ open, onClose, title, children, footer, tall = false, sc
       {open && (
         <div className={cn('flex max-h-[inherit] flex-col', tall && 'h-full')}>
           <div className="flex items-center gap-2 border-b border-line px-4 py-2">
-            <h2 id={titleId} className="min-w-0 flex-1 truncate text-[17px] font-semibold">
+            <h2
+              id={titleId}
+              className={cn(
+                'min-w-0 flex-1 text-[17px] font-semibold',
+                wrapTitle ? 'line-clamp-2' : 'truncate',
+              )}
+            >
               {title}
             </h2>
             <button

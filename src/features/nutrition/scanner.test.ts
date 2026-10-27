@@ -1,3 +1,4 @@
+import { cameraProblem as sharedCameraProblem } from '@/lib/camera'
 import { cameraProblem, createBarcodeReader, FOOD_FORMATS, type BarcodeReader } from './scanner'
 
 /** Un faux lecteur du navigateur, qui note les formats demandés. */
@@ -42,20 +43,8 @@ describe('lecteur de codes-barres', () => {
 })
 
 describe('problèmes de caméra', () => {
-  it('reconnaît un accès refusé', () => {
+  it('reprend la fonction commune (lib/camera.ts)', () => {
+    expect(cameraProblem).toBe(sharedCameraProblem)
     expect(cameraProblem(new DOMException('refusé', 'NotAllowedError'))).toBe('denied')
-    expect(cameraProblem(new DOMException('hors HTTPS', 'SecurityError'))).toBe('denied')
-  })
-
-  it('reconnaît l’absence de caméra utilisable', () => {
-    expect(cameraProblem(new DOMException('aucune', 'NotFoundError'))).toBe('unavailable')
-    expect(cameraProblem(new DOMException('contraintes', 'OverconstrainedError'))).toBe('unavailable')
-    expect(cameraProblem(new DOMException('occupée', 'NotReadableError'))).toBe('unavailable')
-  })
-
-  it('classe le reste comme une erreur', () => {
-    expect(cameraProblem(new DOMException('arrêt', 'AbortError'))).toBe('error')
-    expect(cameraProblem(new Error('autre'))).toBe('error')
-    expect(cameraProblem('texte')).toBe('error')
   })
 })

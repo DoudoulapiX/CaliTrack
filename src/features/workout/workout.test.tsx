@@ -1,4 +1,5 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
+import type { Mock } from 'vitest'
 import { addSession, addSlot, emptyProgram, newSession, newSlot } from '@/content/programs/edit'
 import { schemeFor } from '@/content/programs/schemes'
 import { addExercise, completeSet, freeWorkout } from '@/content/workouts/workout'
@@ -9,10 +10,42 @@ import type { Program, Workout } from '@/db/types'
 import { startWorkout } from '@/db/workouts'
 import { sequentialIds, testCatalog } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
+import { expectFrenchSpacing } from '@/test/typography'
+import type { RepCounterSheetProps } from './counter/RepCounterSheet'
 import { skipRest } from './rest-timer'
 
 // Les horloges de l'écran (durée, repos) ne tournent pas pendant les tests : pas de rendu hors de act().
 vi.mock('./useNow', () => ({ useNow: () => Date.now() }))
+
+// La vraie feuille du compteur caméra, dont le test garde les props (pour cocher une série comme elle le fera).
+// `unloadable` : son chargement échoue (fichier pas encore en cache, sans réseau).
+const counterSheet = vi.hoisted(() => ({ props: null as RepCounterSheetProps | null, unloadable: false }))
+vi.mock('./counter/RepCounterSheet', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./counter/RepCounterSheet')>()
+  const { createElement } = await import('react')
+  const RepCounterSheet = (props: RepCounterSheetProps) => {
+    counterSheet.props = props
+    return createElement(actual.RepCounterSheet, props)
+  }
+  return {
+    ...actual,
+    get RepCounterSheet() {
+      if (counterSheet.unloadable) throw new TypeError('Failed to fetch dynamically imported module')
+      return RepCounterSheet
+    },
+  }
+})
+
+// Le moteur de squelette du compteur, qui se charge dès l'ouverture de la feuille : factice, jamais MediaPipe.
+const pose = vi.hoisted(() => ({ engines: [] as { readonly detect: Mock; readonly close: Mock }[] }))
+vi.mock('./counter/pose-engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./counter/pose-engine')>()),
+  openPoseEngine: () => {
+    const engine = { delegate: 'CPU', detect: vi.fn(), close: vi.fn() }
+    pose.engines.push(engine)
+    return Promise.resolve(engine)
+  },
+}))
 
 const PROGRAM_ID = 'w-1'
 const SESSION_ID = 'w-2'
@@ -20,6 +53,9 @@ const SESSION_PATH = `/training/programs/${PROGRAM_ID}/sessions/${SESSION_ID}`
 
 afterEach(() => {
   skipRest()
+  counterSheet.props = null
+  counterSheet.unloadable = false
+  pose.engines = []
 })
 
 /** Programme fait main : une figure (tractions poitrine à la barre), puis des pompes et des dips. */
@@ -360,5 +396,143 @@ describe('séance en direct', () => {
 
     await router.navigate('/workout/inconnue')
     expect(await screen.findByText('Séance introuvable')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Séance libre en cours : pompes (3 séries, la première faite), gainage, pistol squat, tractions négatives,
+ * et un squat déjà fini.
+ */
+async function saveCountingWorkout(): Promise<Workout> {
+  const newId = sequentialIds('c')
+  let workout = freeWorkout({ date: '2026-10-10', now: new Date().toISOString(), newId })
+  for (const id of ['pushup', 'plank', 'pistol', 'pullup-negative', 'squat']) {
+    workout = addExercise(workout, id, {
+      restSec: 90,
+      newId,
+      sets: id === 'pushup' ? 3 : 1,
+      block: 'strength',
+    })
+  }
+  const [pushups, , , , squats] = workout.exercises
+  const at = new Date().toISOString()
+  workout = completeSet(workout, pushups!.id, pushups!.sets[0]!.id, { reps: 8 }, at)
+  workout = completeSet(workout, squats!.id, squats!.sets[0]!.id, { reps: 15 }, at)
+  return startWorkout(workout)
+}
+
+/** Ouvre la séance de saveCountingWorkout. */
+async function openCountingWorkout() {
+  let id = ''
+  const app = await renderApp('/training', {
+    setup: async () => {
+      id = (await saveCountingWorkout()).id
+    },
+  })
+  await app.router.navigate(`/workout/${id}`)
+  expect(await screen.findByRole('article', { name: 'Pompes' })).toBeInTheDocument()
+  return app
+}
+
+describe('compteur caméra', () => {
+  it('se propose sur un exercice compté qui a une série à faire, et s’ouvre sur cette série', async () => {
+    const { user } = await openCountingWorkout()
+    const pushups = screen.getByRole('article', { name: 'Pompes' })
+    const count = within(pushups).getByRole('button', { name: 'Compter à la caméra : Pompes' })
+    expect(count).toHaveTextContent('Compter à la caméra')
+    // Au chrono, pas compté, ou plus rien à faire : pas de bouton.
+    for (const name of [
+      'Gainage sur les avant-bras',
+      'Pistol squat',
+      'Tractions négatives',
+      'Squat au poids du corps',
+    ]) {
+      const card = screen.getByRole('article', { name })
+      expect(within(card).queryByRole('button', { name: /^Compter à la caméra/ })).not.toBeInTheDocument()
+    }
+
+    await user.click(count)
+    const sheet = await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    // La première fois pour les pompes : où poser le téléphone, la caméra n'est pas encore ouverte.
+    expect(within(sheet).getByRole('heading', { name: 'Place ton téléphone' })).toBeInTheDocument()
+    expect(counterSheet.props).toMatchObject({
+      exerciseName: 'Pompes',
+      variant: { movement: 'pushup', overrides: {} },
+    })
+    // Le moteur se prépare pendant les conseils ; il n'analyse rien tant que la caméra n'est pas ouverte.
+    await waitFor(() => {
+      expect(pose.engines).toHaveLength(1)
+    })
+    const engine = pose.engines[0]!
+    await user.click(within(sheet).getByRole('button', { name: 'Fermer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Pompes, série 2' })).not.toBeInTheDocument()
+    })
+    // Feuille fermée : moteur libéré.
+    expect(engine.close).toHaveBeenCalledTimes(1)
+    expect(engine.detect).not.toHaveBeenCalled()
+    // Rien n'a été coché.
+    expect((await activeWorkout()).exercises[0]?.sets.map((set) => set.done)).toEqual([true, false, false])
+  })
+
+  it('coche la série comptée : repos raccourci du temps déjà passé, série suivante rendue', async () => {
+    const { user } = await openCountingWorkout()
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    const props = counterSheet.props!
+    const [, second, third] = props.exercise.sets
+
+    // Dernière répétition il y a 30 s : il reste 1 min de repos sur 1 min 30.
+    let next = await act(() => props.onComplete(second!, { reps: 11 }, Date.now() - 30_000))
+    expect(next).toMatchObject({ index: 2, set: { id: third!.id }, exercise: { id: props.exercise.id } })
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toHaveTextContent('1:00')
+    const saved = (await activeWorkout()).exercises[0]?.sets[1]
+    expect(saved).toMatchObject({ done: true, reps: 11 })
+
+    // Sans heure de fin : le repos entier ; puis la série d'un autre exercice.
+    next = await act(() => props.onComplete(third!, { reps: 10 }))
+    expect(next?.exercise.exerciseId).toBe('plank')
+    expect(screen.getByRole('timer', { name: 'Repos restant' })).toHaveTextContent('1:30')
+  })
+
+  it('ne se charge pas (hors ligne, pas encore en cache) : la séance reste, et le prochain appui réessaie', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { user } = await openCountingWorkout()
+    counterSheet.unloadable = true
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    const failed = await screen.findByRole('dialog', { name: 'Compteur caméra' })
+    expect(within(failed).getByRole('alert')).toHaveTextContent(
+      'Le compteur n’a pas pu démarrer. S’il n’a encore jamais servi, connecte-toi une fois à Internet pour le télécharger.',
+    )
+    expect(screen.getByRole('article', { name: 'Pompes' })).toBeInTheDocument()
+    expectFrenchSpacing()
+
+    // Fermé, puis rouvert une fois en ligne : le compteur se charge.
+    await user.click(within(failed).getByRole('button', { name: 'Fermer' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Compteur caméra' })).not.toBeInTheDocument()
+    })
+    counterSheet.unloadable = false
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    expect(await screen.findByRole('dialog', { name: 'Pompes, série 2' })).toBeInTheDocument()
+    expect((await activeWorkout()).exercises[0]?.sets.map((set) => set.done)).toEqual([true, false, false])
+  })
+
+  it('ne lance pas de repos déjà écoulé, et rejette quand l’enregistrement échoue', async () => {
+    const { user } = await openCountingWorkout()
+    await user.click(screen.getByRole('button', { name: 'Compter à la caméra : Pompes' }))
+    await screen.findByRole('dialog', { name: 'Pompes, série 2' })
+    const props = counterSheet.props!
+    const [, second, third] = props.exercise.sets
+
+    await act(() => props.onComplete(second!, { reps: 9 }, Date.now() - 120_000))
+    expect(screen.queryByRole('timer', { name: 'Repos restant' })).not.toBeInTheDocument()
+
+    await db.workouts.clear()
+    let failure: unknown = null
+    await act(async () => {
+      failure = await props.onComplete(third!, { reps: 9 }).catch((error: unknown) => error)
+    })
+    expect(failure).toEqual(new Error('Séance introuvable.'))
   })
 })
