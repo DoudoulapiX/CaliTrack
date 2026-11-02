@@ -191,6 +191,25 @@
   color: var(--ct-accent);
 }
 
+/* Écran de chargement : l'anneau de l'icône se remplit (décalage de départ = partie remplie, appIconArc()). */
+.app-icon-fill {
+  animation: app-icon-fill 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes app-icon-fill {
+  from {
+    stroke-dashoffset: 579.1;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

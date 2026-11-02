@@ -516,3 +516,44 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   await expect(weight).toContainText('79,5 kg')
   expect(errors).toEqual([])
 })
+
+test('ouverture : l’anneau de l’icône se remplit, puis l’accueil s’affiche', async ({ page }) => {
+  const errors = collectErrors(page)
+  // Note chaque début et fin du remplissage de l'anneau, et le moment où l'accueil apparaît.
+  await page.addInitScript(() => {
+    const log: string[] = []
+    Object.assign(window, { __introLog: log })
+    for (const type of ['animationstart', 'animationend']) {
+      document.addEventListener(
+        type,
+        (event) => {
+          if ((event as AnimationEvent).animationName === 'app-icon-fill') log.push(type)
+        },
+        true,
+      )
+    }
+    new MutationObserver((_, observer) => {
+      if (document.querySelector('h1')) {
+        log.push('app')
+        observer.disconnect()
+      }
+    }).observe(document, { childList: true, subtree: true })
+  })
+
+  await page.goto('./')
+  await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
+  await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+  const log = await page.evaluate(() => (window as unknown as { __introLog: string[] }).__introLog)
+  expect(log).toEqual(['animationstart', 'animationend', 'app'])
+  expect(errors).toEqual([])
+})
+
+test.describe('avec « Réduire les animations »', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' } })
+
+  test('ouverture : l’accueil s’affiche sans attendre l’anneau', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible({ timeout: 3000 })
+    await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+  })
+})

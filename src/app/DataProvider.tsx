@@ -34,10 +34,20 @@ function ThemeApplier({ settings }: { settings: AppSettings }) {
   return null
 }
 
+/**
+ * Au-delà, l'écran de chargement laisse place à l'appli même si la fin du remplissage de l'anneau n'est jamais
+ * annoncée (animation suspendue quand l'appli passe en arrière-plan).
+ */
+export const INTRO_TIMEOUT_MS = 1500
+
+/** Remplissage de l'anneau à l'ouverture : pas commencé, en cours, fini. */
+type Intro = 'waiting' | 'playing' | 'done'
+
 /** Prépare la base locale et fournit réglages et profil à toute l'appli. */
 export function DataProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<unknown>(null)
+  const [intro, setIntro] = useState<Intro>('waiting')
 
   useEffect(() => {
     let cancelled = false
@@ -55,11 +65,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (intro !== 'playing') return
+    const timer = window.setTimeout(() => {
+      setIntro('done')
+    }, INTRO_TIMEOUT_MS)
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [intro])
+
   const settings = useLiveQuery(() => (ready ? db.settings.get('app') : undefined), [ready])
   const profile = useLiveQuery(() => (ready ? db.profile.get('me') : undefined), [ready])
 
   if (error) return <StorageError error={error} />
-  if (!settings || !profile) return <Splash />
+  // Une animation commencée va jusqu'au bout ; si elle n'a pas démarré (données déjà prêtes, ou navigateur
+  // sans animation), l'appli s'ouvre sans l'attendre.
+  if (!settings || !profile || intro === 'playing') {
+    return (
+      <Splash
+        intro={intro !== 'done'}
+        onIntroStart={() => {
+          setIntro((current) => (current === 'waiting' ? 'playing' : current))
+        }}
+        onIntroEnd={() => {
+          setIntro('done')
+        }}
+      />
+    )
+  }
 
   return (
     <SettingsContext value={settings}>
