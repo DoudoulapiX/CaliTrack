@@ -516,3 +516,46 @@ test('accueil : cartes, pesée, réglages appliqués, puis sauvegarde téléchar
   await expect(weight).toContainText('79,5 kg')
   expect(errors).toEqual([])
 })
+
+test('ouverture : l’anneau de l’icône se remplit, puis l’accueil s’affiche', async ({ page }) => {
+  const errors = collectErrors(page)
+  // Note quand l'anneau apparaît (et s'il s'anime), puis quand l'accueil le remplace (horloge de la page).
+  await page.addInitScript(() => {
+    const intro: { ring?: number; animated?: boolean; app?: number } = {}
+    Object.assign(window, { __intro: intro })
+    new MutationObserver((_, observer) => {
+      const ring = document.querySelector('[data-testid="app-icon-fill"]')
+      if (ring && intro.ring === undefined) {
+        intro.ring = performance.now()
+        intro.animated = ring
+          .getAnimations()
+          .some((animation) => 'animationName' in animation && animation.animationName === 'app-icon-fill')
+      }
+      if (document.querySelector('h1')) {
+        intro.app = performance.now()
+        observer.disconnect()
+      }
+    }).observe(document, { childList: true, subtree: true })
+  })
+
+  await page.goto('./')
+  await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
+  await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+  const intro = await page.evaluate(
+    () => (window as unknown as { __intro: { ring?: number; animated?: boolean; app?: number } }).__intro,
+  )
+  // L'anneau s'est animé et a eu le temps de se remplir (600 ms) avant que l'accueil le remplace.
+  expect(intro.animated).toBe(true)
+  expect(intro.app! - intro.ring!).toBeGreaterThanOrEqual(550)
+  expect(errors).toEqual([])
+})
+
+test.describe('avec « Réduire les animations »', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' } })
+
+  test('ouverture : l’accueil s’affiche sans attendre l’anneau', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible({ timeout: 3000 })
+    await expect(page.getByText('Chargement…', { exact: true })).toHaveCount(0)
+  })
+})

@@ -24,6 +24,10 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
   Les écrans du coach IA sont dans `src/features/coach/`, le compteur caméra (caméra, MediaPipe, feuille)
   dans `src/features/workout/counter/`.
 - `src/ui/` : composants communs. `src/lib/` : dates, unités, typographie, couleurs.
+- Icône de l'appli (anneau de gym) : dessinée dans `src/lib/app-icon.ts`, reprise par l'écran de chargement
+  (`AppIconMark`, anneau qui se remplit à l'ouverture, pris par `getAnimations()` dès l'affichage : WebKit
+  n'annonce `animationstart` qu'au rendu suivant, parfois après le chargement) ; après un changement, `npm run data:icons` refait
+  `public/favicon.svg` et `public/icons/` (`app-icon.test.ts` vérifie qu'ils sont à jour).
 - `src/test/` : base de test, `renderApp`, jeux de données (`fixtures.ts`) ; `src/test/reps/` : squelettes
   de vraies séries (jamais d'image), rejoués par les tests du compteur.
 
