@@ -315,7 +315,11 @@ describe('discussion avec le coach', () => {
     expect(await storedCount()).toBe(0)
 
     await user.click(screen.getByRole('button', { name: 'Réessayer' }))
-    expect(await screen.findByText(CHAT_ANSWER)).toBeInTheDocument()
+    // Recherche et vérification dans le même tour : la bulle écrite en flux est remplacée par la réponse
+    // enregistrée, et findByText (qui laisse passer un tour après avoir trouvé) pourrait rendre l'ancienne.
+    await waitFor(() => {
+      expect(screen.getByText(CHAT_ANSWER)).toBeInTheDocument()
+    })
     await answered()
     await waitFor(async () => {
       expect(await storedCount()).toBe(2)
