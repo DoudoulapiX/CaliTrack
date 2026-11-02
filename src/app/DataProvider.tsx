@@ -35,16 +35,24 @@ function ThemeApplier({ settings }: { settings: AppSettings }) {
 }
 
 /**
- * Au-delà, l'écran de chargement laisse place à l'appli même si la fin du remplissage de l'anneau n'est jamais
- * annoncée (animation suspendue quand l'appli passe en arrière-plan).
+ * Durée du remplissage de l'anneau (`.app-icon-fill` dans index.css, 600 ms) et une image de plus : l'appli
+ * s'ouvre alors même si la fin n'a pas été annoncée. WebKit annonce les animations au rendu suivant, qui tarde
+ * pendant le chargement ; l'annonce de fin ne sert qu'à ouvrir plus tôt (« Réduire les animations »).
  */
-export const INTRO_TIMEOUT_MS = 1500
+export const INTRO_TIMEOUT_MS = 650
 
 /** Remplissage de l'anneau à l'ouverture : pas commencé, en cours, fini. */
 type Intro = 'waiting' | 'playing' | 'done'
 
 /** Prépare la base locale et fournit réglages et profil à toute l'appli. */
-export function DataProvider({ children }: { children: ReactNode }) {
+export function DataProvider({
+  children,
+  introTimeoutMs = INTRO_TIMEOUT_MS,
+}: {
+  children: ReactNode
+  /** Seulement pour les tests : attente maximale de la fin du remplissage. */
+  introTimeoutMs?: number
+}) {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const [intro, setIntro] = useState<Intro>('waiting')
@@ -69,11 +77,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (intro !== 'playing') return
     const timer = window.setTimeout(() => {
       setIntro('done')
-    }, INTRO_TIMEOUT_MS)
+    }, introTimeoutMs)
     return () => {
       window.clearTimeout(timer)
     }
-  }, [intro])
+  }, [intro, introTimeoutMs])
 
   const settings = useLiveQuery(() => (ready ? db.settings.get('app') : undefined), [ready])
   const profile = useLiveQuery(() => (ready ? db.profile.get('me') : undefined), [ready])

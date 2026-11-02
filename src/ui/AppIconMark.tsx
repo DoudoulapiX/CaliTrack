@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef } from 'react'
 import { APP_ICON, APP_ICON_BG, appIconArc } from '@/lib/app-icon'
+import { cssAnimations } from '@/lib/motion'
 
 /** Arrondi des coins, comme celui des icônes d'iOS. */
 const RADIUS = 112
@@ -28,15 +29,30 @@ export function AppIconMark({
     callbacks.current = { onFillStart, onFillEnd }
   })
 
+  // Le navigateur crée l'animation au premier calcul des styles : on la prend tout de suite, sans attendre
+  // `animationstart`, que WebKit n'envoie qu'au rendu suivant, parfois après le chargement des données (l'appli
+  // s'ouvrait alors en coupant l'anneau). Les événements restent écoutés là où getAnimations manque (tests).
   // Écouteurs natifs : React ne suit `animationstart` que sous un nom préfixé là où AnimationEvent manque.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const fill = fillRef.current
     if (!fill || !animate) return
-    const start = () => callbacks.current.onFillStart?.()
-    const end = () => callbacks.current.onFillEnd?.()
+    let active = true
+    const start = () => {
+      if (active) callbacks.current.onFillStart?.()
+    }
+    const end = () => {
+      if (active) callbacks.current.onFillEnd?.()
+    }
     fill.addEventListener('animationstart', start)
     fill.addEventListener('animationend', end)
+    const [animation] = cssAnimations(fill, 'app-icon-fill')
+    if (animation) {
+      start()
+      // Rejetée si l'animation est annulée (écran de chargement retiré) : rien à faire.
+      animation.finished.then(end, () => undefined)
+    }
     return () => {
+      active = false
       fill.removeEventListener('animationstart', start)
       fill.removeEventListener('animationend', end)
     }
