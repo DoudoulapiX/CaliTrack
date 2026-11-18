@@ -1,4 +1,4 @@
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages'
+import type { AiContent } from '@/content/ai/client'
 import { z } from 'zod'
 import { choice } from '@/content/ai/structured'
 import { computeTargets, type MacroTargets } from '@/content/nutrition/targets'
@@ -8,9 +8,9 @@ import { buildCoachContext, type CoachData, type ContextSection } from './contex
 import { COACH_RULES, promptText } from './prompt'
 
 /*
- * Coach physique : Claude regarde des photos et propose une phase (sèche, maintien, prise de masse) avec
+ * Coach physique : ChatGPT regarde des photos et propose une phase (sèche, maintien, prise de masse) avec
  * une fourchette de masse grasse. Les objectifs chiffrés viennent toujours de computeTargets, jamais de
- * Claude, et une phase risquée est ramenée au maintien (guardedPhase).
+ * ChatGPT, et une phase risquée est ramenée au maintien (guardedPhase).
  */
 
 /** Les phases, dans l'ordre de l'écran des objectifs. */
@@ -33,7 +33,7 @@ export const BODY_PHOTO_MAX = 3
 export type BodyGate = 'noKey' | 'noBirthYear' | 'minor' | 'noHeight' | 'noWeight' | null
 
 /**
- * Le coach physique demande une clé Claude et un adulte dont on connaît la taille et le poids. Avec la
+ * Le coach physique demande une clé OpenAI et un adulte dont on connaît la taille et le poids. Avec la
  * seule année de naissance, l'âge atteint cette année peut ne pas l'être encore : on retire un an, pour
  * être sûr que la personne a 18 ans.
  */
@@ -52,11 +52,11 @@ export function bodyCoachGate(args: {
 }
 
 /* ------------------------------------------------------------------ */
-/* Réponse de Claude                                                   */
+/* Réponse de ChatGPT                                                   */
 /* ------------------------------------------------------------------ */
 
 /**
- * Ce que Claude renvoie (forme SOUPLE : l'API ne contrôle ni les choix ni les bornes, ramenés ensuite par
+ * Ce que ChatGPT renvoie (forme SOUPLE : l'API ne contrôle ni les choix ni les bornes, ramenés ensuite par
  * cleanBodyReview). Les descriptions sont les consignes de chaque champ.
  */
 export const bodyReviewOutput = z.object({
@@ -97,7 +97,7 @@ const SUMMARY_MAX = 600
 const LINE_MAX = 200
 const LINES_MAX = 4
 
-/** Un texte de Claude sans espaces autour, coupé à `max` caractères (sans couper un caractère en deux). */
+/** Un texte de ChatGPT sans espaces autour, coupé à `max` caractères (sans couper un caractère en deux). */
 export function cutText(text: string, max: number): string {
   let cut = text.trim().slice(0, max)
   if (/[\ud800-\udbff]$/.test(cut)) cut = cut.slice(0, -1)
@@ -112,10 +112,10 @@ const lines = (items: readonly string[]) =>
 
 const bodyFatBound = (value: number) => Math.round(Math.min(BODY_FAT.max, Math.max(BODY_FAT.min, value)))
 
-/** La réponse de Claude ramenée à des valeurs sûres. */
+/** La réponse de ChatGPT ramenée à des valeurs sûres. */
 export interface CleanBodyReview {
   suggestedPhase: NutritionPhase
-  /** Masse grasse estimée, en % entiers ; null si Claude ne l'a pas estimée. */
+  /** Masse grasse estimée, en % entiers ; null si ChatGPT ne l'a pas estimée. */
   bodyFat: { low: number; high: number } | null
   summary: string
   observations: string[]
@@ -266,12 +266,12 @@ const BODY_RULES = `Analyse physique :
 - Si les photos ne montrent pas un corps humain, ou pas assez pour l'analyser, mets readable à false et explique pourquoi dans problem, en une phrase.`
 
 /**
- * La demande à Claude : les règles du coach et de l'analyse, puis les photos (JPEG), les données utiles
+ * La demande à ChatGPT : les règles du coach et de l'analyse, puis les photos (JPEG), les données utiles
  * et la phase actuelle. Aucune espace insécable (promptText).
  */
 export function bodyPrompt(args: { data: CoachData; photos: readonly BodyPhoto[] }): {
   system: string
-  content: ContentBlockParam[]
+  content: AiContent[]
 } {
   const { data, photos } = args
   const phase = data.nutrition.phase
@@ -284,10 +284,7 @@ export function bodyPrompt(args: { data: CoachData; photos: readonly BodyPhoto[]
   return {
     system: promptText(`${COACH_RULES}\n\n${BODY_RULES}`),
     content: [
-      ...photos.map((photo): ContentBlockParam => ({
-        type: 'image',
-        source: { type: 'base64', media_type: 'image/jpeg', data: photo.base64 },
-      })),
+      ...photos.map((photo): AiContent => ({ type: 'image', jpegBase64: photo.base64 })),
       { type: 'text', text: promptText(text) },
     ],
   }

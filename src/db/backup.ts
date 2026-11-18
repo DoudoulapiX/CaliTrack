@@ -10,7 +10,7 @@ import {
   type CaliTrackDB,
   type DataTableName,
 } from './db'
-import { settingsV1toV2 } from './migrations'
+import { settingsV1toV2, settingsV3toV4 } from './migrations'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
 import type { Snapshot } from './types'
@@ -20,8 +20,9 @@ export const BACKUP_APP = 'CaliTrack'
  * Version du format de fichier. À augmenter (avec une conversion dans upgradeTables) si le format change.
  * 1 : étape 1 (entraînement). 2 : nutrition et Oura (réglages complétés, nouvelles tables).
  * 3 : tables du coach IA (coachDays, bodyReviews, pantryItems, coachMessages).
+ * 4 : l'IA passe à OpenAI (modèle d'IA des réglages converti).
  */
-export const BACKUP_FORMAT = 3
+export const BACKUP_FORMAT = 4
 /** Nombre de copies de sécurité internes conservées. */
 export const MAX_SNAPSHOTS = 3
 
@@ -134,14 +135,17 @@ const headerSchema = z.object({
   tables: z.record(z.string(), z.unknown()),
 })
 
-/** 1 → 2 : réglages complétés (modèle d'IA, Oura) et nouveaux onglets et cartes. */
-function settingsTableV1toV2(tables: Record<string, unknown>): Record<string, unknown> {
+/** Les réglages d'un fichier passés par une conversion (les lignes mal formées restent telles quelles). */
+function convertSettings(
+  tables: Record<string, unknown>,
+  convert: (row: Record<string, unknown>) => Record<string, unknown>,
+): Record<string, unknown> {
   const settings = tables.settings
   return {
     ...tables,
     settings: Array.isArray(settings)
       ? settings.map((row: unknown) =>
-          row !== null && typeof row === 'object' ? settingsV1toV2(row as Record<string, unknown>) : row,
+          row !== null && typeof row === 'object' ? convert(row as Record<string, unknown>) : row,
         )
       : settings,
   }
@@ -153,8 +157,11 @@ function settingsTableV1toV2(tables: Record<string, unknown>): Record<string, un
  */
 export function upgradeTables(format: number, tables: Record<string, unknown>): Record<string, unknown> {
   let upgraded = tables
-  if (format < 2) upgraded = settingsTableV1toV2(upgraded)
+  // 1 → 2 : réglages complétés (modèle d'IA, Oura) et nouveaux onglets et cartes.
+  if (format < 2) upgraded = convertSettings(upgraded, settingsV1toV2)
   // 2 → 3 : quatre tables du coach, absentes des fichiers plus anciens (lues comme vides).
+  // 3 → 4 : le modèle Claude choisi prend son remplaçant chez OpenAI.
+  if (format < 4) upgraded = convertSettings(upgraded, settingsV3toV4)
   return upgraded
 }
 
@@ -258,7 +265,7 @@ export async function restoreSnapshot(id: string, database: CaliTrackDB = defaul
 
 /**
  * Efface toutes les données (les tables de l'appareil comprises : copies de sécurité internes, clé d'IA,
- * jeton Oura, compteur des demandes à Claude) et repart de zéro.
+ * jeton Oura, compteur des demandes à ChatGPT) et repart de zéro.
  */
 export async function resetAllData(database: CaliTrackDB = defaultDb): Promise<void> {
   const tables = [...dataTables(database), ...DEVICE_TABLES.map((name) => database.table(name))]

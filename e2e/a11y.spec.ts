@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
-import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, solidPng } from './nutrition-helpers'
+import { OPENAI_KEY, collectErrors, fakeOpenAi, onboard, solidPng } from './nutrition-helpers'
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
 import { usePersonCamera, useReplayedPose, watchOutside } from './person-camera'
 import { openCounter, PULLUPS, SQUATS, startFreeWorkout } from './rep-counter-helpers'
@@ -451,7 +451,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
             get: () => undefined,
           })
         })
-        await fakeClaude(page)
+        await fakeOpenAi(page)
         await fakeOura(page)
         await onboard(page)
 
@@ -495,10 +495,10 @@ for (const colorScheme of ['dark', 'light'] as const) {
           await expectAccessible(page, path)
         }
 
-        // La photo d'un repas, analysée par Claude (simulé), puis la correction d'un aliment.
-        await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+        // La photo d'un repas, analysée par ChatGPT (simulé), puis la correction d'un aliment.
+        await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
         await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-        await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+        await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
         await expectAccessible(page, 'clé enregistrée')
 
         // Les écrans du coach IA, la clé enregistrée (sans elle, ils renvoient aux réglages de l'IA), chacun

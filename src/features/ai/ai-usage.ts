@@ -5,7 +5,7 @@ import { db, type CaliTrackDB } from '@/db/db'
 import { today } from '@/lib/dates'
 
 /**
- * Ajoute une demande à Claude au compteur du mois, au prix du modèle qui a répondu. Rien sans jetons
+ * Ajoute une demande à ChatGPT au compteur du mois, au prix du modèle qui a répondu. Rien sans jetons
  * facturés (null : aucune réponse n'est revenue). Ne lève jamais d'erreur : le compteur n'est qu'une
  * estimation, il ne doit pas faire échouer la demande.
  */

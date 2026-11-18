@@ -93,7 +93,7 @@ export const settingsSchema = z.object({
   activeGradeScaleId: z.string(),
   climbingGym: z.string(),
   currentLocationId: z.string().nullable(),
-  aiModel: z.enum(['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']),
+  aiModel: z.enum(['gpt-6.2-astra', 'gpt-6.2-sol', 'gpt-6-luna']),
   ouraClientId: z.string(),
   ouraRelayUrl: z.string(),
   createdAt: timestamp,
@@ -526,7 +526,7 @@ export const ouraDaySchema = z.object({
 })
 
 /*
- * Coach IA. Ces schémas décrivent nos propres données : z.enum y est permis. Les réponses de Claude sont
+ * Coach IA. Ces schémas décrivent nos propres données : z.enum y est permis. Les réponses de ChatGPT sont
  * lues avec des schémas plus lâches, puis nettoyées avant d'arriver ici.
  */
 
@@ -608,7 +608,7 @@ export const coachMessageSchema = z.object({
   createdAt: timestamp,
 })
 
-/** Compteur des demandes à Claude, par mois : il reste sur l'appareil (hors des sauvegardes). */
+/** Compteur des demandes à ChatGPT, par mois : il reste sur l'appareil (hors des sauvegardes). */
 export const aiUsageSchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
   calls: z.number().int().min(0),

@@ -1,26 +1,27 @@
 import {
   errorResponse,
-  fakeAnthropicFetch,
+  fakeOpenAiFetch,
   messageResponse,
   PLATE_ESTIMATE,
   streamResponse,
-} from '@/test/anthropic'
+  usageWith,
+} from '@/test/openai'
 import { entryFromEstimate } from '@/db/nutrition'
 import { foodEntrySchema } from '@/db/schema'
 import { cleanItems, estimateMealPhoto, type MealPhotoRequest } from './meal-photo'
 
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
 /** Les jetons facturés d'une réponse enregistrée (messageResponse). */
 const USAGE = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
 
 function request(fetchImpl: typeof fetch, patch: Partial<MealPhotoRequest> = {}): MealPhotoRequest {
-  return { apiKey: KEY, model: 'claude-sonnet-5-5', imageBase64: 'SU1BR0U=', note: '', fetchImpl, ...patch }
+  return { apiKey: KEY, model: 'gpt-6.2-astra', imageBase64: 'SU1BR0U=', note: '', fetchImpl, ...patch }
 }
 
 describe('photo de repas', () => {
   it('envoie la photo et les précisions, puis lit les aliments estimés', async () => {
-    const { fetchImpl, requests } = fakeAnthropicFetch(messageResponse(PLATE_ESTIMATE))
+    const { fetchImpl, requests } = fakeOpenAiFetch(messageResponse(PLATE_ESTIMATE))
     const result = await estimateMealPhoto(request(fetchImpl, { note: '  cuit à l’huile d’olive ' }))
 
     expect(result).toEqual({
@@ -47,18 +48,18 @@ describe('photo de repas', () => {
     })
     expect(requests).toHaveLength(1)
     const [sent] = requests
-    expect(sent?.url).toBe('https://api.anthropic.com/v1/messages')
-    expect(sent?.headers.get('x-api-key')).toBe(KEY)
-    expect(sent?.headers.get('anthropic-dangerous-direct-browser-access')).toBe('true')
+    expect(sent?.url).toBe('https://api.openai.com/v1/responses')
+    expect(sent?.headers.get('authorization')).toBe(`Bearer ${KEY}`)
     expect(sent?.body).toMatchObject({
-      model: 'claude-sonnet-5-5',
-      output_config: { effort: 'low', format: { type: 'json_schema' } },
-      messages: [
+      model: 'gpt-6.2-astra',
+      reasoning: { effort: 'low' },
+      text: { format: { type: 'json_schema', strict: true } },
+      input: [
         {
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'SU1BR0U=' } },
-            { type: 'text', text: 'Estime ce repas. Précisions : cuit à l’huile d’olive' },
+            { type: 'input_image', image_url: 'data:image/jpeg;base64,SU1BR0U=', detail: 'auto' },
+            { type: 'input_text', text: 'Estime ce repas. Précisions : cuit à l’huile d’olive' },
           ],
         },
       ],
@@ -66,7 +67,7 @@ describe('photo de repas', () => {
   })
 
   it('dit quand la photo ne montre pas de repas', async () => {
-    const { fetchImpl } = fakeAnthropicFetch(
+    const { fetchImpl } = fakeOpenAiFetch(
       messageResponse({ isMeal: false, problem: 'La photo est trop sombre.', items: [] }),
       messageResponse({ isMeal: false, problem: ' ', items: [] }),
       messageResponse({ isMeal: true, problem: '', items: [] }),
@@ -83,22 +84,23 @@ describe('photo de repas', () => {
 
   it('reconnaît les erreurs de l’API', async () => {
     const cases: [Response, string][] = [
-      [errorResponse(401, 'authentication_error'), 'invalidKey'],
-      [errorResponse(403, 'permission_error'), 'invalidKey'],
-      [errorResponse(402, 'billing_error'), 'noCredit'],
-      [errorResponse(400, 'billing_error'), 'noCredit'],
-      [errorResponse(404, 'not_found_error'), 'model'],
-      [errorResponse(429, 'rate_limit_error'), 'busy'],
-      [errorResponse(529, 'overloaded_error'), 'busy'],
+      [errorResponse(401, 'invalid_api_key'), 'invalidKey'],
+      [errorResponse(403, 'unsupported_country_region_territory'), 'invalidKey'],
+      [errorResponse(402, 'payment_required'), 'noCredit'],
+      [errorResponse(429, 'insufficient_quota'), 'noCredit'],
+      [errorResponse(404, 'model_not_found'), 'model'],
+      [errorResponse(429, 'rate_limit_exceeded'), 'busy'],
+      [errorResponse(503, 'server_error'), 'busy'],
       [errorResponse(400, 'invalid_request_error'), 'failed'],
       [messageResponse(null, 'refusal'), 'refused'],
-      [messageResponse(PLATE_ESTIMATE, 'max_tokens'), 'failed'],
+      [messageResponse(null, 'content_filter'), 'refused'],
+      [messageResponse(PLATE_ESTIMATE, 'max_output_tokens'), 'failed'],
       [messageResponse({ réponse: 'pas le bon format' }), 'failed'],
     ]
     for (const [answer, problem] of cases) {
       // Une réponse revenue (code 200) est facturée, même inutilisable ; une erreur de l'API ne l'est pas.
       const usage = answer.status === 200 ? USAGE : null
-      const { fetchImpl } = fakeAnthropicFetch(answer)
+      const { fetchImpl } = fakeOpenAiFetch(answer)
       expect(await estimateMealPhoto(request(fetchImpl)), problem).toEqual({
         status: 'error',
         problem,
@@ -108,7 +110,7 @@ describe('photo de repas', () => {
   })
 
   it('signale l’absence de réseau, après un nouvel essai', async () => {
-    const { fetchImpl, requests } = fakeAnthropicFetch(
+    const { fetchImpl, requests } = fakeOpenAiFetch(
       new TypeError('Load failed'),
       new TypeError('Load failed'),
     )
@@ -133,30 +135,32 @@ describe('photo de repas', () => {
     expect(await pending).toEqual({ status: 'error', problem: 'cancelled', usage: null })
   })
 
-  it('demande la réponse en flux, au format JSON simple', async () => {
-    const { fetchImpl, requests } = fakeAnthropicFetch(messageResponse(PLATE_ESTIMATE))
+  it('demande la réponse en flux, au format JSON strict', async () => {
+    const { fetchImpl, requests } = fakeOpenAiFetch(messageResponse(PLATE_ESTIMATE))
     await estimateMealPhoto(request(fetchImpl))
     const body = requests[0]?.body as {
       stream: boolean
-      max_tokens: number
-      output_config: { format: object }
+      store: boolean
+      max_output_tokens: number
+      text: { format: object }
     }
     expect(body.stream).toBe(true)
-    expect(body.max_tokens).toBe(8000)
-    expect(Object.keys(body.output_config.format).sort()).toEqual(['schema', 'type'])
+    expect(body.store).toBe(false)
+    expect(body.max_output_tokens).toBe(8000)
+    expect(Object.keys(body.text.format).sort()).toEqual(['name', 'schema', 'strict', 'type'])
   })
 
   it('rend les jetons facturés, réflexion comprise', async () => {
-    const { fetchImpl } = fakeAnthropicFetch(
-      streamResponse(PLATE_ESTIMATE, 'end_turn', { usage: { cache_read_input_tokens: 300 } }),
+    const { fetchImpl } = fakeOpenAiFetch(
+      streamResponse(PLATE_ESTIMATE, 'completed', { usage: usageWith({ cached: 300 }) }),
     )
     const result = await estimateMealPhoto(request(fetchImpl))
     expect(result.status).toBe('ok')
     expect(result.usage).toEqual({ ...USAGE, cacheReadTokens: 300 })
   })
 
-  it('dit quand Claude refuse d’analyser la photo, sans le confondre avec un échec', async () => {
-    const { fetchImpl } = fakeAnthropicFetch(streamResponse(null, 'refusal'))
+  it('dit quand ChatGPT refuse d’analyser la photo, sans le confondre avec un échec', async () => {
+    const { fetchImpl } = fakeOpenAiFetch(streamResponse(null, 'refusal'))
     expect(await estimateMealPhoto(request(fetchImpl))).toEqual({
       status: 'error',
       problem: 'refused',

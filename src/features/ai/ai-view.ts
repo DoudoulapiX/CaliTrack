@@ -8,23 +8,23 @@ import { formatDollars } from '@/lib/units'
 /** Où régler l'IA dans l'appli. */
 export const AI_SETTINGS_PATH = '/more/ai'
 
-/** Ce qu'on dit quand Claude n'a pas pu répondre. */
+/** Ce qu'on dit quand ChatGPT n'a pas pu répondre. */
 export const AI_PROBLEM_TEXT: Record<AiProblem, string> = {
   offline: frenchSpacing('Pas de connexion : réessaie une fois connecté.'),
   invalidKey: frenchSpacing(
-    'Ta clé Claude est refusée : vérifie-la ou remplace-la dans les réglages de l’IA.',
+    'Ta clé OpenAI est refusée : vérifie-la ou remplace-la dans les réglages de l’IA.',
   ),
-  noCredit: frenchSpacing('Ton compte Claude n’a plus de crédit : recharge-le sur platform.claude.com.'),
-  busy: frenchSpacing('Claude est très demandé en ce moment : réessaie dans un instant.'),
+  noCredit: frenchSpacing('Ton compte OpenAI n’a plus de crédit : recharge-le sur platform.openai.com.'),
+  busy: frenchSpacing('ChatGPT est très demandé en ce moment : réessaie dans un instant.'),
   model: frenchSpacing(
     'Ce modèle n’est pas ouvert à ta clé : choisis-en un autre dans les réglages de l’IA.',
   ),
-  refused: 'Claude n’a pas voulu analyser cette photo. Essaie avec une autre.',
+  refused: 'ChatGPT n’a pas voulu analyser cette photo. Essaie avec une autre.',
   cancelled: 'Analyse annulée.',
   failed: 'L’analyse n’a pas abouti. Réessaie, ou note le repas à la main.',
 }
 
-/** Les demandes faites à Claude, pour dire ce qui n'a pas marché avec les bons mots. */
+/** Les demandes faites à ChatGPT, pour dire ce qui n'a pas marché avec les bons mots. */
 export type AiTask = 'photo' | 'daily' | 'body' | 'fridge' | 'ideas' | 'chat'
 
 /** Refus et échecs de chaque demande du coach (ceux de la photo de repas sont dans AI_PROBLEM_TEXT). */
@@ -34,11 +34,11 @@ const TASK_TEXT: Record<Exclude<AiTask, 'photo'>, { refused: string; failed: str
     failed: 'Le coach n’a pas pu préparer ton conseil. Réessaie.',
   },
   body: {
-    refused: 'Claude n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
+    refused: 'ChatGPT n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
     failed: 'L’analyse n’a pas abouti. Réessaie.',
   },
   fridge: {
-    refused: 'Claude n’a pas voulu analyser cette photo.',
+    refused: 'ChatGPT n’a pas voulu analyser cette photo.',
     failed: 'Impossible de lire cette photo. Réessaie avec une photo plus nette.',
   },
   ideas: {
@@ -51,7 +51,7 @@ const TASK_TEXT: Record<Exclude<AiTask, 'photo'>, { refused: string; failed: str
   },
 }
 
-/** Ce qu'on dit quand une demande à Claude n'a pas abouti. */
+/** Ce qu'on dit quand une demande à ChatGPT n'a pas abouti. */
 export function problemText(problem: AiProblem, task: AiTask): string {
   if (task === 'photo' || (problem !== 'refused' && problem !== 'failed')) {
     return frenchSpacing(AI_PROBLEM_TEXT[problem])
@@ -60,8 +60,8 @@ export function problemText(problem: AiProblem, task: AiTask): string {
 }
 
 /**
- * Le prix d'une demande ordinaire, avant de la faire : « Environ 8 centimes avec Opus 5.5 » (arrondi au
- * centime supérieur), ou « Moins d'un centime avec Haiku 5.5 ».
+ * Le prix d'une demande ordinaire, avant de la faire : « Environ 4 centimes avec GPT-6.2 Sol » (arrondi au
+ * centime supérieur), ou « Moins d'un centime avec GPT-6 Luna ».
  */
 export function costHintText(costUsd: number, modelLabel: string): string {
   const cents = costUsd * 100
@@ -77,9 +77,9 @@ export function costHintText(costUsd: number, modelLabel: string): string {
 export const DELETE_KEY_TEXT =
   'Le coach et l’analyse des photos ne marcheront plus tant que tu n’en colles pas une autre.'
 
-/** Ce qui est facturé, et ce qui part vers Anthropic. */
+/** Ce qui est facturé, et ce qui part vers OpenAI. */
 export const COST_PRIVACY_TEXT = frenchSpacing(
-  'Chaque demande au coach et chaque analyse de photo est facturée par Anthropic sur ton compte, en dollars. Tes photos et les données utiles au coach (séances, repas, sommeil, poids) sont envoyées à Anthropic ; CaliTrack ne garde pas les photos.',
+  'Chaque demande au coach et chaque analyse de photo est facturée par OpenAI sur ton compte, en dollars. Tes photos et les données utiles au coach (séances, repas, sommeil, poids) sont envoyées à OpenAI ; CaliTrack ne garde pas les photos.',
 )
 
 /** Le mois d'usage estimé, d'après MONTHLY_PLAN (content/ai/cost). */
@@ -88,11 +88,9 @@ export const MONTHLY_PLAN_TEXT = frenchSpacing(
 )
 
 /** Le compteur n'est qu'une estimation. */
-export const ESTIMATE_NOTE = frenchSpacing(
-  'Estimation calculée sur cet iPhone ; ta facture Anthropic fait foi.',
-)
+export const ESTIMATE_NOTE = frenchSpacing('Estimation calculée sur cet iPhone ; ta facture OpenAI fait foi.')
 
-/** Le coût d'un mois d'usage avec chaque modèle : « Opus 5.5 : environ 6,72 $ (choisi) ». */
+/** Le coût d'un mois d'usage avec chaque modèle : « GPT-6.2 Sol : environ 3,36 $ (choisi) ». */
 export function monthlyEstimateLines(chosen: AiModel): { model: AiModel; text: string; chosen: boolean }[] {
   return AI_MODEL_OPTIONS.map((option) => {
     const isChosen = option.id === chosen
@@ -124,7 +122,7 @@ export function canRetry(problem: AiProblem): boolean {
   return problem === 'offline' || problem === 'busy' || problem === 'failed'
 }
 
-/** La clé masquée, pour la reconnaître sans l'afficher (« sk-ant-…ghij »). */
+/** La clé masquée, pour la reconnaître sans l'afficher (« sk-proj-…ghij »). */
 export function maskKey(key: string): string {
-  return key.length <= 12 ? '••••' : `${key.slice(0, 7)}…${key.slice(-4)}`
+  return key.length <= 12 ? '••••' : `${key.slice(0, 8)}…${key.slice(-4)}`
 }

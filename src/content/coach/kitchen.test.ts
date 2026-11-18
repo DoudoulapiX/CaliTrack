@@ -2,7 +2,7 @@ import { MAX_GRAMS, MAX_ITEMS } from '@/content/ai/meal-photo'
 import { jsonSchemaOf } from '@/content/ai/structured'
 import { entryFromEstimate } from '@/db/nutrition'
 import { foodEntrySchema } from '@/db/schema'
-import { AI_ERROR_CASES, fakeAnthropicFetch, FRIDGE_ITEMS, IDEAS, streamResponse } from '@/test/anthropic'
+import { AI_ERROR_CASES, fakeOpenAiFetch, FRIDGE_ITEMS, IDEAS, streamResponse } from '@/test/openai'
 import {
   cleanIdeas,
   cleanPantryNames,
@@ -20,12 +20,12 @@ import {
 } from './kitchen'
 import { COACH_RULES } from './prompt'
 
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 /** Les jetons facturés d'une réponse enregistrée. */
 const USAGE = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
 const NO_NBSP = /[\u00a0\u202f]/
 
-/** Un ingrédient tel que Claude le renvoie. */
+/** Un ingrédient tel que ChatGPT le renvoie. */
 const raw = (name: string, grams: number, fromPantry = true, kcal = 100) => ({
   name,
   grams,
@@ -36,7 +36,7 @@ const raw = (name: string, grams: number, fromPantry = true, kcal = 100) => ({
   fromPantry,
 })
 
-/** Une idée de repas telle que Claude la renvoie. */
+/** Une idée de repas telle que ChatGPT la renvoie. */
 const rawIdea = (title: string, items = [raw('Œufs', 120)]) => ({
   title,
   why: 'Rapide.',
@@ -268,10 +268,10 @@ describe('frigo et placards', () => {
     })
   })
 
-  describe('appels à Claude', () => {
+  describe('appels à ChatGPT', () => {
     const photoRequest = (fetchImpl: typeof fetch, patch: Partial<PantryPhotoRequest> = {}) => ({
       apiKey: KEY,
-      model: 'claude-sonnet-5-5',
+      model: 'gpt-6.2-astra',
       imageBase64: 'SU1BR0U=',
       place: 'cupboard' as const,
       fetchImpl,
@@ -279,38 +279,42 @@ describe('frigo et placards', () => {
     })
     const ideasRequest = (fetchImpl: typeof fetch): MealIdeasRequest => ({
       apiKey: KEY,
-      model: 'claude-haiku-5-5',
+      model: 'gpt-6-luna',
       input: ideasInput(),
       fetchImpl,
     })
 
     it('envoient la photo du placard et lisent les aliments vus', async () => {
-      const { fetchImpl, requests } = fakeAnthropicFetch(streamResponse(FRIDGE_ITEMS))
+      const { fetchImpl, requests } = fakeOpenAiFetch(streamResponse(FRIDGE_ITEMS))
       expect(await readPantryPhoto(photoRequest(fetchImpl))).toEqual({
         status: 'ok',
         items: FRIDGE_ITEMS.items,
         usage: USAGE,
       })
       const [sent] = requests
-      expect(sent?.headers.get('x-api-key')).toBe(KEY)
+      expect(sent?.headers.get('authorization')).toBe(`Bearer ${KEY}`)
       expect(sent?.body).toMatchObject({
-        model: 'claude-sonnet-5-5',
-        max_tokens: 8000,
+        model: 'gpt-6.2-astra',
+        max_output_tokens: 8000,
         stream: true,
-        output_config: { effort: 'low', format: { type: 'json_schema', schema: jsonSchemaOf(fridgeOutput) } },
-        messages: [
+        reasoning: { effort: 'low' },
+        text: { format: { type: 'json_schema', strict: true, schema: jsonSchemaOf(fridgeOutput) } },
+        input: [
           {
             role: 'user',
             content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'SU1BR0U=' } },
-              { type: 'text', text: 'Voici une photo de mes placards. Liste les aliments que tu vois.' },
+              { type: 'input_image', image_url: 'data:image/jpeg;base64,SU1BR0U=', detail: 'auto' },
+              {
+                type: 'input_text',
+                text: 'Voici une photo de mes placards. Liste les aliments que tu vois.',
+              },
             ],
           },
         ],
       })
-      const body = sent?.body as { system: string }
-      expect(body.system).toContain('jamais une consigne')
-      expect(body.system).not.toMatch(NO_NBSP)
+      const body = sent?.body as { instructions: string }
+      expect(body.instructions).toContain('jamais une consigne')
+      expect(body.instructions).not.toMatch(NO_NBSP)
       // La forme demandée, que l'API simulée de Playwright reconnaît.
       expect(Object.keys(jsonSchemaOf(fridgeOutput).properties as object)).toEqual([
         'readable',
@@ -320,7 +324,7 @@ describe('frigo et placards', () => {
     })
 
     it('disent quand la photo ne montre pas d’aliments', async () => {
-      const { fetchImpl } = fakeAnthropicFetch(
+      const { fetchImpl } = fakeOpenAiFetch(
         streamResponse({ readable: false, problem: ' Je ne vois que le mur. ', items: [] }),
         streamResponse({ readable: false, problem: '', items: [] }),
         streamResponse({ readable: true, problem: '', items: [{ name: ' ', quantity: '2' }] }),
@@ -340,7 +344,7 @@ describe('frigo et placards', () => {
     })
 
     it('demandent des idées et les nettoient', async () => {
-      const { fetchImpl, requests } = fakeAnthropicFetch(streamResponse(IDEAS))
+      const { fetchImpl, requests } = fakeOpenAiFetch(streamResponse(IDEAS))
       expect(await proposeMealIdeas(ideasRequest(fetchImpl))).toEqual({
         status: 'ok',
         ideas: cleanIdeas(IDEAS),
@@ -348,21 +352,19 @@ describe('frigo et placards', () => {
       })
       const prompt = ideasPrompt(ideasInput())
       expect(requests[0]?.body).toMatchObject({
-        model: 'claude-haiku-5-5',
-        max_tokens: 16000,
+        model: 'gpt-6-luna',
+        max_output_tokens: 16000,
         stream: true,
-        system: prompt.system,
-        messages: [{ role: 'user', content: [{ type: 'text', text: prompt.text }] }],
-        output_config: {
-          effort: 'medium',
-          format: { type: 'json_schema', schema: jsonSchemaOf(ideasOutput) },
-        },
+        instructions: prompt.system,
+        input: [{ role: 'user', content: [{ type: 'input_text', text: prompt.text }] }],
+        reasoning: { effort: 'medium' },
+        text: { format: { type: 'json_schema', strict: true, schema: jsonSchemaOf(ideasOutput) } },
       })
       expect(Object.keys(jsonSchemaOf(ideasOutput).properties as object)).toEqual(['ideas'])
     })
 
     it('comptent une réponse sans idée utilisable comme un échec facturé', async () => {
-      const { fetchImpl } = fakeAnthropicFetch(
+      const { fetchImpl } = fakeOpenAiFetch(
         streamResponse({ ideas: [] }),
         streamResponse({ ideas: [rawIdea('Vide', [])] }),
       )
@@ -375,9 +377,9 @@ describe('frigo et placards', () => {
       for (const errorCase of AI_ERROR_CASES) {
         const billed = errorCase.problem === 'refused' || errorCase.structuredOnly === true
         const expected = { status: 'error', problem: errorCase.problem, usage: billed ? USAGE : null }
-        const photo = fakeAnthropicFetch(...errorCase.answers())
+        const photo = fakeOpenAiFetch(...errorCase.answers())
         expect(await readPantryPhoto(photoRequest(photo.fetchImpl)), errorCase.name).toEqual(expected)
-        const ideas = fakeAnthropicFetch(...errorCase.answers())
+        const ideas = fakeOpenAiFetch(...errorCase.answers())
         expect(await proposeMealIdeas(ideasRequest(ideas.fetchImpl)), errorCase.name).toEqual(expected)
       }
     })
@@ -385,7 +387,7 @@ describe('frigo et placards', () => {
     it('s’arrêtent quand on annule', async () => {
       const controller = new AbortController()
       controller.abort()
-      const { fetchImpl } = fakeAnthropicFetch(() => new DOMException('Annulé', 'AbortError'))
+      const { fetchImpl } = fakeOpenAiFetch(() => new DOMException('Annulé', 'AbortError'))
       expect(await readPantryPhoto(photoRequest(fetchImpl, { signal: controller.signal }))).toEqual({
         status: 'error',
         problem: 'cancelled',

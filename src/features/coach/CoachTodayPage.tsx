@@ -70,7 +70,7 @@ type Phase = { kind: 'idle' } | { kind: 'asking' } | { kind: 'problem'; problem:
 /**
  * Coach du jour : on dit au coach comment on se sent ; d'après la bague, les séances récentes et la
  * semaine à venir, il valide la séance prévue, l'allège ou conseille le repos (des conseils pour la
- * journée quand rien n'est prévu). Claude n'est appelé qu'au toucher de « Demander au coach ».
+ * journée quand rien n'est prévu). ChatGPT n'est appelé qu'au toucher de « Demander au coach ».
  */
 export function CoachTodayPage() {
   const apiKey = useAiKey()

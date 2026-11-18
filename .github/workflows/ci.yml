@@ -16,7 +16,9 @@ permissions:
 jobs:
   check:
     name: Vérifications
-    runs-on: ubuntu-latest
+    # Ubuntu 24.04 et non ubuntu-latest : passé en 26.04, ubuntu-latest n'accepte plus les navigateurs de
+    # Playwright 1.57 (« Playwright does not support chromium on ubuntu26.04-x64 »).
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5

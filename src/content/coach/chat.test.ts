@@ -1,6 +1,6 @@
 import { CHAT_MAX_STORED } from '@/db/coach'
 import type { CoachMessage } from '@/db/types'
-import { coachData } from '@/test/anthropic'
+import { coachData } from '@/test/openai'
 import { coachMessage } from '@/test/fixtures'
 import { CHAT_DRAFT_MAX, CHAT_RULES, CHAT_WINDOW, chatSystem, chatWindow, plainChatText } from './chat'
 import { ALL_SECTIONS, buildCoachContext } from './context'
@@ -100,16 +100,12 @@ describe('fenêtre de la discussion', () => {
 })
 
 describe('message système de la discussion', () => {
-  it('pose les règles, puis les données du coach en cache', () => {
+  it('pose les règles, puis les données du coach (début commun gardé en cache)', () => {
     const data = coachData()
     const system = chatSystem(data)
-    expect(system).toEqual([
-      { type: 'text', text: `${COACH_RULES}\n\n${CHAT_RULES}` },
-      { type: 'text', text: buildCoachContext(data, ALL_SECTIONS), cache_control: { type: 'ephemeral' } },
-    ])
-    expect(system[0]).not.toHaveProperty('cache_control')
-    expect(system[1]?.text).toContain('<donnees>')
-    expect(system[1]?.text).toContain('Œufs')
+    expect(system).toBe(`${COACH_RULES}\n\n${CHAT_RULES}\n\n${buildCoachContext(data, ALL_SECTIONS)}`)
+    expect(system).toContain('<donnees>')
+    expect(system).toContain('Œufs')
   })
 
   it('donne exactement le même texte pour les mêmes données, sans espace insécable', () => {

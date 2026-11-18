@@ -15,7 +15,8 @@ parcours dans `e2e/`). Ne jamais sauter, désactiver ni assouplir un test pour f
 - `src/content/` : logique sans interface (programmes, progression, records, agenda, objectifs,
   escalade, nutrition, IA, Oura), testée seule.
 - `src/content/coach/` : le coach IA (conseil du jour, coach physique, frigo, discussion), son contexte
-  (`context.ts`) et ses prompts (`prompt.ts`) ; les appels à Claude sont dans `src/content/ai/`.
+  (`context.ts`) et ses prompts (`prompt.ts`) ; les appels à l'IA (ChatGPT, API d'OpenAI) sont dans
+  `src/content/ai/`.
 - `src/content/reps/` : le compteur de répétitions (mouvements comptés, seuils dans `specs.ts`, machine à
   états, justesse). Ses modules importent leurs valeurs en relatif avec l'extension `.ts` : les scripts
   `reps:*` les lancent sous Node.
@@ -61,13 +62,14 @@ d'appareil : `localStorage['calitrack.counter']`.
 
 ## Services extérieurs
 
-- Clé Claude et accès Oura : table `secrets`, sur l'appareil seulement, jamais dans les sauvegardes ni
-  dans le dépôt.
-- Claude (photos des repas, coach IA) : SDK officiel appelé depuis le navigateur avec la clé de
-  l'utilisateur.
-  - Aucun appel à Claude sans geste de l'utilisateur (testé écran par écran).
-  - Schémas de sortie lâches (`z.string()` puis `choice()`, jamais `z.enum`) ; `stop_reason` vérifié
-    avant `JSON.parse`.
+- Clé OpenAI (secret `openai`) et accès Oura : table `secrets`, sur l'appareil seulement, jamais dans les
+  sauvegardes ni dans le dépôt. L'ancienne clé Claude (`anthropic`) est effacée par la version 4 de la base.
+- ChatGPT (photos des repas, coach IA) : API Responses d'OpenAI appelée depuis le navigateur avec la clé de
+  l'utilisateur, par notre propre client (`client.ts` et `responses.ts`, `fetch` et flux SSE, sans SDK),
+  toujours en flux et avec `store: false`. Modèles et prix : `models.ts` et `cost.ts`.
+  - Aucun appel à l'IA sans geste de l'utilisateur (testé écran par écran).
+  - Sorties structurées strictes (`jsonSchemaOf`), mais schémas lâches (`z.string()` puis `choice()`,
+    jamais `z.enum`) ; l'état de la réponse (`completed`, refus, `incomplete`) vérifié avant `JSON.parse`.
   - Pas d'espace insécable dans les prompts : les textes envoyés passent par `promptText`.
   - `aiUsage` (compteur des demandes) reste sur l'appareil, avec `secrets` et `snapshots`
     (`DEVICE_TABLES`) : jamais dans les sauvegardes.
@@ -90,7 +92,7 @@ d'appareil : `localStorage['calitrack.counter']`.
     `index.css` suit), et l'analyse n'attend jamais l'affichage plus de `STALL_MS` (`frame-loop.ts`). Sous WebKit
     en CI (rendu logiciel), le flou recalculé à chaque image faisait tomber l'écran, et l'analyse avec lui, à
     quelques images par seconde.
-- Dans les tests, ces services sont simulés (`src/test/anthropic.ts`, `src/test/oura.ts`, routes
+- Dans les tests, ces services sont simulés (`src/test/openai.ts`, `src/test/oura.ts`, routes
   Playwright dans `e2e/`) : aucun test n'appelle le vrai réseau.
 
 ## Tests
@@ -101,8 +103,9 @@ d'appareil : `localStorage['calitrack.counter']`.
   les noms accessibles : dans une expression régulière sur un `name`, écrire `\s`.
 - La navigation entre écrans est asynchrone (routes chargées à la demande) : attendre avec `waitFor` ou
   `findBy…`.
-- Claude simulé (`src/test/anthropic.ts`, `fakeClaude` dans `e2e/nutrition-helpers.ts`) : les faux
-  répondent en SSE quand la requête demande un flux (`stream: true`), en JSON sinon.
+- OpenAI simulé (`src/test/openai.ts`, `fakeOpenAi` dans `e2e/nutrition-helpers.ts`) : les faux
+  répondent en SSE (événements `response.*` de l'API Responses) quand la requête demande un flux
+  (`stream: true`), en JSON sinon.
 - Playwright simule un iPhone 13 : Chromium en local, Chromium et WebKit en CI. `E2E_PORT` change son
   port (4173 par défaut) : deux copies du dépôt peuvent lancer leurs tests en même temps.
 - Un test qui simule un service extérieur avec `page.route` bloque le service worker

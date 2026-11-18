@@ -15,7 +15,7 @@ export const BODY_DISCLAIMER = frenchSpacing(
 
 /** Sous les photos : ce qui part, et ce qui n'est pas gardé. */
 export const PHOTO_NOTE = frenchSpacing(
-  'Tes photos partent vers Anthropic pour l’analyse ; CaliTrack ne les garde pas.',
+  'Tes photos partent vers OpenAI pour l’analyse ; CaliTrack ne les garde pas.',
 )
 
 /** Une photo que le téléphone ne sait pas ouvrir. */
@@ -60,7 +60,7 @@ export function phaseAdviceText(phase: NutritionPhase): string {
 }
 
 /**
- * Quand CaliTrack a ramené la phase de Claude au maintien : « Le coach proposait une sèche ; CaliTrack
+ * Quand CaliTrack a ramené la phase de ChatGPT au maintien : « Le coach proposait une sèche ; CaliTrack
  * conseille le maintien vu ta corpulence. » ; null quand les deux sont d'accord.
  */
 export function guardText(review: Pick<BodyReview, 'suggestedPhase' | 'phase'>): string | null {

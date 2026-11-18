@@ -3,7 +3,7 @@ import { collectErrors, onboard } from './nutrition-helpers'
 import { configureOura, fakeOura, OURA_TOKEN } from './oura-helpers'
 
 // Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
-// services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
+// services simulés (Open Food Facts, ChatGPT, Oura) exigent de le bloquer.
 test.use({ serviceWorkers: 'block' })
 
 test.beforeEach(async ({ page }) => {

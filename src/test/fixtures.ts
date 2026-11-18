@@ -257,7 +257,7 @@ export function coachChange(patch: Partial<CoachChange> = {}): CoachChange {
 export function coachDay(patch: Partial<CoachDay> = {}): CoachDay {
   return {
     date: '2026-10-21',
-    model: 'claude-opus-5-5',
+    model: 'gpt-6.2-sol',
     checkIn: { sleep: null, energy: 'ok', soreness: 'none', zones: [], note: '' },
     basis: { readinessScore: 82, sleepScore: 78, sleepMin: 430, yesterdayKcal: 2650 },
     programId: 'p1',
@@ -278,7 +278,7 @@ export function coachDay(patch: Partial<CoachDay> = {}): CoachDay {
 export function bodyReview(patch: Partial<BodyReview> = {}): BodyReview {
   return {
     date: '2026-10-21',
-    model: 'claude-opus-5-5',
+    model: 'gpt-6.2-sol',
     suggestedPhase: 'cut',
     phase: 'cut',
     bodyFat: { low: 15, high: 19 },
@@ -322,13 +322,13 @@ export function coachMessage(
     seq,
     role,
     text: role === 'user' ? `Question ${String(seq)}` : `Réponse ${String(seq)}`,
-    model: role === 'user' ? null : 'claude-opus-5-5',
+    model: role === 'user' ? null : 'gpt-6.2-sol',
     createdAt: new Date(Date.UTC(2026, 9, 21, 8, seq)).toISOString(),
     ...patch,
   }
 }
 
-/** Le compteur des demandes à Claude d'octobre 2026 sur cet appareil. */
+/** Le compteur des demandes à ChatGPT d'octobre 2026 sur cet appareil. */
 export function aiUsageRow(patch: Partial<AiUsageRow> = {}): AiUsageRow {
   return {
     month: '2026-10',

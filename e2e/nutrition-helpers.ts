@@ -13,10 +13,10 @@ export const NUTELLA_PRODUCT = {
   },
 }
 
-/** Une clé Claude d'essai (l'API est simulée). */
-export const CLAUDE_KEY = 'sk-ant-api03-e2e-0123456789abcdefghij'
+/** Une clé OpenAI d'essai (l'API est simulée). */
+export const OPENAI_KEY = 'sk-proj-e2e-0123456789abcdefghij'
 
-/** L'estimation enregistrée de Claude pour une assiette (poulet, riz). */
+/** L'estimation enregistrée de ChatGPT pour une assiette (poulet, riz). */
 export const PLATE_ESTIMATE = {
   isMeal: true,
   problem: '',
@@ -26,47 +26,47 @@ export const PLATE_ESTIMATE = {
   ],
 }
 
-const CLAUDE_CORS = {
+const OPENAI_CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-headers': '*',
   'access-control-allow-methods': 'GET, POST, OPTIONS',
 }
 
-/** Les demandes faites à Claude par l'appli, reconnues à la forme de réponse demandée. */
-export type ClaudeTask = 'meal' | 'daily' | 'body' | 'fridge' | 'ideas' | 'chat'
+/** Les demandes faites à ChatGPT par l'appli, reconnues à la forme de réponse demandée. */
+export type AiTask = 'meal' | 'daily' | 'body' | 'fridge' | 'ideas' | 'chat'
 
 /** Une demande envoyée à l'API simulée. */
-export interface SentToClaude {
+export interface SentToOpenAi {
   url: string
   key: string | null
   body: unknown
   /** La demande reconnue ; null pour la liste des modèles ou une demande inconnue. */
-  task: ClaudeTask | null
+  task: AiTask | null
 }
 
-/** Une erreur de l'API à renvoyer à la place d'une réponse (voir claudeError). */
-interface ClaudeError {
-  claudeError: { status: number; type: string }
+/** Une erreur de l'API à renvoyer à la place d'une réponse (voir openAiError). */
+interface OpenAiError {
+  openAiError: { status: number; code: string }
 }
 
 /**
  * La réponse de l'API simulée pour une demande : un objet (sortie structurée, envoyé en JSON), un texte
- * (discussion), une erreur (claudeError), ou une fonction qui la calcule d'après la demande reçue.
+ * (discussion), une erreur (openAiError), ou une fonction qui la calcule d'après la demande reçue.
  */
-export type ClaudeAnswer = unknown
+export type AiAnswer = unknown
 
-/** Une erreur de l'API (`overloaded_error`, `authentication_error`…), sans nouvel essai. */
-export function claudeError(status: number, type: string): ClaudeError {
-  return { claudeError: { status, type } }
+/** Une erreur de l'API (`server_error`, `invalid_api_key`…), avec son code HTTP. */
+export function openAiError(status: number, code: string): OpenAiError {
+  return { openAiError: { status, code } }
 }
 
-const isClaudeError = (answer: unknown): answer is ClaudeError =>
-  typeof answer === 'object' && answer !== null && 'claudeError' in answer
+const isOpenAiError = (answer: unknown): answer is OpenAiError =>
+  typeof answer === 'object' && answer !== null && 'openAiError' in answer
 
 /** La demande faite, d'après les champs de la réponse structurée demandée (sans format : la discussion). */
-export function claudeTaskOf(body: unknown): ClaudeTask | null {
-  const request = body as { output_config?: { format?: { schema?: { properties?: object } } } } | null
-  const format = request?.output_config?.format
+export function aiTaskOf(body: unknown): AiTask | null {
+  const request = body as { text?: { format?: { schema?: { properties?: object } } } } | null
+  const format = request?.text?.format
   if (!format) return 'chat'
   const keys = Object.keys(format.schema?.properties ?? {})
   if (keys.includes('isMeal')) return 'meal'
@@ -80,93 +80,110 @@ export function claudeTaskOf(body: unknown): ClaudeTask | null {
 const USAGE = {
   input_tokens: 1900,
   output_tokens: 400,
-  cache_read_input_tokens: 0,
-  cache_creation_input_tokens: 0,
+  input_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+  output_tokens_details: { reasoning_tokens: 100 },
+  total_tokens: 2300,
 }
 
-/** Le message complet de l'API dont le texte est `text`. */
-function claudeMessage(text: string) {
+/** La réponse complète de l'API (Responses) dont le texte est `text`. */
+function openAiResponse(text: string) {
   return {
-    id: 'msg_e2e',
-    type: 'message',
-    role: 'assistant',
-    model: 'claude-opus-5-5',
-    content: [{ type: 'text', text }],
-    stop_reason: 'end_turn',
-    stop_sequence: null,
+    id: 'resp_e2e',
+    object: 'response',
+    created_at: 1_792_000_000,
+    model: 'gpt-6.2-sol',
+    status: 'completed',
+    output: [
+      {
+        id: 'msg_e2e',
+        type: 'message',
+        status: 'completed',
+        role: 'assistant',
+        content: [{ type: 'output_text', text, annotations: [] }],
+      },
+    ],
     usage: USAGE,
+    incomplete_details: null,
+    error: null,
   }
 }
 
-/** Le même message en flux (server-sent events), envoyé d'un bloc : le texte arrive en trois morceaux. */
+/** La photo JPEG d'une demande (la première image envoyée), décodée ; null s'il n'y en a pas. */
+export function sentPhoto(body: unknown): { mediaType: string; data: Buffer } | null {
+  const request = body as { input?: { content?: { type?: string; image_url?: string }[] }[] } | null
+  const url = request?.input?.[0]?.content?.find((part) => part.type === 'input_image')?.image_url ?? ''
+  const match = /^data:([^;]+);base64,(.*)$/.exec(url)
+  return match ? { mediaType: match[1] ?? '', data: Buffer.from(match[2] ?? '', 'base64') } : null
+}
+
+/** La même réponse en flux (server-sent events), envoyée d'un bloc : le texte arrive en trois morceaux. */
 export function sseBody(text: string): string {
   const size = Math.max(1, Math.ceil(text.length / 3))
   const pieces = [0, 1, 2].map((i) => text.slice(i * size, (i + 1) * size)).filter((piece) => piece !== '')
+  const done = openAiResponse(text)
+  const started = { ...done, status: 'in_progress', output: [], usage: null }
+  const where = { item_id: 'msg_e2e', output_index: 0, content_index: 0 }
   const events: { type: string; [key: string]: unknown }[] = [
+    { type: 'response.created', response: started },
     {
-      type: 'message_start',
-      message: {
-        ...claudeMessage(''),
-        content: [],
-        stop_reason: null,
-        usage: { ...USAGE, output_tokens: 1 },
-      },
+      type: 'response.output_item.added',
+      output_index: 0,
+      item: { ...done.output[0], status: 'in_progress', content: [] },
     },
-    { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
-    ...pieces.map((piece) => ({
-      type: 'content_block_delta',
-      index: 0,
-      delta: { type: 'text_delta', text: piece },
-    })),
-    { type: 'content_block_stop', index: 0 },
-    { type: 'message_delta', delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: USAGE },
-    { type: 'message_stop' },
+    ...pieces.map((delta) => ({ type: 'response.output_text.delta', ...where, delta, logprobs: [] })),
+    { type: 'response.output_text.done', ...where, text, logprobs: [] },
+    { type: 'response.output_item.done', output_index: 0, item: done.output[0] },
+    { type: 'response.completed', response: done },
   ]
-  return events.map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join('')
+  return events
+    .map(
+      (event, sequence) =>
+        `event: ${event.type}\ndata: ${JSON.stringify({ ...event, sequence_number: sequence })}\n\n`,
+    )
+    .join('')
 }
 
 /**
- * L'API Claude simulée : la clé est acceptée, chaque demande reçoit la réponse prévue pour elle (l'assiette
+ * L'API d'OpenAI simulée : la clé est acceptée, chaque demande reçoit la réponse prévue pour elle (l'assiette
  * de PLATE_ESTIMATE pour une photo de repas, sauf autre réponse donnée), en flux quand l'appli le demande.
- * Une demande sans réponse prévue reçoit une erreur 400. Note chaque demande.
+ * Une demande sans réponse prévue reçoit une erreur 400. Note chaque demande, avec la clé envoyée.
  */
-export async function fakeClaude(page: Page, answers: Partial<Record<ClaudeTask, ClaudeAnswer>> = {}) {
-  const planned: Partial<Record<ClaudeTask, ClaudeAnswer>> = { meal: PLATE_ESTIMATE, ...answers }
-  const sent: SentToClaude[] = []
-  await page.route('https://api.anthropic.com/**', async (route: Route) => {
+export async function fakeOpenAi(page: Page, answers: Partial<Record<AiTask, AiAnswer>> = {}) {
+  const planned: Partial<Record<AiTask, AiAnswer>> = { meal: PLATE_ESTIMATE, ...answers }
+  const sent: SentToOpenAi[] = []
+  await page.route('https://api.openai.com/**', async (route: Route) => {
     const request = route.request()
-    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CLAUDE_CORS })
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: OPENAI_CORS })
     const body: unknown = request.postDataJSON()
-    const isModels = request.url().includes('/v1/models')
-    const task = isModels ? null : claudeTaskOf(body)
-    sent.push({ url: request.url(), key: request.headers()['x-api-key'] ?? null, body, task })
+    const isModels = request.url().endsWith('/v1/models')
+    const task = isModels ? null : aiTaskOf(body)
+    const authorization = request.headers().authorization ?? ''
+    const key = authorization.startsWith('Bearer ') ? authorization.slice('Bearer '.length) : null
+    sent.push({ url: request.url(), key, body, task })
     if (isModels) {
-      return route.fulfill({
-        json: { data: [], has_more: false, first_id: null, last_id: null },
-        headers: CLAUDE_CORS,
-      })
+      return route.fulfill({ json: { object: 'list', data: [] }, headers: OPENAI_CORS })
     }
     const plan = task === null ? undefined : planned[task]
     const answer: unknown = typeof plan === 'function' ? (plan as (body: unknown) => unknown)(body) : plan
-    if (answer === undefined || isClaudeError(answer)) {
-      const error = isClaudeError(answer)
-        ? answer.claudeError
-        : { status: 400, type: 'invalid_request_error' }
+    if (answer === undefined || isOpenAiError(answer)) {
+      const error = isOpenAiError(answer) ? answer.openAiError : { status: 400, code: 'invalid_value' }
       return route.fulfill({
         status: error.status,
-        json: { type: 'error', error: { type: error.type, message: 'Erreur simulée' } },
-        headers: { ...CLAUDE_CORS, 'x-should-retry': 'false' },
+        json: {
+          error: { message: 'Erreur simulée', type: 'invalid_request_error', param: null, code: error.code },
+        },
+        headers: OPENAI_CORS,
       })
     }
     const text = typeof answer === 'string' ? answer : JSON.stringify(answer)
     if ((body as { stream?: unknown } | null)?.stream === true) {
       return route.fulfill({
         status: 200,
-        headers: { ...CLAUDE_CORS, 'content-type': 'text/event-stream' },
+        headers: { ...OPENAI_CORS, 'content-type': 'text/event-stream' },
         body: sseBody(text),
       })
     }
-    return route.fulfill({ json: claudeMessage(text), headers: CLAUDE_CORS })
+    return route.fulfill({ json: openAiResponse(text), headers: OPENAI_CORS })
   })
   return sent
 }

@@ -1,33 +1,41 @@
 import { expect, test, type Page } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
 import { BODY_CUT_LEAN } from './coach-fixtures'
-import { CLAUDE_KEY, collectErrors, fakeClaude, jpegSize, onboard, solidPng } from './nutrition-helpers'
+import {
+  OPENAI_KEY,
+  collectErrors,
+  fakeOpenAi,
+  jpegSize,
+  onboard,
+  sentPhoto,
+  solidPng,
+} from './nutrition-helpers'
 
-// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : Claude
+// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : ChatGPT
 // simulé exige de le bloquer.
 test.use({ serviceWorkers: 'block' })
 
 /** Un mercredi midi. */
 const NOW = new Date('2026-10-21T12:30:00+02:00')
 
-/** Les requêtes parties ailleurs que vers l'appli ou l'API Claude simulée (il ne doit y en avoir aucune). */
+/** Les requêtes parties ailleurs que vers l'appli ou l’API OpenAI simulée (il ne doit y en avoir aucune). */
 function outsideRequests(page: Page): string[] {
   const outside: string[] = []
   page.on('request', (request) => {
     const url = new URL(request.url())
-    const local = url.hostname === 'localhost' || url.hostname === 'api.anthropic.com'
+    const local = url.hostname === 'localhost' || url.hostname === 'api.openai.com'
     if ((url.protocol === 'http:' || url.protocol === 'https:') && !local) outside.push(request.url())
   })
   return outside
 }
 
-/** Premier lancement, la clé Claude collée, puis une sèche avec des calories fixées à la main. */
+/** Premier lancement, la clé OpenAI collée, puis une sèche avec des calories fixées à la main. */
 async function setUp(page: Page) {
   await onboard(page)
   await page.goto('more/ai')
-  await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+  await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
   await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-  await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+  await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
 
   await page.goto('nutrition/targets')
   await page.getByRole('radio', { name: 'Sèche' }).click()
@@ -35,7 +43,7 @@ async function setUp(page: Page) {
   await expect(page.getByText(/^Fixé à la main\s:\s2\s300\skcal$/)).toBeVisible()
 }
 
-/** Une grande photo de face (2048 × 1536), analysée par Claude (simulé). */
+/** Une grande photo de face (2048 × 1536), analysée par ChatGPT (simulé). */
 async function analyzePhoto(page: Page) {
   await page.getByLabel('De face').setInputFiles({
     name: 'IMG_0003.png',
@@ -53,7 +61,7 @@ test('coach physique : photo analysée, phase corrigée par CaliTrack, puis appl
   const errors = collectErrors(page)
   const outside = outsideRequests(page)
   await page.clock.setFixedTime(NOW)
-  const sent = await fakeClaude(page, { body: BODY_CUT_LEAN })
+  const sent = await fakeOpenAi(page, { body: BODY_CUT_LEAN })
   await setUp(page)
 
   // Depuis les objectifs caloriques.
@@ -65,7 +73,7 @@ test('coach physique : photo analysée, phase corrigée par CaliTrack, puis appl
   await expect(page.getByRole('button', { name: 'Analyser mes photos' })).toBeDisabled()
 
   await analyzePhoto(page)
-  // Claude propose une sèche, mais la masse grasse est déjà basse : CaliTrack conseille le maintien.
+  // ChatGPT propose une sèche, mais la masse grasse est déjà basse : CaliTrack conseille le maintien.
   await expect(
     page.getByText(/^Le coach proposait une sèche\s; CaliTrack conseille le maintien vu ta corpulence\.$/),
   ).toBeVisible()
@@ -75,14 +83,12 @@ test('coach physique : photo analysée, phase corrigée par CaliTrack, puis appl
   ).toBeVisible()
 
   // Une seule demande : la photo réduite à 1024 pixels, en JPEG, avec la clé.
-  const messages = sent.filter((request) => request.url.endsWith('/v1/messages'))
+  const messages = sent.filter((request) => request.url.endsWith('/v1/responses'))
   expect(messages.map((request) => request.task)).toEqual(['body'])
-  expect(messages[0]?.key).toBe(CLAUDE_KEY)
-  const image = (
-    messages[0]?.body as { messages: { content: { source?: { data: string; media_type: string } }[] }[] }
-  ).messages[0]?.content[0]?.source
-  expect(image?.media_type).toBe('image/jpeg')
-  expect(jpegSize(Buffer.from(image?.data ?? '', 'base64'))).toEqual({ width: 1024, height: 768 })
+  expect(messages[0]?.key).toBe(OPENAI_KEY)
+  const image = sentPhoto(messages[0]?.body)
+  expect(image?.mediaType).toBe('image/jpeg')
+  expect(jpegSize(image?.data ?? Buffer.alloc(0))).toEqual({ width: 1024, height: 768 })
   expect(JSON.stringify(messages[0]?.body)).not.toMatch(/[\u00a0\u202f]/)
 
   // Appliquée en remplaçant la valeur fixée à la main (choix par défaut).
@@ -107,7 +113,7 @@ test('coach physique : photo analysée, phase corrigée par CaliTrack, puis appl
   await expect(
     page.getByRole('listitem').filter({ hasText: /^Aujourd’hui\s*Maintien · 8\sà\s11\s% de masse grasse$/ }),
   ).toBeVisible()
-  expect(sent.filter((request) => request.url.endsWith('/v1/messages'))).toHaveLength(1)
+  expect(sent.filter((request) => request.url.endsWith('/v1/responses'))).toHaveLength(1)
   expect(outside).toEqual([])
   expect(errors).toEqual([])
 })
@@ -119,7 +125,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
     test('coach physique accessible, avant et après l’analyse', async ({ page }) => {
       const errors = collectErrors(page)
       await page.clock.setFixedTime(NOW)
-      await fakeClaude(page, { body: BODY_CUT_LEAN })
+      await fakeOpenAi(page, { body: BODY_CUT_LEAN })
       await setUp(page)
 
       await page.goto('nutrition/body')

@@ -12,7 +12,7 @@ const call = (patch: Partial<AiUsage> = {}): AiUsage => ({
   ...patch,
 })
 
-describe('compteur des demandes à Claude', () => {
+describe('compteur des demandes à l’IA', () => {
   beforeEach(resetDb)
 
   it('ne connaît pas un mois sans demande', async () => {

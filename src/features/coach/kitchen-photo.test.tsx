@@ -5,7 +5,7 @@ import { preparePhoto, UnreadablePhotoError } from '@/features/nutrition/photo'
 import { db } from '@/db/db'
 import { saveSecret } from '@/db/secrets'
 import type { PantryPlace } from '@/db/types'
-import { AI_ERROR_CASES, fakeAnthropicFetch, FRIDGE_ITEMS, streamResponse } from '@/test/anthropic'
+import { AI_ERROR_CASES, fakeOpenAiFetch, FRIDGE_ITEMS, streamResponse } from '@/test/openai'
 import { pantryItem } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
@@ -17,12 +17,12 @@ vi.mock('@/features/nutrition/photo', async (importOriginal) => ({
 }))
 
 const PAGE = '/nutrition/kitchen/photo'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
-const withKey = () => saveSecret('anthropic', KEY)
+const withKey = () => saveSecret('openai', KEY)
 
 function stubFetch(...answers: (Response | Error)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -50,7 +50,7 @@ describe('photo du frigo', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude sans un geste', async () => {
+  it('n’appelle jamais ChatGPT sans un geste', async () => {
     const fake = stubFetch()
     const { user } = await renderApp(PAGE, { setup: withKey })
     expect(await screen.findByRole('heading', { name: 'Photo du frigo', level: 1 })).toBeInTheDocument()
@@ -60,9 +60,9 @@ describe('photo du frigo', () => {
     expect(fake.requests).toHaveLength(0)
   })
 
-  it('demande d’abord une clé Claude', async () => {
+  it('demande d’abord une clé OpenAI', async () => {
     const { user, router } = await renderApp(PAGE)
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Ajouter ma clé' }))
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/more/ai')
@@ -100,7 +100,7 @@ describe('photo du frigo', () => {
     })
     await choosePhoto(user)
     expect(screen.getByRole('img', { name: 'Ta photo' })).toHaveAttribute('src', 'blob:photo')
-    expect(screen.getByText('Environ 4 centimes avec Opus 5.5')).toBeInTheDocument()
+    expect(screen.getByText('Environ 2 centimes avec GPT-6.2 Sol')).toBeInTheDocument()
     expectFrenchSpacing()
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
 
@@ -244,7 +244,7 @@ describe('photo du frigo', () => {
     const { user } = await renderApp(PAGE, { setup: withKey })
     await choosePhoto(user)
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
-    expect(await screen.findByText('Claude regarde ta photo…')).toBeInTheDocument()
+    expect(await screen.findByText('ChatGPT regarde ta photo…')).toBeInTheDocument()
     await waitFor(() => {
       expect(pending).toHaveBeenCalledTimes(1)
     })
@@ -252,7 +252,7 @@ describe('photo du frigo', () => {
     expect(await screen.findByRole('button', { name: 'Analyser la photo' })).toBeInTheDocument()
     // La demande est vraiment coupée : sa réponse ne remplacera pas la photo.
     expect(pending.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
-    expect(screen.queryByText('Claude regarde ta photo…')).not.toBeInTheDocument()
+    expect(screen.queryByText('ChatGPT regarde ta photo…')).not.toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(await db.pantryItems.count()).toBe(0)
   })

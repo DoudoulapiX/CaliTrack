@@ -1,5 +1,4 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/messages'
 import { db } from '@/db/db'
 import { saveProgram } from '@/db/programs'
 import { saveSecret } from '@/db/secrets'
@@ -10,12 +9,12 @@ import {
   DAILY_LIGHTER,
   DAILY_REST,
   DAILY_TIPS,
-  fakeAnthropicFetch,
+  fakeOpenAiFetch,
   streamController,
   streamResponse,
   type Answer,
   type RecordedRequest,
-} from '@/test/anthropic'
+} from '@/test/openai'
 import { coachChange, coachDay, programSession, testProgram } from '@/test/fixtures'
 import { ouraDay } from '@/test/oura'
 import { renderApp } from '@/test/render-app'
@@ -27,7 +26,7 @@ vi.mock('@/features/workout/useNow', () => ({ useNow: () => Date.now() }))
 
 const COACH_PAGE = '/training/coach'
 const DATE = '2026-10-21'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 const NBSP = /[\u00a0\u202f]/
 
 function slot(id: string, exerciseId: string, patch: Partial<ProgramSlot> = {}): ProgramSlot {
@@ -65,10 +64,10 @@ const SESSION_B: ProgramSession = {
   ],
 }
 
-/** Clé Claude, prénom, et le programme avec la séance B prévue aujourd'hui. */
+/** Clé OpenAI, prénom, et le programme avec la séance B prévue aujourd'hui. */
 async function withProgram() {
-  await saveSecret('anthropic', KEY)
-  await updateSettings({ aiModel: 'claude-haiku-5-5' })
+  await saveSecret('openai', KEY)
+  await updateSettings({ aiModel: 'gpt-6-luna' })
   await updateProfile({ firstName: 'Charles' })
   await saveProgram(testProgram({ sessions: [programSession('A', [1, 4]), SESSION_B] }))
 }
@@ -79,15 +78,15 @@ async function withOura() {
 }
 
 function stubFetch(...answers: (Response | Error | Answer)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
 
-/** Le texte envoyé à Claude (un seul bloc de texte). */
+/** Le texte envoyé à ChatGPT (un seul bloc de texte). */
 function promptOf(request: RecordedRequest | undefined): string {
-  const body = request?.body as { messages: { content: TextBlockParam[] }[] } | undefined
-  return body?.messages[0]?.content[0]?.text ?? ''
+  const body = request?.body as { input: { content: { type: string; text?: string }[] }[] } | undefined
+  return body?.input[0]?.content[0]?.text ?? ''
 }
 
 const askButton = () => screen.findByRole('button', { name: 'Demander au coach' })
@@ -102,7 +101,7 @@ describe('coach du jour', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude à l’ouverture', async () => {
+  it('n’appelle jamais ChatGPT à l’ouverture', async () => {
     const { requests } = stubFetch()
     await renderApp(COACH_PAGE, {
       setup: async () => {
@@ -116,10 +115,10 @@ describe('coach du jour', () => {
     expect(requests).toHaveLength(0)
   })
 
-  it('demande d’abord une clé Claude, sans rien appeler', async () => {
+  it('demande d’abord une clé OpenAI, sans rien appeler', async () => {
     const { requests } = stubFetch()
     const { user, router } = await renderApp(COACH_PAGE)
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Demander au coach' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Ajouter ma clé' }))
     await waitFor(() => {
@@ -190,7 +189,7 @@ describe('coach du jour', () => {
     expect(await screen.findByText('Séance allégée', { selector: 'span' })).toBeInTheDocument()
     expect(requests).toHaveLength(1)
     const request = requests[0]
-    expect(request?.body).toMatchObject({ model: 'claude-haiku-5-5', stream: true })
+    expect(request?.body).toMatchObject({ model: 'gpt-6-luna', stream: true })
     const sent = JSON.stringify(request?.body)
     expect(sent).not.toContain('Charles')
     expect(sent).not.toMatch(NBSP)
@@ -217,7 +216,7 @@ describe('coach du jour', () => {
     const saved = await db.coachDays.get(DATE)
     expect(saved).toMatchObject({
       date: DATE,
-      model: 'claude-haiku-5-5',
+      model: 'gpt-6-luna',
       checkIn: {
         sleep: null,
         energy: 'low',
@@ -256,7 +255,7 @@ describe('coach du jour', () => {
     expect(requests).toHaveLength(1)
   })
 
-  it('redemander repart du dernier ressenti, et ne rappelle Claude qu’au toucher', async () => {
+  it('redemander repart du dernier ressenti, et ne rappelle ChatGPT qu’au toucher', async () => {
     const { requests } = stubFetch()
     const { user } = await renderApp(COACH_PAGE, {
       setup: async () => {
@@ -399,7 +398,7 @@ describe('coach du jour', () => {
     const { requests } = stubFetch(streamResponse(DAILY_TIPS))
     const { user } = await renderApp(COACH_PAGE, {
       setup: async () => {
-        await saveSecret('anthropic', KEY)
+        await saveSecret('openai', KEY)
       },
     })
     await askButton()

@@ -1,10 +1,9 @@
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/messages'
 import type { CoachMessage } from '@/db/types'
 import { ALL_SECTIONS, buildCoachContext, type CoachData } from './context'
 import { COACH_RULES, promptText } from './prompt'
 
 /**
- * Ce que Claude relit de la discussion à chaque question : les derniers messages seulement (la question
+ * Ce que ChatGPT relit de la discussion à chaque question : les derniers messages seulement (la question
  * comprise), dans une limite de caractères. Les plus anciens restent affichés, mais ne sont plus envoyés.
  */
 export const CHAT_WINDOW = { messages: 20, chars: 16_000 } as const
@@ -20,17 +19,17 @@ export const CHAT_RULES = `Discussion :
 - Réponds en quelques phrases courtes, ou en une liste simple : pas de tableau, pas de titre.
 - Si la question sort de ces sujets, réponds brièvement et ramène la discussion à son entraînement.`
 
-/** Un message de la conversation envoyée à Claude : du texte seulement. */
+/** Un message de la conversation envoyée à ChatGPT : du texte seulement. */
 export interface ChatTurn {
   role: 'user' | 'assistant'
   content: string
 }
 
 /**
- * La conversation envoyée à Claude : les derniers messages enregistrés (dans l'ordre de `seq`, au plus
+ * La conversation envoyée à ChatGPT : les derniers messages enregistrés (dans l'ordre de `seq`, au plus
  * CHAT_WINDOW.messages avec la question, CHAT_WINDOW.chars caractères en tout), en commençant par une
  * question de l'utilisateur, puis la nouvelle question. Seul le texte enregistré est relu : la réflexion
- * de Claude n'est jamais gardée.
+ * de ChatGPT n'est jamais gardée.
  */
 export function chatWindow(history: readonly CoachMessage[], draft: string): ChatTurn[] {
   const question = promptText(draft.trim())
@@ -52,14 +51,12 @@ export function chatWindow(history: readonly CoachMessage[], draft: string): Cha
 }
 
 /**
- * Le message système de la discussion : les règles, puis les données du coach, gardées en cache par
- * l'API (les mêmes données donnent le même texte, relu moins cher d'une question à l'autre).
+ * Les consignes de la discussion : les règles, puis les données du coach. Elles ouvrent chaque demande,
+ * toujours dans le même ordre : OpenAI garde ce début en cache (les mêmes données donnent le même texte,
+ * relu moins cher d'une question à l'autre).
  */
-export function chatSystem(data: CoachData): TextBlockParam[] {
-  return [
-    { type: 'text', text: promptText(`${COACH_RULES}\n\n${CHAT_RULES}`) },
-    { type: 'text', text: buildCoachContext(data, ALL_SECTIONS), cache_control: { type: 'ephemeral' } },
-  ]
+export function chatSystem(data: CoachData): string {
+  return `${promptText(`${COACH_RULES}\n\n${CHAT_RULES}`)}\n\n${buildCoachContext(data, ALL_SECTIONS)}`
 }
 
 /**

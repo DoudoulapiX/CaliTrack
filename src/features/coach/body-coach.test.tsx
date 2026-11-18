@@ -6,13 +6,7 @@ import { saveSecret } from '@/db/secrets'
 import { updateProfile, type ProfilePatch } from '@/db/settings'
 import { canRetry, needsAiSettings, problemText } from '@/features/ai/ai-view'
 import { preparePhoto, UnreadablePhotoError } from '@/features/nutrition/photo'
-import {
-  AI_ERROR_CASES,
-  BODY_CUT_LEAN,
-  errorResponse,
-  fakeAnthropicFetch,
-  streamResponse,
-} from '@/test/anthropic'
+import { AI_ERROR_CASES, BODY_CUT_LEAN, errorResponse, fakeOpenAiFetch, streamResponse } from '@/test/openai'
 import { bodyReview } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
@@ -24,12 +18,12 @@ vi.mock('@/features/nutrition/photo', async (importOriginal) => ({
 }))
 
 const PAGE = '/nutrition/body'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 const DISCLAIMER = 'C’est une estimation pour guider tes phases, pas un avis médical.'
 const ANALYZING = 'Le coach regarde tes photos…'
 const NBSP = /[\u00a0\u202f]/
 
-/** Charles : 30 ans, 1,80 m, 80 kg (2 760 kcal en maintien), avec une clé Claude. */
+/** Charles : 30 ans, 1,80 m, 80 kg (2 760 kcal en maintien), avec une clé OpenAI. */
 async function charles(patch: ProfilePatch = {}) {
   await updateProfile({
     firstName: 'Charles',
@@ -39,11 +33,11 @@ async function charles(patch: ProfilePatch = {}) {
     weightKg: 80,
     ...patch,
   })
-  await saveSecret('anthropic', KEY)
+  await saveSecret('openai', KEY)
 }
 
 function stubFetch(...answers: (Response | Error)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -77,8 +71,9 @@ function tiles(container: HTMLElement): string[] {
 
 interface SentBody {
   model: string
-  output_config: { effort: string; format: { type: string; schema: { properties: object } } }
-  messages: { content: { type: string; text?: string; source?: { media_type: string; data: string } }[] }[]
+  reasoning: { effort: string }
+  text: { format: { type: string; schema: { properties: object } } }
+  input: { content: { type: string; text?: string; image_url?: string }[] }[]
 }
 
 describe('coach physique', () => {
@@ -100,7 +95,7 @@ describe('coach physique', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude sans qu’on le demande', async () => {
+  it('n’appelle jamais ChatGPT sans qu’on le demande', async () => {
     const { requests } = stubFetch()
     const { user } = await renderApp(PAGE, { setup: charles })
     expect(await screen.findByRole('heading', { name: 'Coach physique', level: 1 })).toBeInTheDocument()
@@ -113,9 +108,9 @@ describe('coach physique', () => {
     expect(requests).toHaveLength(0)
   })
 
-  it('demande d’abord une clé Claude', async () => {
+  it('demande d’abord une clé OpenAI', async () => {
     const { user, router } = await renderApp(PAGE, { setup: () => updateProfile({ birthYear: 1996 }) })
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     expect(screen.getByText(DISCLAIMER)).toBeInTheDocument()
     expect(screen.queryByLabelText('De face')).not.toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Ajouter ma clé' }))
@@ -212,9 +207,9 @@ describe('coach physique', () => {
     await addPhoto(user, 'De profil', 'profil.jpg')
     await addPhoto(user, 'De dos', 'dos.jpg')
     expect(await screen.findByRole('button', { name: 'Retirer la photo de dos' })).toBeInTheDocument()
-    expect(screen.getByText('Environ 9 centimes avec Opus 5.5')).toBeInTheDocument()
+    expect(screen.getByText('Environ 5 centimes avec GPT-6.2 Sol')).toBeInTheDocument()
     expect(
-      screen.getByText('Tes photos partent vers Anthropic pour l’analyse ; CaliTrack ne les garde pas.'),
+      screen.getByText('Tes photos partent vers OpenAI pour l’analyse ; CaliTrack ne les garde pas.'),
     ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Analyser mes photos' }))
 
@@ -247,15 +242,21 @@ describe('coach physique', () => {
     // La demande : trois photos en JPEG, réduites à 1024 pixels, puis le texte, sans prénom ni espace insécable.
     expect(requests).toHaveLength(1)
     const body = requests[0]?.body as SentBody
-    expect(body.model).toBe('claude-opus-5-5')
-    expect(body.output_config).toMatchObject({ effort: 'medium', format: { type: 'json_schema' } })
-    expect(Object.keys(body.output_config.format.schema.properties)).toContain('bodyFatLow')
-    const content = body.messages[0]?.content ?? []
-    expect(content.map((block) => block.type)).toEqual(['image', 'image', 'image', 'text'])
-    expect(content.slice(0, 3).map((block) => block.source)).toEqual([
-      { type: 'base64', media_type: 'image/jpeg', data: btoa('face.jpg') },
-      { type: 'base64', media_type: 'image/jpeg', data: btoa('profil.jpg') },
-      { type: 'base64', media_type: 'image/jpeg', data: btoa('dos.jpg') },
+    expect(body.model).toBe('gpt-6.2-sol')
+    expect(body.reasoning).toEqual({ effort: 'medium' })
+    expect(body.text.format).toMatchObject({ type: 'json_schema' })
+    expect(Object.keys(body.text.format.schema.properties)).toContain('bodyFatLow')
+    const content = body.input[0]?.content ?? []
+    expect(content.map((block) => block.type)).toEqual([
+      'input_image',
+      'input_image',
+      'input_image',
+      'input_text',
+    ])
+    expect(content.slice(0, 3).map((block) => block.image_url)).toEqual([
+      `data:image/jpeg;base64,${btoa('face.jpg')}`,
+      `data:image/jpeg;base64,${btoa('profil.jpg')}`,
+      `data:image/jpeg;base64,${btoa('dos.jpg')}`,
     ])
     expect(content[3]?.text).toContain("Photos jointes, dans l'ordre : de face, de profil, de dos.")
     expect(content[3]?.text).toContain('Phase actuelle : cut (sèche).')
@@ -268,7 +269,7 @@ describe('coach physique', () => {
     expect(saved).toEqual([
       expect.objectContaining({
         date: '2026-10-21',
-        model: 'claude-opus-5-5',
+        model: 'gpt-6.2-sol',
         suggestedPhase: 'cut',
         phase: 'maintain',
         bodyFat: { low: 8, high: 11 },
@@ -423,7 +424,7 @@ describe('coach physique', () => {
     expectFrenchSpacing()
   })
 
-  it('dit ce que Claude ne voit pas, sans rien enregistrer', async () => {
+  it('dit ce que ChatGPT ne voit pas, sans rien enregistrer', async () => {
     stubFetch(
       streamResponse({
         ...BODY_CUT_LEAN,
@@ -455,7 +456,7 @@ describe('coach physique', () => {
   it('oublie ce qui a été dit des photos précédentes quand elles changent', async () => {
     stubFetch(
       streamResponse({ ...BODY_CUT_LEAN, readable: false, problem: 'Je ne vois qu’un mur blanc.' }),
-      errorResponse(529, 'overloaded_error'),
+      errorResponse(503, 'server_error'),
     )
     const { user } = await renderApp(PAGE, { setup: charles })
     await addPhoto(user, 'De face')
@@ -500,14 +501,16 @@ describe('coach physique', () => {
   })
 
   it('réessaie avec les mêmes photos', async () => {
-    const { requests } = stubFetch(errorResponse(529, 'overloaded_error'), streamResponse(BODY_CUT_LEAN))
+    const { requests } = stubFetch(errorResponse(503, 'server_error'), streamResponse(BODY_CUT_LEAN))
     const { user } = await renderApp(PAGE, { setup: charles })
     await addPhoto(user, 'De dos', 'dos.jpg')
     await user.click(await screen.findByRole('button', { name: 'Analyser mes photos' }))
     await user.click(await screen.findByRole('button', { name: 'Réessayer' }, { timeout: 5000 }))
     expect(await screen.findByText('Phase conseillée : Maintien', {}, { timeout: 5000 })).toBeInTheDocument()
     expect(requests).toHaveLength(2)
-    expect((requests[1]?.body as SentBody).messages[0]?.content[0]?.source?.data).toBe(btoa('dos.jpg'))
+    expect((requests[1]?.body as SentBody).input[0]?.content[0]?.image_url).toBe(
+      `data:image/jpeg;base64,${btoa('dos.jpg')}`,
+    )
   })
 
   it('annule une analyse en cours, et en quittant l’écran', async () => {

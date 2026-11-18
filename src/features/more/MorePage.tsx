@@ -94,7 +94,7 @@ export function MorePage() {
           />
           <ListRow
             title="Intelligence artificielle"
-            subtitle="Clé Claude, modèle, coût"
+            subtitle="Clé OpenAI, modèle, coût"
             to="/more/ai"
             leading={<Sparkles size={22} aria-hidden />}
           />

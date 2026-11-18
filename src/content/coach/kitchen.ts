@@ -35,7 +35,7 @@ export const IDEA_MINUTES_MAX = 180
 /** Longueur maximale d'une demande au coach (« quelque chose de chaud »). */
 export const IDEA_REQUEST_MAX = 200
 
-/** Un aliment de la liste, tel que Claude le lit ou que l'utilisateur le corrige. */
+/** Un aliment de la liste, tel que ChatGPT le lit ou que l'utilisateur le corrige. */
 export interface PantryName {
   name: string
   quantity: string
@@ -53,7 +53,7 @@ function line(text: string, max: number): string {
 /* Photo du frigo                                                      */
 /* ------------------------------------------------------------------ */
 
-/** Ce que Claude renvoie pour une photo de frigo ou de placard (forme souple, nettoyée ensuite). */
+/** Ce que ChatGPT renvoie pour une photo de frigo ou de placard (forme souple, nettoyée ensuite). */
 export const fridgeOutput = z.object({
   readable: z
     .boolean()
@@ -122,14 +122,14 @@ export type PantryPhotoResult =
   | { status: 'unreadable'; reason: string; usage: AiUsage }
   | { status: 'error'; problem: AiProblem; usage: AiUsage | null }
 
-/** Demande à Claude les aliments visibles sur une photo de frigo, de congélateur ou de placard. */
+/** Demande à ChatGPT les aliments visibles sur une photo de frigo, de congélateur ou de placard. */
 export async function readPantryPhoto(request: PantryPhotoRequest): Promise<PantryPhotoResult> {
   const result = await askStructured({
     apiKey: request.apiKey,
     model: request.model,
     system: FRIDGE_SYSTEM,
     content: [
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: request.imageBase64 } },
+      { type: 'image', jpegBase64: request.imageBase64 },
       { type: 'text', text: `${PLACE_PHOTO_TEXT[request.place]} Liste les aliments que tu vois.` },
     ],
     schema: fridgeOutput,
@@ -150,7 +150,7 @@ export async function readPantryPhoto(request: PantryPhotoRequest): Promise<Pant
 /* Idées de repas                                                      */
 /* ------------------------------------------------------------------ */
 
-/** Ce que Claude renvoie pour des idées de repas (forme souple, nettoyée ensuite). */
+/** Ce que ChatGPT renvoie pour des idées de repas (forme souple, nettoyée ensuite). */
 export const ideasOutput = z.object({
   ideas: z
     .array(
@@ -258,7 +258,7 @@ Pour chaque idée : un titre court, pourquoi elle convient (une phrase), le temp
 Quand seul l'inventaire est permis, n'ajoute que du sel, du poivre, des épices, de l'huile ou du vinaigre ; compte l'huile dans les ingrédients.
 Vise une portion qui tient dans ce qui reste à manger pour la journée sans le dépasser de beaucoup, avec assez de protéines pour la phase en cours. S'il ne reste presque rien, propose un repas léger.`
 
-/** La consigne et la demande envoyées à Claude pour des idées de repas, sans espace insécable. */
+/** La consigne et la demande envoyées à ChatGPT pour des idées de repas, sans espace insécable. */
 export function ideasPrompt(input: IdeasInput): { system: string; text: string } {
   const pantry = [...input.pantry]
     .sort((a, b) => PLACE_ORDER.indexOf(a.place) - PLACE_ORDER.indexOf(b.place))

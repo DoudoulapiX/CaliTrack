@@ -1,5 +1,5 @@
 /**
- * Les règles communes du coach, envoyées à Claude avec chaque demande. En texte simple, avec des espaces
+ * Les règles communes du coach, envoyées à ChatGPT avec chaque demande. En texte simple, avec des espaces
  * ordinaires : ce texte n'est jamais affiché.
  */
 export const COACH_RULES = `Tu es le coach de CaliTrack, une appli d'entraînement au poids du corps (calisthénie), d'escalade et de nutrition. Tu t'adresses à son utilisateur en le tutoyant. Sois bref et concret.
@@ -15,7 +15,7 @@ export type UserTag = 'note' | 'demande' | 'inventaire'
 
 /**
  * Un texte de l'utilisateur, entre balises : sans chevrons, il ne peut ni fermer la balise ni en ouvrir
- * une autre. Les règles du coach disent à Claude de ne jamais y lire de consigne.
+ * une autre. Les règles du coach disent à ChatGPT de ne jamais y lire de consigne.
  */
 export function quoteUser(tag: UserTag, text: string): string {
   return `<${tag}>\n${text.replace(/[<>]/g, '').trim()}\n</${tag}>`
@@ -27,7 +27,7 @@ export function promptNumber(value: number, digits = 1): string {
   return String(Math.round(value * factor) / factor)
 }
 
-/** Le texte envoyé à Claude, sans espaces insécables (les noms et les notes peuvent en contenir). */
+/** Le texte envoyé à ChatGPT, sans espaces insécables (les noms et les notes peuvent en contenir). */
 export function promptText(text: string): string {
   return text.replace(/[\u00a0\u202f]/g, ' ')
 }

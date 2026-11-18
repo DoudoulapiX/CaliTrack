@@ -5,13 +5,13 @@ import { db } from '@/db/db'
 import { addEntries, quickEntry } from '@/db/nutrition'
 import { saveSecret } from '@/db/secrets'
 import { updateProfile } from '@/db/settings'
-import { AI_ERROR_CASES, fakeAnthropicFetch, IDEAS, streamResponse } from '@/test/anthropic'
+import { AI_ERROR_CASES, fakeOpenAiFetch, IDEAS, streamResponse } from '@/test/openai'
 import { pantryItem } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 
 const PAGE = '/nutrition/kitchen/ideas'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
 /** Homme, 30 ans, 1,80 m, 80 kg, en maintien : 2 760 kcal, 145 g de protéines, 375 g de glucides, 75 g de lipides. */
 const charles = () => updateProfile({ sex: 'male', birthYear: 1996, heightCm: 180, weightKg: 80 })
@@ -38,14 +38,14 @@ const breakfast = (day: string) =>
 const withEverything =
   (day = '2026-10-21') =>
   async () => {
-    await saveSecret('anthropic', KEY)
+    await saveSecret('openai', KEY)
     await charles()
     await stocked()
     await breakfast(day)
   }
 
 function stubFetch(...answers: (Response | Error)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -74,7 +74,7 @@ describe('idées de repas', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude sans un geste', async () => {
+  it('n’appelle jamais ChatGPT sans un geste', async () => {
     const fake = stubFetch()
     await renderApp(PAGE, { setup: withEverything() })
     expect(await screen.findByRole('heading', { name: 'Idées de repas', level: 1 })).toBeInTheDocument()
@@ -83,16 +83,16 @@ describe('idées de repas', () => {
     expect(fake.requests).toHaveLength(0)
   })
 
-  it('demande d’abord une clé Claude', async () => {
+  it('demande d’abord une clé OpenAI', async () => {
     await renderApp(PAGE)
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ajouter ma clé' })).toHaveAttribute('href', '/more/ai')
   })
 
   it('montre ce qui reste, et bloque le mode « ce que j’ai » quand le frigo est vide', async () => {
     const { user } = await renderApp(PAGE, {
       setup: async () => {
-        await saveSecret('anthropic', KEY)
+        await saveSecret('openai', KEY)
         await charles()
         await breakfast('2026-10-21')
       },
@@ -114,7 +114,7 @@ describe('idées de repas', () => {
       '/nutrition/kitchen',
     )
     expect(screen.getByRole('button', { name: 'Proposer des idées' })).toBeDisabled()
-    expect(screen.getByText('Environ 9 centimes avec Opus 5.5')).toBeInTheDocument()
+    expect(screen.getByText('Environ 5 centimes avec GPT-6.2 Sol')).toBeInTheDocument()
     expectFrenchSpacing()
 
     await user.click(strict)
@@ -156,9 +156,9 @@ describe('idées de repas', () => {
 
     // La demande : le frigo et l'envie entre balises, ce qui reste, le repas, sans espace insécable.
     expect(requests).toHaveLength(1)
-    const body = requests[0]?.body as { model: string; messages: { content: { text: string }[] }[] }
-    expect(body.model).toBe('claude-opus-5-5')
-    const text = body.messages[0]?.content[0]?.text ?? ''
+    const body = requests[0]?.body as { model: string; input: { content: { text: string }[] }[] }
+    expect(body.model).toBe('gpt-6.2-sol')
+    const text = body.input[0]?.content[0]?.text ?? ''
     expect(text).toContain('Repas : dîner')
     expect(text).toContain(
       'Reste à manger pour la journée : 2110 kcal, 100 g de protéines, 305 g de glucides, 57 g de lipides',
@@ -275,7 +275,7 @@ describe('idées de repas', () => {
 
   it('travaille sans objectifs définis, courses permises', async () => {
     const { requests } = stubFetch(streamResponse(IDEAS))
-    const { user } = await renderApp(PAGE, { setup: () => saveSecret('anthropic', KEY) })
+    const { user } = await renderApp(PAGE, { setup: () => saveSecret('openai', KEY) })
     expect(await screen.findByText('Objectifs non définis')).toBeInTheDocument()
     expect(screen.getByText(/^Ajoute ton âge/)).toBeInTheDocument()
     await user.click(screen.getByRole('switch', { name: 'Seulement avec ce que j’ai' }))

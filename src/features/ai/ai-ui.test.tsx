@@ -32,19 +32,19 @@ async function show(element: ReactNode) {
 describe('briques du coach IA', () => {
   it('annonce le prix d’une demande avec le modèle choisi', async () => {
     await show(<CostHint action="daily" />)
-    expect(await screen.findByText('Environ 8 centimes avec Opus 5.5')).toBeInTheDocument()
+    expect(await screen.findByText('Environ 4 centimes avec GPT-6.2 Sol')).toBeInTheDocument()
     await act(async () => {
-      await updateSettings({ aiModel: 'claude-haiku-5-5' })
+      await updateSettings({ aiModel: 'gpt-6-luna' })
     })
-    expect(await screen.findByText('Moins d’un centime avec Haiku 5.5')).toBeInTheDocument()
+    expect(await screen.findByText('Moins d’un centime avec GPT-6 Luna')).toBeInTheDocument()
     expectFrenchSpacing()
   })
 
-  it('demande une clé Claude et mène aux réglages de l’IA', async () => {
+  it('demande une clé OpenAI et mène aux réglages de l’IA', async () => {
     const { router, user } = await show(<KeyNeeded />)
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     expect(
-      screen.getByText('Le coach passe par Claude, avec ta propre clé, gardée sur cet iPhone.'),
+      screen.getByText('Le coach passe par ChatGPT, avec ta propre clé, gardée sur cet iPhone.'),
     ).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Ajouter ma clé' }))
     expect(router.state.location.pathname).toBe('/more/ai')
@@ -53,7 +53,7 @@ describe('briques du coach IA', () => {
   it('propose de réessayer un problème passager', async () => {
     const retry = vi.fn()
     const { user } = await show(<AiProblemNote problem="busy" task="daily" onRetry={retry} />)
-    expect(await screen.findByRole('alert')).toHaveTextContent('Claude est très demandé en ce moment')
+    expect(await screen.findByRole('alert')).toHaveTextContent('ChatGPT est très demandé en ce moment')
     expect(screen.queryByRole('link', { name: 'Réglages de l’IA' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Réessayer' }))
     expect(retry).toHaveBeenCalledOnce()
@@ -62,16 +62,16 @@ describe('briques du coach IA', () => {
 
   it('mène aux réglages quand la clé est refusée', async () => {
     const { router, user } = await show(<AiProblemNote problem="invalidKey" task="chat" onRetry={vi.fn()} />)
-    expect(await screen.findByRole('alert')).toHaveTextContent('Ta clé Claude est refusée')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ta clé OpenAI est refusée')
     expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Réglages de l’IA' }))
     expect(router.state.location.pathname).toBe('/more/ai')
   })
 
-  it('parle de la demande faite quand Claude refuse', async () => {
+  it('parle de la demande faite quand ChatGPT refuse', async () => {
     await show(<AiProblemNote problem="refused" task="body" />)
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Claude n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
+      'ChatGPT n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
     )
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
@@ -111,7 +111,7 @@ describe('demande annulable', () => {
   })
 })
 
-describe('compteur des demandes à Claude', () => {
+describe('compteur des demandes à ChatGPT', () => {
   beforeEach(async () => {
     await resetDb()
     vi.setSystemTime(new Date(2026, 9, 21, 11, 0))
@@ -122,18 +122,18 @@ describe('compteur des demandes à Claude', () => {
 
   it('ajoute chaque réponse revenue au mois, au prix du modèle', async () => {
     const usage = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
-    await recordCallUsage(usage, 'claude-opus-5-5')
-    await recordCallUsage(null, 'claude-opus-5-5')
-    await recordCallUsage(usage, 'claude-haiku-5-5')
+    await recordCallUsage(usage, 'gpt-6.2-sol')
+    await recordCallUsage(null, 'gpt-6.2-sol')
+    await recordCallUsage(usage, 'gpt-6-luna')
     const row = await db.aiUsage.get('2026-10')
     expect(row).toMatchObject({ calls: 2, inputTokens: 3700, outputTokens: 840 })
-    expect(row?.costUsd).toBeCloseTo((1850 * 4 + 420 * 20 + 1850 * 0.1 + 420 * 0.5) / 1e6, 12)
+    expect(row?.costUsd).toBeCloseTo((1850 * 2 + 420 * 10 + 1850 * 0.1 + 420 * 0.5) / 1e6, 12)
   })
 
   it('ne fait jamais échouer la demande', async () => {
     await db.aiUsage.put(aiUsageRow())
     const broken = { inputTokens: -1, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 }
-    await expect(recordCallUsage(broken, 'claude-opus-5-5')).resolves.toBeUndefined()
+    await expect(recordCallUsage(broken, 'gpt-6.2-sol')).resolves.toBeUndefined()
     expect(await db.aiUsage.get('2026-10')).toEqual(aiUsageRow())
   })
 })

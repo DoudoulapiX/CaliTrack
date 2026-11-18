@@ -26,7 +26,7 @@ import {
 } from './backup'
 import { DATA_TABLES, DB_VERSION, DEVICE_TABLES, createDb, db } from './db'
 import { defaultSettings } from './defaults'
-import { V1_DEFAULT_TABS, settingsV1toV2 } from './migrations'
+import { V1_DEFAULT_TABS, settingsV1toV2, settingsV3toV4 } from './migrations'
 import { TABLE_SCHEMAS } from './schema'
 import { ensureSeeded } from './seed'
 import type { BodyMetric } from './types'
@@ -112,17 +112,17 @@ describe('sauvegardes', () => {
     expect(parseBackup('{"app":"Autre"}').ok).toBe(false)
   })
 
-  it('écrit le format 3, avec les tables du coach', async () => {
+  it('écrit le format 4, avec les tables du coach', async () => {
     const file = JSON.parse(serializeBackup(await collectBackup())) as BackupJson
-    expect(BACKUP_FORMAT).toBe(3)
-    expect(file).toMatchObject({ format: 3, dbVersion: 3 })
+    expect(BACKUP_FORMAT).toBe(4)
+    expect(file).toMatchObject({ format: 4, dbVersion: 4 })
     expect(Object.keys(file.tables)).toEqual([...DATA_TABLES])
     for (const name of COACH_TABLES) expect(file.tables[name]).toEqual([])
   })
 
   it.each([
-    ['du format 4', { format: 4 }],
-    ['d’une base en version 4', { dbVersion: 4 }],
+    ['du format 5', { format: 5 }],
+    ['d’une base en version 5', { dbVersion: 5 }],
   ])('refuse une sauvegarde %s', async (_, patch) => {
     const file = { ...(JSON.parse(serializeBackup(await collectBackup())) as BackupJson), ...patch }
     const parsed = parseBackup(JSON.stringify(file))
@@ -204,7 +204,8 @@ describe('sauvegardes', () => {
 
     expect(await db.settings.get('app')).toMatchObject({
       accent: '#2563eb',
-      aiModel: 'claude-opus-5-5',
+      // Le modèle par défaut de la version 2 (Claude Opus), remplacé ensuite par celui d'OpenAI.
+      aiModel: 'gpt-6.2-sol',
       tabs: ['today', 'training', 'nutrition', 'climbing'],
     })
     expect(await db.nutritionGoals.get('me')).toMatchObject({ phase: 'maintain', kcal: null })
@@ -233,23 +234,46 @@ describe('sauvegardes', () => {
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
     expect(parsed.backup).toMatchObject({ format: BACKUP_FORMAT, dbVersion: DB_VERSION })
-    expect(parsed.backup.tables.settings).toEqual([settings])
+    // Seul le modèle Claude change : il prend son remplaçant chez OpenAI.
+    const converted = { ...settings, aiModel: 'gpt-6.2-sol' }
+    expect(parsed.backup.tables.settings).toEqual([converted])
     for (const name of COACH_TABLES) expect(parsed.backup.tables[name]).toEqual([])
     await restoreBackup(parsed.backup)
 
-    expect(await db.settings.get('app')).toEqual(settings)
+    expect(await db.settings.get('app')).toEqual(converted)
     expect(await db.coachMessages.count()).toBe(0)
   })
 
   it('met les tables des anciens formats au format actuel, étape par étape', () => {
     const tables = { settings: [v1Settings()], goals: [] }
-    expect(upgradeTables(3, tables)).toBe(tables)
-    expect(upgradeTables(2, tables)).toBe(tables)
+    expect(upgradeTables(4, tables)).toBe(tables)
     const fromV1 = upgradeTables(1, tables)
-    expect(fromV1.settings).toEqual([settingsV1toV2(v1Settings())])
+    expect(fromV1.settings).toEqual([settingsV3toV4(settingsV1toV2(v1Settings()))])
+    expect(fromV1.settings).toEqual([expect.objectContaining({ aiModel: 'gpt-6.2-sol' })])
     expect(fromV1.goals).toBe(tables.goals)
     // Le fichier lu n'est pas modifié.
     expect(tables.settings).toEqual([v1Settings()])
+
+    const v3 = { settings: [{ id: 'app', aiModel: 'claude-haiku-5-5' }, 'abîmé'], goals: [] }
+    expect(upgradeTables(3, v3).settings).toEqual([{ id: 'app', aiModel: 'gpt-6-luna' }, 'abîmé'])
+    expect(upgradeTables(2, v3).settings).toEqual([{ id: 'app', aiModel: 'gpt-6-luna' }, 'abîmé'])
+    expect(upgradeTables(3, { goals: [] })).toEqual({ goals: [], settings: undefined })
+  })
+
+  it('restaure une sauvegarde de la version 3, faite avec Claude', async () => {
+    const settings = { ...defaultSettings('2026-10-13T08:00:00.000Z'), aiModel: 'claude-haiku-5-5' }
+    await db.coachMessages.bulkPut([coachMessage(0), coachMessage(1)])
+    const file = JSON.parse(serializeBackup(await collectBackup())) as BackupJson
+    file.format = 3
+    file.dbVersion = 3
+    file.tables.settings = [settings]
+
+    const parsed = parseBackup(JSON.stringify(file))
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    await restoreBackup(parsed.backup)
+    expect(await db.settings.get('app')).toEqual({ ...settings, aiModel: 'gpt-6-luna' })
+    expect(await db.coachMessages.count()).toBe(2)
   })
 
   it('exporte puis réimporte les données du coach à l’identique', async () => {
@@ -290,12 +314,12 @@ describe('sauvegardes', () => {
   })
 
   it('garde la clé d’IA et le compteur des demandes sur l’iPhone, hors des sauvegardes', async () => {
-    await db.secrets.put({ id: 'anthropic', value: 'sk-ant-test', expiresAt: null, updatedAt: 'x' })
+    await db.secrets.put({ id: 'openai', value: 'sk-proj-test', expiresAt: null, updatedAt: 'x' })
     await db.aiUsage.put(aiUsageRow())
     const snapshot = await createSnapshot('manual')
     const text = serializeBackup(await collectBackup())
     for (const saved of [text, snapshot.data]) {
-      expect(saved).not.toContain('sk-ant-test')
+      expect(saved).not.toContain('sk-proj-test')
       expect(saved).not.toContain('aiUsage')
     }
 
@@ -303,7 +327,7 @@ describe('sauvegardes', () => {
     const parsed = parseBackup(text)
     if (!parsed.ok) throw new Error(parsed.error)
     await restoreBackup(parsed.backup)
-    expect(await db.secrets.get('anthropic')).toBeDefined()
+    expect(await db.secrets.get('openai')).toBeDefined()
     expect(await db.aiUsage.toArray()).toEqual([aiUsageRow()])
     expect(await db.snapshots.count()).toBe(2)
     await resetAllData()
@@ -313,15 +337,15 @@ describe('sauvegardes', () => {
   })
 
   it('garde la clé d’IA et le jeton Oura hors des sauvegardes', async () => {
-    await db.secrets.put({ id: 'anthropic', value: 'sk-ant-test', expiresAt: null, updatedAt: 'x' })
+    await db.secrets.put({ id: 'openai', value: 'sk-proj-test', expiresAt: null, updatedAt: 'x' })
     const text = serializeBackup(await collectBackup())
-    expect(text).not.toContain('sk-ant-test')
+    expect(text).not.toContain('sk-proj-test')
 
     // Restaurer une sauvegarde ne retire pas la clé de l'iPhone ; tout effacer, si.
     const parsed = parseBackup(text)
     if (!parsed.ok) throw new Error(parsed.error)
     await restoreBackup(parsed.backup)
-    expect(await db.secrets.get('anthropic')).toBeDefined()
+    expect(await db.secrets.get('openai')).toBeDefined()
     await resetAllData()
     expect(await db.secrets.count()).toBe(0)
   })

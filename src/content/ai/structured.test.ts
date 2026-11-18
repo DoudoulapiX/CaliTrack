@@ -1,14 +1,21 @@
 import { z } from 'zod'
 import {
   AI_ERROR_CASES,
-  fakeAnthropicFetch,
+  fakeOpenAiFetch,
   messageResponse,
   streamController,
   streamResponse,
-} from '@/test/anthropic'
-import { askStructured, choice, jsonSchemaOf, MAX_TOKENS, type StructuredRequest } from './structured'
+} from '@/test/openai'
+import {
+  askStructured,
+  choice,
+  jsonSchemaOf,
+  MAX_TOKENS,
+  readStructured,
+  type StructuredRequest,
+} from './structured'
 
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 const USAGE = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
 
 const schema = z.object({ answer: z.string(), score: z.number(), tags: z.array(z.string()) })
@@ -20,7 +27,7 @@ function request(
 ): StructuredRequest<typeof schema> {
   return {
     apiKey: KEY,
-    model: 'claude-opus-5-5',
+    model: 'gpt-6.2-sol',
     system: 'Tu es le coach.',
     content: [{ type: 'text', text: 'Que faire aujourd’hui ?' }],
     schema,
@@ -30,32 +37,53 @@ function request(
   }
 }
 
-describe('réponses structurées de Claude', () => {
+describe('réponses structurées de ChatGPT', () => {
   it('lit la réponse après le bloc de réflexion, avec les jetons facturés', async () => {
-    const { fetchImpl } = fakeAnthropicFetch(streamResponse(ANSWER))
+    const { fetchImpl } = fakeOpenAiFetch(streamResponse(ANSWER))
     expect(await askStructured(request(fetchImpl))).toEqual({ ok: true, value: ANSWER, usage: USAGE })
   })
 
-  it('demande un flux avec un schéma JSON simple, sans lecture automatique', async () => {
-    const { fetchImpl, requests } = fakeAnthropicFetch(streamResponse(ANSWER), streamResponse(ANSWER))
+  it('demande un flux avec un schéma JSON strict, sans rien garder chez OpenAI', async () => {
+    const { fetchImpl, requests } = fakeOpenAiFetch(streamResponse(ANSWER), streamResponse(ANSWER))
     await askStructured(request(fetchImpl))
-    await askStructured(request(fetchImpl, { effort: 'low', model: 'claude-haiku-5-5' }))
+    await askStructured(
+      request(fetchImpl, {
+        effort: 'low',
+        model: 'gpt-6-luna',
+        content: [
+          { type: 'image', jpegBase64: 'SU1BR0U=' },
+          { type: 'text', text: 'Et ça ?' },
+        ],
+      }),
+    )
 
     const [medium, low] = requests
-    expect(medium?.url).toBe('https://api.anthropic.com/v1/messages')
-    expect(medium?.headers.get('x-api-key')).toBe(KEY)
+    expect(medium?.url).toBe('https://api.openai.com/v1/responses')
+    expect(medium?.headers.get('authorization')).toBe(`Bearer ${KEY}`)
+    expect(medium?.headers.get('content-type')).toBe('application/json')
     expect(medium?.body).toEqual({
-      model: 'claude-opus-5-5',
-      max_tokens: 16000,
-      system: 'Tu es le coach.',
-      messages: [{ role: 'user', content: [{ type: 'text', text: 'Que faire aujourd’hui ?' }] }],
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: jsonSchemaOf(schema) } },
+      model: 'gpt-6.2-sol',
+      instructions: 'Tu es le coach.',
+      input: [{ role: 'user', content: [{ type: 'input_text', text: 'Que faire aujourd’hui ?' }] }],
+      max_output_tokens: 16000,
+      reasoning: { effort: 'medium' },
+      text: { format: { type: 'json_schema', name: 'reponse', strict: true, schema: jsonSchemaOf(schema) } },
+      store: false,
       stream: true,
     })
     expect(low?.body).toMatchObject({
-      model: 'claude-haiku-5-5',
-      max_tokens: 8000,
-      output_config: { effort: 'low' },
+      model: 'gpt-6-luna',
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_image', image_url: 'data:image/jpeg;base64,SU1BR0U=', detail: 'auto' },
+            { type: 'input_text', text: 'Et ça ?' },
+          ],
+        },
+      ],
+      max_output_tokens: 8000,
+      reasoning: { effort: 'low' },
       stream: true,
     })
     expect(MAX_TOKENS).toEqual({ low: 8000, medium: 16000 })
@@ -63,7 +91,7 @@ describe('réponses structurées de Claude', () => {
 
   it('reconnaît chaque problème, et rend les jetons quand une réponse est revenue', async () => {
     for (const errorCase of AI_ERROR_CASES) {
-      const { fetchImpl } = fakeAnthropicFetch(...errorCase.answers())
+      const { fetchImpl } = fakeOpenAiFetch(...errorCase.answers())
       const billed = errorCase.problem === 'refused' || errorCase.structuredOnly === true
       expect(await askStructured(request(fetchImpl)), errorCase.name).toEqual({
         ok: false,
@@ -73,8 +101,8 @@ describe('réponses structurées de Claude', () => {
     }
   })
 
-  it('distingue un refus d’un échec', async () => {
-    const { fetchImpl } = fakeAnthropicFetch(messageResponse(null, 'refusal'), streamResponse('', 'end_turn'))
+  it('distingue un refus d’un échec, même dans une réponse terminée', async () => {
+    const { fetchImpl } = fakeOpenAiFetch(messageResponse(null, 'refusal'), streamResponse('', 'completed'))
     expect(await askStructured(request(fetchImpl))).toMatchObject({ ok: false, problem: 'refused' })
     expect(await askStructured(request(fetchImpl))).toMatchObject({ ok: false, problem: 'failed' })
   })
@@ -82,7 +110,7 @@ describe('réponses structurées de Claude', () => {
   it('s’arrête quand on annule pendant la réponse', async () => {
     const stream = streamController()
     const controller = new AbortController()
-    const { fetchImpl, requests } = fakeAnthropicFetch(stream.answer)
+    const { fetchImpl, requests } = fakeOpenAiFetch(stream.answer)
     stream.push('{"answer": "Re')
     const pending = askStructured(request(fetchImpl, { signal: controller.signal }))
     await vi.waitFor(() => {
@@ -92,13 +120,63 @@ describe('réponses structurées de Claude', () => {
     expect(await pending).toEqual({ ok: false, problem: 'cancelled', usage: null })
   })
 
-  it('donne un schéma JSON fermé', () => {
-    expect(jsonSchemaOf(schema)).toMatchObject({
+  it('donne un schéma JSON fermé, accepté par les sorties strictes', () => {
+    expect(jsonSchemaOf(schema)).toEqual({
       type: 'object',
+      properties: {
+        answer: { type: 'string' },
+        score: { type: 'number' },
+        tags: { type: 'array', items: { type: 'string' } },
+      },
       additionalProperties: false,
       required: ['answer', 'score', 'tags'],
     })
-    expect(jsonSchemaOf(schema)).not.toHaveProperty('parse')
+    const nested = z.object({
+      low: z.number().nullable().describe('Bas'),
+      items: z.array(z.object({ name: z.string() })),
+    })
+    expect(jsonSchemaOf(nested)).toEqual({
+      type: 'object',
+      properties: {
+        low: { type: ['number', 'null'], description: 'Bas' },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { name: { type: 'string' } },
+            required: ['name'],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ['low', 'items'],
+      additionalProperties: false,
+    })
+  })
+
+  it('compte les jetons du cache à part, et refuse une réponse sans jetons comptés', () => {
+    const response = {
+      status: 'completed',
+      output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(ANSWER) }] }],
+    }
+    expect(
+      readStructured(
+        {
+          ...response,
+          usage: { input_tokens: 2000, output_tokens: 10, input_tokens_details: { cached_tokens: 1500 } },
+        },
+        schema,
+      ),
+    ).toEqual({
+      ok: true,
+      value: ANSWER,
+      usage: { inputTokens: 500, outputTokens: 10, cacheReadTokens: 1500, cacheWriteTokens: 0 },
+    })
+    expect(readStructured(response, schema)).toEqual({ ok: false, problem: 'failed', usage: null })
+    expect(readStructured({ ...response, status: 'cancelled' }, schema)).toMatchObject({
+      problem: 'cancelled',
+    })
+    expect(readStructured({ ...response, status: 'queued' }, schema)).toMatchObject({ problem: 'failed' })
   })
 
   it('ramène une valeur libre à un choix permis', () => {

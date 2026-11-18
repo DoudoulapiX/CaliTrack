@@ -1,4 +1,4 @@
-/** Réponses de l'API Claude enregistrées, pour tester sans réseau ni clé. */
+/** Réponses de l'API d'OpenAI (Responses) enregistrées, pour tester sans réseau ni clé. */
 import type { AiProblem } from '@/content/ai/client'
 import type { CoachData } from '@/content/coach/context'
 
@@ -11,56 +11,68 @@ export interface RecordedRequest {
 /** Une réponse calculée d'après la demande reçue (et son signal d'annulation). */
 export type Answer = (request: RecordedRequest, init?: RequestInit) => Response | Error
 
-type StopReason = 'end_turn' | 'refusal' | 'max_tokens'
+/**
+ * Comment se termine une réponse : terminée, refusée (bloc de refus), coupée par la limite de longueur
+ * ou arrêtée par le filtre de contenu (réponses incomplètes).
+ */
+export type Finish = 'completed' | 'refusal' | 'max_output_tokens' | 'content_filter'
 
-/** Une réponse de l'API Messages dont le texte est `output` (sortie structurée). */
-export function messageResponse(output: unknown, stopReason: StopReason = 'end_turn'): Response {
-  const body = {
-    id: 'msg_01Test',
-    type: 'message',
-    role: 'assistant',
-    model: 'claude-opus-5-5',
-    content: stopReason === 'refusal' ? [] : [{ type: 'text', text: JSON.stringify(output) }],
-    stop_reason: stopReason,
-    stop_sequence: null,
-    usage: { input_tokens: 1850, output_tokens: 420 },
+/** Les jetons comptés par défaut dans une réponse (sans cache). */
+export const STREAM_USAGE = {
+  input_tokens: 1850,
+  output_tokens: 420,
+  input_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+  output_tokens_details: { reasoning_tokens: 120 },
+  total_tokens: 2270,
+}
+
+export type FakeUsage = typeof STREAM_USAGE
+
+/** Les jetons comptés, avec ceux lus dans le cache et ceux qui y sont écrits (compris dans l'entrée). */
+export function usageWith({
+  cached = 0,
+  written = 0,
+  input = 1850,
+  output = 420,
+}: { cached?: number; written?: number; input?: number; output?: number } = {}): FakeUsage {
+  return {
+    input_tokens: input + cached + written,
+    output_tokens: output,
+    input_tokens_details: { cached_tokens: cached, cache_write_tokens: written },
+    output_tokens_details: { reasoning_tokens: 120 },
+    total_tokens: input + cached + written + output,
   }
-  return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
 }
 
-/** Une erreur de l'API (`authentication_error`, `billing_error`…), sans nouvel essai. */
-export function errorResponse(status: number, type: string, message = 'Erreur de test'): Response {
-  return new Response(JSON.stringify({ type: 'error', error: { type, message }, request_id: 'req_test' }), {
-    status,
-    // Pas de nouvel essai : le client réessaie seulement si le serveur ne l'interdit pas.
-    headers: { 'content-type': 'application/json', 'x-should-retry': 'false' },
-  })
-}
-
-/* ------------------------------------------------------------------ */
-/* Réponses en flux (server-sent events)                               */
-/* ------------------------------------------------------------------ */
-
-type StreamEvent = { type: string } & Record<string, unknown>
-
-interface FakeBlock {
+interface FakeItem {
+  id: string
   type: string
-  text?: string
-  thinking?: string
-  signature?: string
+  status?: string
+  role?: string
+  summary?: unknown[]
+  content?: { type: string; text?: string; refusal?: string; annotations?: unknown[] }[]
 }
 
-interface FakeMessage {
-  content: FakeBlock[]
-  stop_reason: string | null
-  usage: Record<string, number | null>
+interface FakeResponse {
+  id: string
+  object: 'response'
+  created_at: number
+  model: string
+  status: string
+  output: FakeItem[]
+  usage: FakeUsage | null
+  incomplete_details: { reason: string } | null
+  error: { code: string; message: string } | null
 }
 
 const SSE_HEADERS = { 'content-type': 'text/event-stream' }
+const JSON_HEADERS = { 'content-type': 'application/json' }
+
+type StreamEvent = { type: string } & Record<string, unknown>
 
 /** Les lignes d'un événement du flux, telles que l'API les envoie. */
-function sseOf(event: StreamEvent): string {
-  return `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
+function sseOf(event: StreamEvent, sequence: number): string {
+  return `event: ${event.type}\ndata: ${JSON.stringify({ ...event, sequence_number: sequence })}\n\n`
 }
 
 /** Un texte coupé en trois morceaux au plus, jamais vides (comme les morceaux d'un vrai flux). */
@@ -69,111 +81,168 @@ function pieces(text: string): string[] {
   return [0, 1, 2].map((i) => text.slice(i * size, (i + 1) * size)).filter((piece) => piece !== '')
 }
 
-function messageStart(usage: Record<string, number | null>): StreamEvent {
+const REASONING: FakeItem = { id: 'rs_test', type: 'reasoning', summary: [] }
+
+function messageItem(content: FakeItem['content']): FakeItem {
+  return { id: 'msg_test', type: 'message', status: 'completed', role: 'assistant', content }
+}
+
+/** La réponse finale de l'API, dont le texte est `text` (null : aucun texte). */
+function fakeResponse(
+  text: string | null,
+  finish: Finish,
+  { reasoning = true, usage = STREAM_USAGE }: { reasoning?: boolean; usage?: FakeUsage } = {},
+): FakeResponse {
+  const output: FakeItem[] = reasoning ? [REASONING] : []
+  if (finish === 'refusal') {
+    output.push(messageItem([{ type: 'refusal', refusal: 'Je ne peux pas aider avec cette demande.' }]))
+  } else if (text !== null) {
+    output.push(messageItem([{ type: 'output_text', text, annotations: [] }]))
+  }
+  const incomplete = finish === 'max_output_tokens' || finish === 'content_filter'
   return {
-    type: 'message_start',
-    message: {
-      id: 'msg_01Test',
-      type: 'message',
-      role: 'assistant',
-      model: 'claude-opus-5-5',
-      content: [],
-      stop_reason: null,
-      stop_sequence: null,
-      usage: { ...usage, output_tokens: 1 },
-    },
+    id: 'resp_test',
+    object: 'response',
+    created_at: 1_792_000_000,
+    model: 'gpt-6.2-sol',
+    status: incomplete ? 'incomplete' : 'completed',
+    output,
+    usage,
+    incomplete_details: incomplete ? { reason: finish } : null,
+    error: null,
   }
 }
 
-/** Les événements qui redonnent `message` une fois mis bout à bout par le SDK. */
-function eventsOf(message: FakeMessage): StreamEvent[] {
-  const events: StreamEvent[] = [messageStart(message.usage)]
-  message.content.forEach((block, index) => {
-    if (block.type === 'thinking') {
-      events.push(
-        {
-          type: 'content_block_start',
-          index,
-          content_block: { type: 'thinking', thinking: '', signature: '' },
-        },
-        {
-          type: 'content_block_delta',
-          index,
-          delta: { type: 'thinking_delta', thinking: block.thinking ?? '' },
-        },
-        {
-          type: 'content_block_delta',
-          index,
-          delta: { type: 'signature_delta', signature: block.signature ?? '' },
-        },
-      )
-    } else {
-      events.push({ type: 'content_block_start', index, content_block: { type: 'text', text: '' } })
-      for (const text of pieces(block.text ?? '')) {
-        events.push({ type: 'content_block_delta', index, delta: { type: 'text_delta', text } })
-      }
-    }
-    events.push({ type: 'content_block_stop', index })
+const textOf = (output: unknown): string | null =>
+  output === null ? null : typeof output === 'string' ? output : JSON.stringify(output)
+
+/** Une réponse JSON de l'API (demande sans flux) dont le texte est `output` (sortie structurée). */
+export function messageResponse(output: unknown, finish: Finish = 'completed'): Response {
+  return new Response(JSON.stringify(fakeResponse(textOf(output), finish)), {
+    status: 200,
+    headers: JSON_HEADERS,
   })
-  events.push(
-    {
-      type: 'message_delta',
-      delta: { stop_reason: message.stop_reason, stop_sequence: null },
-      usage: message.usage,
-    },
-    { type: 'message_stop' },
-  )
+}
+
+/** Une erreur de l'API (`invalid_api_key`, `insufficient_quota`…), avec son code HTTP. */
+export function errorResponse(status: number, code: string, message = 'Erreur de test'): Response {
+  const type = code === 'insufficient_quota' ? 'insufficient_quota' : 'invalid_request_error'
+  return new Response(JSON.stringify({ error: { message, type, param: null, code } }), {
+    status,
+    headers: JSON_HEADERS,
+  })
+}
+
+/* ------------------------------------------------------------------ */
+/* Réponses en flux (server-sent events)                               */
+/* ------------------------------------------------------------------ */
+
+const inProgress = (response: FakeResponse) => ({
+  ...response,
+  status: 'in_progress',
+  output: [],
+  usage: null,
+  incomplete_details: null,
+})
+
+/** Les événements qui redonnent `response` une fois mis bout à bout. */
+function eventsOf(response: FakeResponse): StreamEvent[] {
+  const events: StreamEvent[] = [
+    { type: 'response.created', response: inProgress(response) },
+    { type: 'response.in_progress', response: inProgress(response) },
+  ]
+  response.output.forEach((item, outputIndex) => {
+    events.push({
+      type: 'response.output_item.added',
+      output_index: outputIndex,
+      item: { ...item, status: 'in_progress', ...(item.content ? { content: [] } : {}) },
+    })
+    item.content?.forEach((part, contentIndex) => {
+      const where = { item_id: item.id, output_index: outputIndex, content_index: contentIndex }
+      events.push({ type: 'response.content_part.added', ...where, part: { ...part, text: '' } })
+      if (part.type === 'output_text') {
+        for (const delta of pieces(part.text ?? '')) {
+          events.push({ type: 'response.output_text.delta', ...where, delta, logprobs: [] })
+        }
+        events.push({ type: 'response.output_text.done', ...where, text: part.text ?? '', logprobs: [] })
+      } else {
+        events.push({ type: 'response.refusal.delta', ...where, delta: part.refusal ?? '' })
+        events.push({ type: 'response.refusal.done', ...where, refusal: part.refusal ?? '' })
+      }
+      events.push({ type: 'response.content_part.done', ...where, part })
+    })
+    events.push({ type: 'response.output_item.done', output_index: outputIndex, item })
+  })
+  events.push({
+    type: response.status === 'incomplete' ? 'response.incomplete' : 'response.completed',
+    response,
+  })
   return events
 }
 
-/** Le même message, envoyé en flux. */
-function sseResponse(message: FakeMessage): Response {
-  return new Response(eventsOf(message).map(sseOf).join(''), { status: 200, headers: SSE_HEADERS })
-}
-
-/** Les jetons comptés par défaut dans une réponse en flux. */
-export const STREAM_USAGE = {
-  input_tokens: 1850,
-  output_tokens: 420,
-  cache_read_input_tokens: 0,
-  cache_creation_input_tokens: 0,
+/** La même réponse, envoyée en flux. */
+function sseResponse(response: FakeResponse): Response {
+  const body = eventsOf(response)
+    .map((event, sequence) => sseOf(event, sequence))
+    .join('')
+  return new Response(body, { status: 200, headers: SSE_HEADERS })
 }
 
 /**
  * Une réponse en flux dont le texte est `output` : un objet (envoyé en JSON) ou un texte brut (discussion,
- * JSON illisible) ; null : aucun texte. Elle commence par défaut par un bloc de réflexion, qui ne doit
+ * JSON illisible) ; null : aucun texte. Elle commence par défaut par un élément de réflexion, qui ne doit
  * jamais être lu comme la réponse.
  */
 export function streamResponse(
   output: unknown,
-  stopReason: StopReason = 'end_turn',
-  { thinking = true, usage = {} }: { thinking?: boolean; usage?: Partial<typeof STREAM_USAGE> } = {},
+  finish: Finish = 'completed',
+  options: { reasoning?: boolean; usage?: FakeUsage } = {},
 ): Response {
-  const content: FakeBlock[] = []
-  if (thinking) content.push({ type: 'thinking', thinking: 'Je regarde les données.', signature: 'sig_test' })
-  if (output !== null) {
-    content.push({ type: 'text', text: typeof output === 'string' ? output : JSON.stringify(output) })
-  }
-  return sseResponse({ content, stop_reason: stopReason, usage: { ...STREAM_USAGE, ...usage } })
+  return sseResponse(fakeResponse(textOf(output), finish, options))
 }
 
-/** Les erreurs que l'API peut envoyer au milieu d'une réponse en flux. */
-export type StreamErrorType = 'overloaded_error' | 'rate_limit_error' | 'api_error'
+/** Une réponse en flux qui échoue côté OpenAI (événement response.failed, sans jetons comptés). */
+export function failedResponse(code = 'server_error'): Response {
+  const response: FakeResponse = {
+    ...fakeResponse(null, 'completed', { reasoning: false }),
+    status: 'failed',
+    usage: null,
+    error: { code, message: 'Erreur de test' },
+  }
+  const events: StreamEvent[] = [
+    { type: 'response.created', response: inProgress(response) },
+    { type: 'response.failed', response },
+  ]
+  return new Response(events.map((event, sequence) => sseOf(event, sequence)).join(''), {
+    status: 200,
+    headers: SSE_HEADERS,
+  })
+}
 
-function errorEvent(type: StreamErrorType): string {
-  return `event: error\ndata: ${JSON.stringify({ type: 'error', error: { type, message: 'Erreur de test' } })}\n\n`
+function errorEvent(code: string): StreamEvent {
+  return { type: 'error', code, message: 'Erreur de test', param: null }
 }
 
 /** Une réponse qui commence bien (HTTP 200, un peu de texte) puis s'interrompt sur une erreur. */
-export function streamErrorResponse(type: StreamErrorType, afterText = 'Je'): Response {
+export function streamErrorResponse(code = 'server_error', afterText = 'Je'): Response {
+  const response = fakeResponse(null, 'completed', { reasoning: false })
+  const where = { item_id: 'msg_test', output_index: 0, content_index: 0 }
   const events: StreamEvent[] = [
-    messageStart(STREAM_USAGE),
-    { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+    { type: 'response.created', response: inProgress(response) },
+    {
+      type: 'response.output_item.added',
+      output_index: 0,
+      item: { ...messageItem([]), status: 'in_progress' },
+    },
   ]
   if (afterText !== '') {
-    events.push({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: afterText } })
+    events.push({ type: 'response.output_text.delta', ...where, delta: afterText, logprobs: [] })
   }
-  return new Response(events.map(sseOf).join('') + errorEvent(type), { status: 200, headers: SSE_HEADERS })
+  events.push(errorEvent(code))
+  return new Response(events.map((event, sequence) => sseOf(event, sequence)).join(''), {
+    status: 200,
+    headers: SSE_HEADERS,
+  })
 }
 
 /**
@@ -186,11 +255,14 @@ export function streamController() {
   const waiting: Uint8Array[] = []
   let sink: ReadableStreamDefaultController<Uint8Array> | null = null
   let closed = false
-  let textStarted = false
+  let sequence = 0
+  let text = ''
+  const base = fakeResponse(null, 'completed', { reasoning: false })
+  const where = { item_id: 'msg_test', output_index: 0, content_index: 0 }
 
-  const send = (chunk: string) => {
+  const send = (event: StreamEvent) => {
     if (closed) return
-    const bytes = encoder.encode(chunk)
+    const bytes = encoder.encode(sseOf(event, sequence++))
     if (sink) sink.enqueue(bytes)
     else waiting.push(bytes)
   }
@@ -199,13 +271,13 @@ export function streamController() {
     closed = true
     sink?.close()
   }
-  const startText = () => {
-    if (textStarted) return
-    textStarted = true
-    send(sseOf({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } }))
-  }
 
-  send(sseOf(messageStart(STREAM_USAGE)))
+  send({ type: 'response.created', response: inProgress(base) })
+  send({
+    type: 'response.output_item.added',
+    output_index: 0,
+    item: { ...messageItem([]), status: 'in_progress' },
+  })
 
   const answer: Answer = (_request, init) => {
     const body = new ReadableStream<Uint8Array>({
@@ -230,26 +302,24 @@ export function streamController() {
   return {
     answer,
     /** Envoie un morceau de texte de la réponse. */
-    push(text: string) {
-      startText()
-      send(sseOf({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text } }))
+    push(delta: string) {
+      text += delta
+      send({ type: 'response.output_text.delta', ...where, delta, logprobs: [] })
     },
     /** Termine la réponse. */
-    finish(stopReason: StopReason = 'end_turn') {
-      if (textStarted) send(sseOf({ type: 'content_block_stop', index: 0 }))
-      send(
-        sseOf({
-          type: 'message_delta',
-          delta: { stop_reason: stopReason, stop_sequence: null },
-          usage: STREAM_USAGE,
-        }),
-      )
-      send(sseOf({ type: 'message_stop' }))
+    finish(finish: Finish = 'completed') {
+      const response = fakeResponse(text, finish, { reasoning: false })
+      send({ type: 'response.output_text.done', ...where, text, logprobs: [] })
+      send({ type: 'response.output_item.done', output_index: 0, item: response.output[0] })
+      send({
+        type: response.status === 'incomplete' ? 'response.incomplete' : 'response.completed',
+        response,
+      })
       close()
     },
     /** Interrompt la réponse sur une erreur de l'API. */
-    fail(type: StreamErrorType) {
-      send(errorEvent(type))
+    fail(code = 'server_error') {
+      send(errorEvent(code))
       close()
     },
   }
@@ -262,30 +332,27 @@ export function streamController() {
 const streams = (body: unknown) =>
   typeof body === 'object' && body !== null && (body as { stream?: unknown }).stream === true
 
-/** Un message JSON (réponse ordinaire) renvoyé en flux, quand la demande attend un flux. */
+/** Une réponse JSON (demande ordinaire) renvoyée en flux, quand la demande attend un flux. */
 async function asStreamed(answer: Response): Promise<Response> {
   if (answer.status !== 200 || !answer.headers.get('content-type')?.includes('application/json'))
     return answer
-  const message = (await answer.clone().json()) as Partial<FakeMessage> & { type?: unknown }
-  if (message.type !== 'message' || !message.content || !message.usage) return answer
-  return sseResponse({
-    content: message.content,
-    stop_reason: message.stop_reason ?? null,
-    usage: message.usage,
-  })
+  const response = (await answer.clone().json()) as Partial<FakeResponse>
+  if (response.object !== 'response' || !Array.isArray(response.output)) return answer
+  return sseResponse(response as FakeResponse)
 }
 
 /**
  * Un `fetch` qui répond dans l'ordre (une erreur = pas de réseau ; une fonction = une réponse calculée
- * d'après la demande) et note chaque requête. Une demande en flux reçoit les messages JSON en flux.
+ * d'après la demande) et note chaque requête. Une demande en flux reçoit les réponses JSON en flux.
  */
-export function fakeAnthropicFetch(...answers: (Response | Error | Answer)[]) {
+export function fakeOpenAiFetch(...answers: (Response | Error | Answer)[]) {
   const requests: RecordedRequest[] = []
   const fetchImpl = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const url = input instanceof Request ? input.url : String(input)
     const body = typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : null
     const request = { url, headers: new Headers(init?.headers), body }
     requests.push(request)
+    if (init?.signal?.aborted) throw init.signal.reason
     const next = answers.shift()
     if (next === undefined) throw new Error('Aucune réponse prévue')
     const answer = typeof next === 'function' ? next(request, init) : next
@@ -295,55 +362,80 @@ export function fakeAnthropicFetch(...answers: (Response | Error | Answer)[]) {
   return { fetchImpl, requests }
 }
 
+/** La liste des modèles (réponse de la vérification d'une clé). */
+export function modelsResponse(): Response {
+  return new Response(JSON.stringify({ object: 'list', data: [] }), { status: 200, headers: JSON_HEADERS })
+}
+
 /* ------------------------------------------------------------------ */
 /* Les erreurs à vérifier pour chaque demande                          */
 /* ------------------------------------------------------------------ */
 
 export interface AiErrorCase {
   name: string
-  /** Les réponses successives (deux pour l'absence de réseau : le client réessaie une fois). */
+  /** Les réponses successives (deux pour l'absence de réseau : la demande est réessayée une fois). */
   answers: () => (Response | Error)[]
   problem: AiProblem
+  /** Vrai pour une réponse facturée (des jetons comptés), même inutilisable. */
+  billed?: boolean
   /** Vrai pour une réponse qui n'est un problème que pour une sortie structurée (pas pour la discussion). */
   structuredOnly?: boolean
 }
 
-/** Toutes les façons dont une demande à Claude peut échouer, et le problème attendu. */
+/** Toutes les façons dont une demande à ChatGPT peut échouer, et le problème attendu. */
 export const AI_ERROR_CASES: readonly AiErrorCase[] = [
   {
     name: 'pas de réseau',
     answers: () => [new TypeError('fetch failed'), new TypeError('fetch failed')],
     problem: 'offline',
   },
-  { name: 'clé refusée', answers: () => [errorResponse(401, 'authentication_error')], problem: 'invalidKey' },
-  { name: 'clé sans droits', answers: () => [errorResponse(403, 'permission_error')], problem: 'invalidKey' },
-  { name: 'plus de crédit', answers: () => [errorResponse(400, 'billing_error')], problem: 'noCredit' },
-  { name: 'modèle fermé', answers: () => [errorResponse(404, 'not_found_error')], problem: 'model' },
-  { name: 'trop de demandes', answers: () => [errorResponse(429, 'rate_limit_error')], problem: 'busy' },
-  { name: 'surcharge', answers: () => [errorResponse(529, 'overloaded_error')], problem: 'busy' },
+  { name: 'clé refusée', answers: () => [errorResponse(401, 'invalid_api_key')], problem: 'invalidKey' },
+  {
+    name: 'clé sans droits',
+    answers: () => [errorResponse(403, 'unsupported_country_region_territory')],
+    problem: 'invalidKey',
+  },
+  { name: 'plus de crédit', answers: () => [errorResponse(429, 'insufficient_quota')], problem: 'noCredit' },
+  { name: 'modèle fermé', answers: () => [errorResponse(404, 'model_not_found')], problem: 'model' },
+  { name: 'trop de demandes', answers: () => [errorResponse(429, 'rate_limit_exceeded')], problem: 'busy' },
+  { name: 'surcharge', answers: () => [errorResponse(503, 'server_error')], problem: 'busy' },
   {
     name: 'surcharge en cours de réponse',
-    answers: () => [streamErrorResponse('overloaded_error')],
+    answers: () => [streamErrorResponse('rate_limit_exceeded')],
     problem: 'busy',
   },
-  { name: 'panne en cours de réponse', answers: () => [streamErrorResponse('api_error')], problem: 'busy' },
-  { name: 'refus', answers: () => [streamResponse(null, 'refusal')], problem: 'refused' },
+  {
+    name: 'panne en cours de réponse',
+    answers: () => [streamErrorResponse('server_error')],
+    problem: 'busy',
+  },
+  { name: 'réponse échouée', answers: () => [failedResponse('server_error')], problem: 'busy' },
+  { name: 'refus', answers: () => [streamResponse(null, 'refusal')], problem: 'refused', billed: true },
+  {
+    name: 'contenu filtré',
+    answers: () => [streamResponse(null, 'content_filter')],
+    problem: 'refused',
+    billed: true,
+  },
   {
     name: 'réponse coupée',
-    answers: () => [streamResponse({ réponse: 'coupée' }, 'max_tokens')],
+    answers: () => [streamResponse({ réponse: 'coupée' }, 'max_output_tokens')],
     problem: 'failed',
+    billed: true,
     structuredOnly: true,
   },
   {
     name: 'JSON illisible',
     answers: () => [streamResponse('{"isMeal": tru')],
     problem: 'failed',
+    billed: true,
     structuredOnly: true,
   },
   {
     name: 'mauvaise forme',
     answers: () => [streamResponse({ réponse: 'pas le bon format' })],
     problem: 'failed',
+    billed: true,
     structuredOnly: true,
   },
 ]
@@ -352,7 +444,7 @@ export const AI_ERROR_CASES: readonly AiErrorCase[] = [
 /* Réponses enregistrées                                               */
 /* ------------------------------------------------------------------ */
 
-/** L'estimation de Claude pour une assiette de poulet, riz et haricots verts. */
+/** L’estimation de ChatGPT pour une assiette de poulet, riz et haricots verts. */
 export const PLATE_ESTIMATE = {
   isMeal: true,
   problem: '',
@@ -399,7 +491,7 @@ export const DAILY_TIPS = {
   changes: [],
 }
 
-/** L'analyse physique : Claude conseille une sèche alors que la masse grasse est déjà basse (8 à 11 %). */
+/** L'analyse physique : ChatGPT conseille une sèche alors que la masse grasse est déjà basse (8 à 11 %). */
 export const BODY_CUT_LEAN = {
   readable: true,
   problem: '',
@@ -411,7 +503,7 @@ export const BODY_CUT_LEAN = {
   advice: ['Garde tes protéines hautes.'],
 }
 
-/** Ce que Claude lit sur une photo de frigo (7 aliments). */
+/** Ce que ChatGPT lit sur une photo de frigo (7 aliments). */
 export const FRIDGE_ITEMS = {
   readable: true,
   problem: '',

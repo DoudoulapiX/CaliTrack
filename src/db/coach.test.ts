@@ -305,23 +305,23 @@ describe('discussion', () => {
 
   it('enregistre la question puis la réponse, à la suite', async () => {
     const now = '2026-10-21T10:00:00.000Z'
-    await appendChatExchange({ user: '  Bonjour  ', assistant: '\nSalut !\n', model: 'claude-opus-5-5', now })
-    await appendChatExchange({ user: 'Et demain ?', assistant: 'Repos.', model: 'claude-haiku-5-5', now })
+    await appendChatExchange({ user: '  Bonjour  ', assistant: '\nSalut !\n', model: 'gpt-6.2-sol', now })
+    await appendChatExchange({ user: 'Et demain ?', assistant: 'Repos.', model: 'gpt-6-luna', now })
     const rows = await messages()
     expect(
       rows.map(({ seq, role, text, model, createdAt }) => ({ seq, role, text, model, createdAt })),
     ).toEqual([
       { seq: 0, role: 'user', text: 'Bonjour', model: null, createdAt: now },
-      { seq: 1, role: 'assistant', text: 'Salut !', model: 'claude-opus-5-5', createdAt: now },
+      { seq: 1, role: 'assistant', text: 'Salut !', model: 'gpt-6.2-sol', createdAt: now },
       { seq: 2, role: 'user', text: 'Et demain ?', model: null, createdAt: now },
-      { seq: 3, role: 'assistant', text: 'Repos.', model: 'claude-haiku-5-5', createdAt: now },
+      { seq: 3, role: 'assistant', text: 'Repos.', model: 'gpt-6-luna', createdAt: now },
     ])
     expect(new Set(rows.map((row) => row.id)).size).toBe(4)
   })
 
   it('suit le dernier numéro, même après des messages effacés', async () => {
     await db.coachMessages.bulkPut([coachMessage(6), coachMessage(7)])
-    await appendChatExchange({ user: 'Q', assistant: 'R', model: 'claude-opus-5-5' })
+    await appendChatExchange({ user: 'Q', assistant: 'R', model: 'gpt-6.2-sol' })
     expect((await messages()).map((row) => row.seq)).toEqual([6, 7, 8, 9])
   })
 
@@ -329,7 +329,7 @@ describe('discussion', () => {
     ['une question vide', { user: '   ', assistant: 'Réponse' }],
     ['une réponse vide', { user: 'Question', assistant: '\n' }],
   ])('refuse %s sans rien écrire', async (_, texts) => {
-    await expect(appendChatExchange({ ...texts, model: 'claude-opus-5-5' })).rejects.toThrow('vide')
+    await expect(appendChatExchange({ ...texts, model: 'gpt-6.2-sol' })).rejects.toThrow('vide')
     expect(await db.coachMessages.count()).toBe(0)
   })
 
@@ -337,20 +337,20 @@ describe('discussion', () => {
     await appendChatExchange({
       user: 'Q',
       assistant: 'a'.repeat(CHAT_TEXT_MAX + 50),
-      model: 'claude-opus-5-5',
+      model: 'gpt-6.2-sol',
     })
     expect((await messages())[1]?.text).toHaveLength(CHAT_TEXT_MAX)
   })
 
   it(`ne garde que les ${String(CHAT_MAX_STORED)} derniers messages`, async () => {
     await db.coachMessages.bulkPut(Array.from({ length: CHAT_MAX_STORED - 1 }, (_, seq) => coachMessage(seq)))
-    await appendChatExchange({ user: 'Q', assistant: 'R', model: 'claude-opus-5-5' })
+    await appendChatExchange({ user: 'Q', assistant: 'R', model: 'gpt-6.2-sol' })
     let seqs = (await messages()).map((row) => row.seq)
     expect(seqs).toHaveLength(CHAT_MAX_STORED)
     expect(seqs[0]).toBe(1)
     expect(seqs.slice(-2)).toEqual([CHAT_MAX_STORED - 1, CHAT_MAX_STORED])
 
-    await appendChatExchange({ user: 'Q2', assistant: 'R2', model: 'claude-opus-5-5' })
+    await appendChatExchange({ user: 'Q2', assistant: 'R2', model: 'gpt-6.2-sol' })
     seqs = (await messages()).map((row) => row.seq)
     expect(seqs).toHaveLength(CHAT_MAX_STORED)
     expect(seqs[0]).toBe(3)
@@ -362,7 +362,7 @@ describe('discussion', () => {
     vi.spyOn(db.coachMessages, 'put')
       .mockImplementationOnce((item, key) => put(item, key))
       .mockImplementationOnce(() => Dexie.Promise.reject(new Error('Disque plein')))
-    await expect(appendChatExchange({ user: 'Q', assistant: 'R', model: 'claude-opus-5-5' })).rejects.toThrow(
+    await expect(appendChatExchange({ user: 'Q', assistant: 'R', model: 'gpt-6.2-sol' })).rejects.toThrow(
       'Disque plein',
     )
     expect(await db.coachMessages.count()).toBe(0)

@@ -3,7 +3,7 @@ import type { UserEvent } from '@testing-library/user-event'
 import { db } from '@/db/db'
 import { saveSecret } from '@/db/secrets'
 import { updateSettings } from '@/db/settings'
-import { errorResponse, fakeAnthropicFetch, messageResponse, PLATE_ESTIMATE } from '@/test/anthropic'
+import { errorResponse, fakeOpenAiFetch, messageResponse, PLATE_ESTIMATE } from '@/test/openai'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 import { preparePhoto, UnreadablePhotoError } from './photo'
@@ -15,15 +15,15 @@ vi.mock('./photo', async (importOriginal) => ({
 }))
 
 const PHOTO_PAGE = '/nutrition/photo?day=2026-10-21&meal=lunch'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
 const withKey = async () => {
-  await saveSecret('anthropic', KEY)
-  await updateSettings({ aiModel: 'claude-haiku-5-5' })
+  await saveSecret('openai', KEY)
+  await updateSettings({ aiModel: 'gpt-6-luna' })
 }
 
 function stubFetch(...answers: (Response | Error)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -45,9 +45,9 @@ describe('photo du repas', () => {
     vi.unstubAllGlobals()
   })
 
-  it('demande d’abord une clé Claude', async () => {
+  it('demande d’abord une clé OpenAI', async () => {
     const { user, router } = await renderApp(PHOTO_PAGE)
-    expect(await screen.findByText('Ajoute ta clé Claude')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI')).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Ajouter ma clé' }))
     expect(
       await screen.findByRole('heading', { name: 'Intelligence artificielle', level: 1 }),
@@ -75,7 +75,7 @@ describe('photo du repas', () => {
       'Riz blanc cuit180 g · 234 kcal',
       'Haricots verts100 g · 31 kcal',
     ])
-    expect(requests[0]?.body).toMatchObject({ model: 'claude-haiku-5-5' })
+    expect(requests[0]?.body).toMatchObject({ model: 'gpt-6-luna' })
     expect(JSON.stringify(requests[0]?.body)).toContain('Précisions : Riz au beurre')
     expect(screen.getByRole('button', { name: 'Ajouter 3 aliments au déjeuner' })).toBeEnabled()
     expectFrenchSpacing()
@@ -110,23 +110,23 @@ describe('photo du repas', () => {
   })
 
   it('renvoie aux réglages quand la clé est refusée', async () => {
-    stubFetch(errorResponse(401, 'authentication_error'))
+    stubFetch(errorResponse(401, 'invalid_api_key'))
     const { user } = await renderApp(PHOTO_PAGE, { setup: withKey })
     await choosePhoto(user)
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
     expect(await screen.findByRole('heading', { name: 'Analyse impossible', level: 2 })).toBeInTheDocument()
-    expect(screen.getByText(/^Ta clé Claude est refusée/)).toBeInTheDocument()
+    expect(screen.getByText(/^Ta clé OpenAI est refusée/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Réglages de l’IA' })).toHaveAttribute('href', '/more/ai')
     expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument()
     expectFrenchSpacing()
   })
 
   it('compte chaque analyse facturée dans le coût du mois', async () => {
-    stubFetch(errorResponse(429, 'rate_limit_error'), messageResponse(PLATE_ESTIMATE))
+    stubFetch(errorResponse(429, 'rate_limit_exceeded'), messageResponse(PLATE_ESTIMATE))
     const { user } = await renderApp(PHOTO_PAGE, { setup: withKey })
     await choosePhoto(user)
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
-    expect(await screen.findByText(/^Claude est très demandé/)).toBeInTheDocument()
+    expect(await screen.findByText(/^ChatGPT est très demandé/)).toBeInTheDocument()
     // Une erreur de l'API n'est pas facturée.
     expect(await db.aiUsage.count()).toBe(0)
 
@@ -181,9 +181,9 @@ describe('photo du repas', () => {
     const { user } = await renderApp(PHOTO_PAGE, { setup: withKey })
     await choosePhoto(user)
     await user.click(screen.getByRole('button', { name: 'Analyser la photo' }))
-    expect(await screen.findByText('Claude regarde ton assiette…')).toBeInTheDocument()
+    expect(await screen.findByText('ChatGPT regarde ton assiette…')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(await screen.findByRole('button', { name: 'Analyser la photo' })).toBeInTheDocument()
-    expect(screen.queryByText('Claude regarde ton assiette…')).not.toBeInTheDocument()
+    expect(screen.queryByText('ChatGPT regarde ton assiette…')).not.toBeInTheDocument()
   })
 })
