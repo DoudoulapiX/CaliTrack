@@ -1,4 +1,4 @@
-/** Réponses enregistrées du coach IA, pour l'API Claude simulée (voir fakeClaude). */
+/** Réponses enregistrées du coach IA, pour l’API OpenAI simulée (voir fakeOpenAi). */
 
 /** Le coach allège la séance : une série de moins sur le créneau slot-1 (à adapter au programme du test). */
 export const DAILY_LIGHTER = {
@@ -36,7 +36,7 @@ export const DAILY_TIPS = {
   changes: [],
 }
 
-/** L'analyse physique : Claude conseille une sèche alors que la masse grasse est déjà basse (8 à 11 %). */
+/** L'analyse physique : ChatGPT conseille une sèche alors que la masse grasse est déjà basse (8 à 11 %). */
 export const BODY_CUT_LEAN = {
   readable: true,
   problem: '',
@@ -48,7 +48,7 @@ export const BODY_CUT_LEAN = {
   advice: ['Garde tes protéines hautes.'],
 }
 
-/** Ce que Claude lit sur une photo de frigo (7 aliments). */
+/** Ce que ChatGPT lit sur une photo de frigo (7 aliments). */
 export const FRIDGE_ITEMS = {
   readable: true,
   problem: '',

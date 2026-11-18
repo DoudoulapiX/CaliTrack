@@ -7,20 +7,20 @@ export interface AiPrice {
   output: number
   /** Relecture du cache, bien moins chère qu'une entrée ordinaire. */
   cacheRead: number
-  /** Écriture dans le cache (5 minutes) : 1,25 fois le prix d'entrée. */
+  /** Écriture dans le cache (30 minutes) : 1,25 fois le prix d'entrée. */
   cacheWrite: number
 }
 
-/** Les prix publics de l'API Claude pour chaque modèle proposé. */
+/** Les prix publics de l'API d'OpenAI pour chaque modèle proposé (novembre 2026). */
 export const AI_PRICES: Record<AiModel, AiPrice> = {
-  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 },
-  'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.2, cacheWrite: 2.5 },
-  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
+  'gpt-6.2-astra': { input: 8, output: 40, cacheRead: 0.4, cacheWrite: 10 },
+  'gpt-6.2-sol': { input: 2, output: 10, cacheRead: 0.1, cacheWrite: 2.5 },
+  'gpt-6-luna': { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
 }
 
-/** Les prix d'un modèle ; un modèle inconnu compte au prix d'Opus, le plus cher (estimation prudente). */
+/** Les prix d'un modèle ; un modèle inconnu compte au prix d'Astra, le plus cher (estimation prudente). */
 export function priceOf(model: string): AiPrice {
-  return model in AI_PRICES ? AI_PRICES[model as AiModel] : AI_PRICES['claude-opus-5-5']
+  return Object.hasOwn(AI_PRICES, model) ? AI_PRICES[model as AiModel] : AI_PRICES['gpt-6.2-astra']
 }
 
 /** Le coût d'une demande, en dollars. */
@@ -35,7 +35,7 @@ export function costOf(usage: AiUsage, model: string): number {
   )
 }
 
-/** Les demandes faites à Claude par l'appli. */
+/** Les demandes faites à ChatGPT par l'appli. */
 export type AiAction = 'daily' | 'mealPhoto' | 'body' | 'fridge' | 'ideas' | 'chat'
 
 /** Les jetons d'une demande ordinaire de chaque sorte (la sortie compte la réflexion). */

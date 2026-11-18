@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import { settingsV1toV2 } from './migrations'
+import { settingsV1toV2, settingsV3toV4 } from './migrations'
 import type {
   AiUsageRow,
   AppSettings,
@@ -89,7 +89,7 @@ export const SCHEMA_V2 = {
 
 /**
  * Version 3 : coach IA (conseils du jour, analyses physiques, frigo et placards, discussion) et compteur
- * des demandes à Claude. Rien à convertir : seulement de nouvelles tables, vides au départ.
+ * des demandes à l'IA. Rien à convertir : seulement de nouvelles tables, vides au départ.
  */
 export const SCHEMA_V3 = {
   coachDays: 'date',
@@ -99,7 +99,14 @@ export const SCHEMA_V3 = {
   aiUsage: 'month',
 } as const
 
-export const DB_VERSION = 3
+/**
+ * Version 4 : l'IA passe de Claude (Anthropic) à ChatGPT (OpenAI). Aucune table ne change : le modèle
+ * choisi prend son remplaçant (settingsV3toV4) et l'ancienne clé Claude, inutilisable chez OpenAI, est
+ * effacée de l'appareil.
+ */
+export const SCHEMA_V4 = {} as const
+
+export const DB_VERSION = 4
 
 /**
  * Toutes les tables qui contiennent des données de l'utilisateur (exportées dans les sauvegardes et
@@ -134,7 +141,7 @@ export type DataTableName = (typeof DATA_TABLES)[number]
 
 /**
  * Tables propres à cet appareil, jamais dans les sauvegardes et gardées par une restauration : copies de
- * sécurité, secrets (clé d'IA, jeton Oura) et compteur des demandes à Claude. « Tout effacer » les vide.
+ * sécurité, secrets (clé d'IA, jeton Oura) et compteur des demandes à ChatGPT. « Tout effacer » les vide.
  */
 export const DEVICE_TABLES = ['snapshots', 'secrets', 'aiUsage'] as const
 
@@ -153,6 +160,18 @@ export function createDb(name = 'calitrack'): CaliTrackDB {
         })
     })
   instance.version(3).stores(SCHEMA_V3)
+  instance
+    .version(4)
+    .stores(SCHEMA_V4)
+    .upgrade(async (tx) => {
+      await tx
+        .table('settings')
+        .toCollection()
+        .modify((row: Record<string, unknown>) => {
+          Object.assign(row, settingsV3toV4(row))
+        })
+      await tx.table('secrets').delete('anthropic')
+    })
   return instance
 }
 

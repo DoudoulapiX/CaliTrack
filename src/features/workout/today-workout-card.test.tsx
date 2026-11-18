@@ -5,7 +5,7 @@ import { saveProgram } from '@/db/programs'
 import { saveSecret } from '@/db/secrets'
 import { updateSettings } from '@/db/settings'
 import type { CoachDay, ProgramSession, ProgramSlot } from '@/db/types'
-import { fakeAnthropicFetch } from '@/test/anthropic'
+import { fakeOpenAiFetch } from '@/test/openai'
 import { coachChange, coachDay, programSession, testProgram } from '@/test/fixtures'
 import { ouraDay } from '@/test/oura'
 import { renderApp } from '@/test/render-app'
@@ -16,7 +16,7 @@ import { resetOuraAutoSync } from '@/features/oura/useOura'
 vi.mock('@/features/workout/useNow', () => ({ useNow: () => Date.now() }))
 
 const DATE = '2026-10-21'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
 function slot(id: string, exerciseId: string, patch: Partial<ProgramSlot> = {}): ProgramSlot {
   return {
@@ -61,12 +61,12 @@ const LIGHTER = coachDay({
 const REST = coachDay({ decision: 'rest', headline: 'Repos conseillé' })
 
 /**
- * Le programme commencé aujourd'hui (rien à rattraper) avec la séance B prévue, la clé Claude et le
+ * Le programme commencé aujourd'hui (rien à rattraper) avec la séance B prévue, la clé OpenAI et le
  * conseil du jour, s'il y en a.
  */
 function setup({ key = true, advice = null }: { key?: boolean; advice?: CoachDay | null } = {}) {
   return async () => {
-    if (key) await saveSecret('anthropic', KEY)
+    if (key) await saveSecret('openai', KEY)
     if (advice) await db.coachDays.put(advice)
     await saveProgram(testProgram({ startDate: DATE, sessions: [programSession('A', [1, 4]), SESSION_B] }))
   }
@@ -201,8 +201,8 @@ describe('séance du jour et coach', () => {
     expect(sessionStarts()).toHaveLength(1)
   })
 
-  it('l’accueil n’appelle jamais Claude, et « Cette nuit » reste à la carte Récupération', async () => {
-    const fake = fakeAnthropicFetch()
+  it('l’accueil n’appelle jamais ChatGPT, et « Cette nuit » reste à la carte Récupération', async () => {
+    const fake = fakeOpenAiFetch()
     vi.stubGlobal('fetch', fake.fetchImpl)
     await renderApp('/', {
       setup: async () => {

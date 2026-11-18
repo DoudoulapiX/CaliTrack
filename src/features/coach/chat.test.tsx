@@ -8,39 +8,39 @@ import { costHintText, problemText } from '@/features/ai/ai-view'
 import {
   AI_ERROR_CASES,
   CHAT_ANSWER,
-  fakeAnthropicFetch,
+  fakeOpenAiFetch,
   streamController,
   streamErrorResponse,
   streamResponse,
   type Answer,
   type RecordedRequest,
-} from '@/test/anthropic'
+} from '@/test/openai'
 import { coachMessage } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 import { CHAT_PRIVACY_TEXT, CHAT_SUGGESTIONS } from './chat-view'
 
 const CHAT = '/more/coach'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
-const MODEL = 'claude-sonnet-5-5'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
+const MODEL = 'gpt-6.2-astra'
 
 interface ChatBody {
   model: string
-  system: { type: string; text: string; cache_control?: unknown }[]
-  messages: { role: string; content: unknown }[]
-  cache_control?: unknown
+  instructions: string
+  input: { role: string; content: unknown }[]
   stream?: boolean
+  store?: boolean
 }
 
 const bodyOf = (request: RecordedRequest | undefined) => request?.body as ChatBody
 
 const withKey = async () => {
-  await saveSecret('anthropic', KEY)
+  await saveSecret('openai', KEY)
   await updateSettings({ aiModel: MODEL })
 }
 
 function stubFetch(...answers: (Response | Error | Answer)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -103,7 +103,7 @@ describe('discussion avec le coach', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude sans geste de l’utilisateur', async () => {
+  it('n’appelle jamais ChatGPT sans geste de l’utilisateur', async () => {
     const fake = stubFetch()
     await openChat(() =>
       db.coachMessages.bulkPut([
@@ -132,12 +132,12 @@ describe('discussion avec le coach', () => {
     expect(fake.requests).toHaveLength(0)
   })
 
-  it('demande une clé Claude, sans cacher la discussion déjà faite', async () => {
+  it('demande une clé OpenAI, sans cacher la discussion déjà faite', async () => {
     const fake = stubFetch()
     const { user, router } = await renderApp(CHAT, {
       setup: () => db.coachMessages.bulkPut([coachMessage(0), coachMessage(1)]),
     })
-    expect(await screen.findByText('Ajoute ta clé Claude pour utiliser le coach.')).toBeInTheDocument()
+    expect(await screen.findByText('Ajoute ta clé OpenAI pour utiliser le coach.')).toBeInTheDocument()
     expect(bubbles()).toEqual(['Toi : Question 0', 'Le coach : Réponse 1'])
     expect(screen.queryByLabelText('Ton message')).not.toBeInTheDocument()
     expectFrenchSpacing()
@@ -154,7 +154,7 @@ describe('discussion avec le coach', () => {
     expect(screen.getByText('Pose ta question au coach')).toBeInTheDocument()
     // Testing Library lit les espaces insécables comme des espaces simples.
     expect(screen.getByText(CHAT_PRIVACY_TEXT.replace(/\s/g, ' '))).toBeInTheDocument()
-    const price = costHintText(actionCost('chat', MODEL), 'Sonnet 5.5').replace(/\s/g, ' ')
+    const price = costHintText(actionCost('chat', MODEL), 'GPT-6.2 Astra').replace(/\s/g, ' ')
     expect(screen.getByText(price)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Envoyer' })).toBeDisabled()
 
@@ -226,18 +226,16 @@ describe('discussion avec le coach', () => {
     })
 
     const [first, second] = fake.requests.map(bodyOf)
-    expect(first?.messages).toEqual([{ role: 'user', content: 'Première question' }])
-    expect(second?.messages).toEqual([
+    expect(first?.input).toEqual([{ role: 'user', content: 'Première question' }])
+    expect(second?.input).toEqual([
       { role: 'user', content: 'Première question' },
       { role: 'assistant', content: 'A' },
       { role: 'user', content: 'Deuxième question' },
     ])
-    // Même message système, octet pour octet : l'API relit le début de la discussion dans son cache.
-    expect(JSON.stringify(second?.system)).toBe(JSON.stringify(first?.system))
-    expect(second).toMatchObject({ model: MODEL, stream: true, cache_control: { type: 'ephemeral' } })
-    expect(second?.system).toHaveLength(2)
-    expect(second?.system[1]).toMatchObject({ cache_control: { type: 'ephemeral' } })
-    expect(second?.system[1]?.text).toMatch(/^<donnees>/)
+    // Mêmes consignes, octet pour octet : OpenAI relit le début de la discussion dans son cache.
+    expect(second?.instructions).toBe(first?.instructions)
+    expect(second).toMatchObject({ model: MODEL, stream: true, store: false })
+    expect(second?.instructions).toMatch(/\n\n<donnees>\n/)
     expect(JSON.stringify(second)).not.toMatch(/[\u00a0\u202f]/)
     expect(bubbles()).toEqual([
       'Toi : Première question',
@@ -267,7 +265,7 @@ describe('discussion avec le coach', () => {
     await waitFor(async () => {
       expect(await storedCount()).toBe(6)
     })
-    expect(bodyOf(fake.requests[1]).messages).toEqual([
+    expect(bodyOf(fake.requests[1]).input).toEqual([
       { role: 'user', content: 'Première question' },
       { role: 'assistant', content: 'A' },
       { role: 'user', content: 'Question d’un autre onglet' },
@@ -302,8 +300,8 @@ describe('discussion avec le coach', () => {
     expect(await db.aiUsage.count()).toBe(0)
   })
 
-  it('propose de réessayer quand Claude s’interrompt, avec la question remise', async () => {
-    const fake = stubFetch(streamErrorResponse('overloaded_error'), streamResponse(CHAT_ANSWER))
+  it('propose de réessayer quand ChatGPT s’interrompt, avec la question remise', async () => {
+    const fake = stubFetch(streamErrorResponse('server_error'), streamResponse(CHAT_ANSWER))
     const { user } = await openChat()
     await ask(user, 'Comment progresser ?')
 
@@ -326,7 +324,7 @@ describe('discussion avec le coach', () => {
     })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(input()).toHaveValue('')
-    expect(bodyOf(fake.requests[1]).messages).toEqual([{ role: 'user', content: 'Comment progresser ?' }])
+    expect(bodyOf(fake.requests[1]).input).toEqual([{ role: 'user', content: 'Comment progresser ?' }])
     expectFrenchSpacing()
   })
 

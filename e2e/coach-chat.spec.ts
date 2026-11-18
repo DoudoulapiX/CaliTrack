@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
 import { CHAT_ANSWER } from './coach-fixtures'
-import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, type SentToClaude } from './nutrition-helpers'
+import { OPENAI_KEY, collectErrors, fakeOpenAi, onboard, type SentToOpenAi } from './nutrition-helpers'
 
-// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : Claude
+// Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : ChatGPT
 // simulé exige de le bloquer.
 test.use({ serviceWorkers: 'block' })
 
@@ -12,11 +12,12 @@ const SECOND_ANSWER = 'Oui : grimpe le samedi et garde le dimanche pour récupé
 
 interface ChatBody {
   stream?: boolean
-  system: { text: string; cache_control?: unknown }[]
-  messages: { role: string; content: unknown }[]
+  store?: boolean
+  instructions: string
+  input: { role: string; content: unknown }[]
 }
 
-const chatRequests = (sent: SentToClaude[]) =>
+const chatRequests = (sent: SentToOpenAi[]) =>
   sent.filter((request) => request.task === 'chat').map((request) => request.body as ChatBody)
 
 /** Le champ du message touche le bas de l'écran, quelle que soit la longueur de la discussion. */
@@ -32,17 +33,17 @@ test('discussion avec le coach : réponse en flux, gardée après un rechargemen
   const hosts = new Set<string>()
   page.on('request', (request) => hosts.add(new URL(request.url()).host))
   await page.clock.setFixedTime(new Date('2026-10-21T12:30:00+02:00'))
-  const sent = await fakeClaude(page, {
-    chat: (body: unknown) => ((body as ChatBody).messages.length === 1 ? CHAT_ANSWER : SECOND_ANSWER),
+  const sent = await fakeOpenAi(page, {
+    chat: (body: unknown) => ((body as ChatBody).input.length === 1 ? CHAT_ANSWER : SECOND_ANSWER),
   })
   await onboard(page)
 
   await page.goto('more/ai')
-  await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+  await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
   await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-  await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+  await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
 
-  // Plein écran, sans appel à Claude à l'ouverture ; une suggestion remplit le message sans l'envoyer.
+  // Plein écran, sans appel à ChatGPT à l'ouverture ; une suggestion remplit le message sans l'envoyer.
   await page.goto('more/coach')
   await expect(page.getByRole('heading', { name: 'Discussion avec le coach', level: 1 })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toHaveCount(0)
@@ -59,10 +60,10 @@ test('discussion avec le coach : réponse en flux, gardée après un rechargemen
   await expect(page.getByLabel('Ton message')).toHaveValue('')
   const [first] = chatRequests(sent)
   expect(first?.stream).toBe(true)
-  expect(first?.messages).toEqual([{ role: 'user', content: 'Comment progresser sur les tractions ?' }])
-  expect(first?.system[1]?.text).toMatch(/^<donnees>/)
-  expect(first?.system[1]?.cache_control).toEqual({ type: 'ephemeral' })
-  expect(sent.find((request) => request.task === 'chat')?.key).toBe(CLAUDE_KEY)
+  expect(first?.store).toBe(false)
+  expect(first?.input).toEqual([{ role: 'user', content: 'Comment progresser sur les tractions ?' }])
+  expect(first?.instructions).toMatch(/\n\n<donnees>\n/)
+  expect(sent.find((request) => request.task === 'chat')?.key).toBe(OPENAI_KEY)
 
   // La discussion, accessible dans les deux thèmes.
   await expectAccessible(page, 'discussion sombre')
@@ -88,16 +89,16 @@ test('discussion avec le coach : réponse en flux, gardée après un rechargemen
   ).toBeVisible()
   await expect(thread).toHaveCount(4)
   const second = chatRequests(sent)[1]
-  expect(second?.messages).toEqual([
+  expect(second?.input).toEqual([
     { role: 'user', content: 'Comment progresser sur les tractions ?' },
     { role: 'assistant', content: CHAT_ANSWER },
     { role: 'user', content: 'Et si je grimpe le samedi ?' },
   ])
-  expect(JSON.stringify(second?.system)).toBe(JSON.stringify(first?.system))
+  expect(second?.instructions).toBe(first?.instructions)
   expect(chatRequests(sent)).toHaveLength(2)
 
   const appHost = new URL(page.url()).host
-  expect([...hosts].filter((host) => host !== appHost && host !== 'api.anthropic.com')).toEqual([])
+  expect([...hosts].filter((host) => host !== appHost && host !== 'api.openai.com')).toEqual([])
   expect(errors).toEqual([])
 })
 
@@ -106,19 +107,19 @@ test('discussion avec le coach : arrêter remet la question, sans rien garder ni
 }) => {
   const errors = collectErrors(page)
   await page.clock.setFixedTime(new Date('2026-10-21T12:30:00+02:00'))
-  await fakeClaude(page)
-  // Claude ne répond jamais : la question reste en attente jusqu'à l'arrêt.
+  await fakeOpenAi(page)
+  // ChatGPT ne répond jamais : la question reste en attente jusqu'à l'arrêt.
   const asked: string[] = []
-  await page.route('https://api.anthropic.com/v1/messages', (route) => {
+  await page.route('https://api.openai.com/v1/responses', (route) => {
     if (route.request().method() !== 'POST') return route.fallback()
     asked.push(route.request().url())
     return undefined
   })
   await onboard(page)
   await page.goto('more/ai')
-  await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+  await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
   await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-  await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+  await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
 
   await page.goto('more/coach')
   await page.getByLabel('Ton message').fill('Combien de séries ?')

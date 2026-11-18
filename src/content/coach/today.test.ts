@@ -1,3 +1,4 @@
+import type { AiContent } from '@/content/ai/client'
 import { jsonSchemaOf } from '@/content/ai/structured'
 import { progressProgram } from '@/content/programs/progression'
 import { trainingContext, type TrainingContext } from '@/content/programs/resolve'
@@ -14,7 +15,7 @@ import type {
   ProgramSlot,
   Workout,
 } from '@/db/types'
-import { coachData, DAILY_LIGHTER, DAILY_REST, DAILY_TIPS } from '@/test/anthropic'
+import { coachData, DAILY_LIGHTER, DAILY_REST, DAILY_TIPS } from '@/test/openai'
 import { coachChange, coachDay, item, sequentialIds, testCatalog, testProgram } from '@/test/fixtures'
 import { COACH_RULES } from './prompt'
 import {
@@ -32,6 +33,9 @@ import {
   type DailyAdviceOutput,
   type SlotOption,
 } from './today'
+
+/** Le texte d'un morceau de demande (vide pour une photo). */
+const textOf = (part: AiContent | undefined) => (part?.type === 'text' ? part.text : '')
 
 const scheme = schemeFor(['strength'], 'intermediate')
 const DATE = '2026-10-21'
@@ -262,7 +266,7 @@ describe('textes coupés', () => {
   })
 })
 
-describe('nettoyage du conseil de Claude', () => {
+describe('nettoyage du conseil de ChatGPT', () => {
   it('oublie un créneau inconnu, une action inconnue ou interdite, et ne garde qu’un changement par créneau', () => {
     const options = [option(), option({ slotId: 'warm', block: 'warmup', actions: [] })]
     const advice = cleanDailyAdvice(
@@ -405,7 +409,7 @@ describe('nettoyage du conseil de Claude', () => {
       summary: DAILY_TIPS.summary,
       tips: DAILY_TIPS.tips,
     })
-    // Même si Claude décide quelque chose.
+    // Même si ChatGPT décide quelque chose.
     expect(cleanDailyAdvice(DAILY_LIGHTER, [option()], false)).toMatchObject({ decision: null, changes: [] })
   })
 
@@ -445,7 +449,7 @@ describe('nettoyage du conseil de Claude', () => {
       const day: CoachDay = coachDay({ ...advice })
       expect(coachDaySchema.safeParse(day).success).toBe(true)
     }
-    // Claude s'est trompé d'identifiant d'exercice : un allègement garde l'exercice prévu.
+    // ChatGPT s'est trompé d'identifiant d'exercice : un allègement garde l'exercice prévu.
     expect(cleanDailyAdvice(DAILY_LIGHTER, options, true).changes).toEqual([
       expect.objectContaining({ slotId: 'slot-1', action: 'lighter', exerciseId: 'pullup', sets: 3 }),
     ])
@@ -501,7 +505,7 @@ describe('demande du conseil du jour', () => {
     })
     expect(prompt.system).toBe(COACH_RULES)
     expect(prompt.content).toHaveLength(1)
-    const text = prompt.content[0]?.text ?? ''
+    const text = textOf(prompt.content[0])
     expect(text).not.toMatch(NBSP)
     expect(text.startsWith('<donnees>\nDate : mercredi 2026-10-21')).toBe(true)
     expect(text).toContain('Programme : Force (semaine 2)')
@@ -560,7 +564,7 @@ describe('demande du conseil du jour', () => {
       checkIn,
       basis: coachBasis(coachData()),
     })
-    expect(prompt.content[0]?.text).toContain(
+    expect(textOf(prompt.content[0])).toContain(
       'slot-1 | renforcement | Tractions [pullup] | 3 | 5 à 8 rép. | 8 kg (plus légères possibles : 4, 6.5 kg) | lighter, swap, skip',
     )
   })
@@ -574,7 +578,7 @@ describe('demande du conseil du jour', () => {
       checkIn: { sleep: null, energy: 'high', soreness: 'none', zones: [], note: '  ' },
       basis: coachBasis(data),
     })
-    const text = prompt.content[0]?.text ?? ''
+    const text = textOf(prompt.content[0])
     expect(text).toContain('Séance prévue aujourd’hui : aucune.')
     expect(text).not.toContain('<seance>')
     expect(text).not.toContain('- sommeil :')

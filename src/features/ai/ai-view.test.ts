@@ -36,7 +36,7 @@ describe('textes de l’IA', () => {
     for (const problem of PROBLEMS) {
       expect(AI_PROBLEM_TEXT[problem]).not.toMatch(/ [:;!?]/)
     }
-    expect(AI_PROBLEM_TEXT.noCredit).toContain('platform.claude.com')
+    expect(AI_PROBLEM_TEXT.noCredit).toContain('platform.openai.com')
   })
 
   it('disent quoi faire ensuite', () => {
@@ -45,7 +45,7 @@ describe('textes de l’IA', () => {
   })
 
   it('masquent la clé', () => {
-    expect(maskKey('sk-ant-api03-abcdefghijklmnopqrstuvwxyz')).toBe('sk-ant-…wxyz')
+    expect(maskKey('sk-proj-abcdefghijklmnopqrstuvwxyz')).toBe('sk-proj-…wxyz')
     expect(maskKey('court')).toBe('••••')
   })
 
@@ -63,7 +63,7 @@ describe('textes de l’IA', () => {
     expect(problemText('busy', 'daily')).toBe(AI_PROBLEM_TEXT.busy)
     // Refus et échecs parlent de la demande faite.
     expect(problemText('refused', 'body')).toBe(
-      'Claude n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
+      'ChatGPT n’analyse pas ces photos. Essaie avec d’autres, en tenue de sport.',
     )
     expect(problemText('failed', 'chat')).toBe('Le coach n’a pas pu répondre. Réessaie.')
     const refusals = new Set(TASKS.map((task) => problemText('refused', task)))
@@ -73,31 +73,31 @@ describe('textes de l’IA', () => {
   })
 
   it('annoncent le prix d’une demande, arrondi au centime supérieur', () => {
-    expect(costHintText(0.074, 'Opus 5.5')).toBe(`Environ 8${NBSP}centimes avec Opus${NBSP}5.5`)
-    expect(costHintText(0.07, 'Opus 5.5')).toBe(`Environ 7${NBSP}centimes avec Opus${NBSP}5.5`)
-    expect(costHintText(0.0101, 'Sonnet 5.5')).toBe(`Environ 2${NBSP}centimes avec Sonnet${NBSP}5.5`)
-    expect(costHintText(0.01, 'Sonnet 5.5')).toBe(`Environ 1${NBSP}centime avec Sonnet${NBSP}5.5`)
-    expect(costHintText(0.00185, 'Haiku 5.5')).toBe(`Moins d’un centime avec Haiku${NBSP}5.5`)
+    expect(costHintText(0.074, 'GPT-6.2 Sol')).toBe(`Environ 8${NBSP}centimes avec GPT-6.2${NBSP}Sol`)
+    expect(costHintText(0.07, 'GPT-6.2 Sol')).toBe(`Environ 7${NBSP}centimes avec GPT-6.2${NBSP}Sol`)
+    expect(costHintText(0.0101, 'GPT-6.2 Astra')).toBe(`Environ 2${NBSP}centimes avec GPT-6.2${NBSP}Astra`)
+    expect(costHintText(0.01, 'GPT-6.2 Astra')).toBe(`Environ 1${NBSP}centime avec GPT-6.2${NBSP}Astra`)
+    expect(costHintText(0.00185, 'GPT-6 Luna')).toBe(`Moins d’un centime avec GPT-6${NBSP}Luna`)
   })
 
-  it('disent ce qui est facturé et ce qui part vers Anthropic, avec la typographie française', () => {
+  it('disent ce qui est facturé et ce qui part vers OpenAI, avec la typographie française', () => {
     for (const text of [COST_PRIVACY_TEXT, MONTHLY_PLAN_TEXT, ESTIMATE_NOTE, DELETE_KEY_TEXT]) {
       expect(text).not.toMatch(/ [:;!?%»]/)
     }
     expect(COST_PRIVACY_TEXT).toContain('CaliTrack ne garde pas les photos.')
     expect(MONTHLY_PLAN_TEXT).toMatch(/\u00a0:$/)
-    expect(ESTIMATE_NOTE).toBe(`Estimation calculée sur cet iPhone${NBSP}; ta facture Anthropic fait foi.`)
+    expect(ESTIMATE_NOTE).toBe(`Estimation calculée sur cet iPhone${NBSP}; ta facture OpenAI fait foi.`)
   })
 
   it('estiment un mois d’usage avec chaque modèle, le modèle choisi marqué', () => {
-    const lines = monthlyEstimateLines('claude-sonnet-5-5')
+    const lines = monthlyEstimateLines('gpt-6.2-astra')
     expect(lines.map((line) => line.text)).toEqual([
-      `Opus${NBSP}5.5${NBSP}: environ 6,72${NBSP}$`,
-      `Sonnet${NBSP}5.5${NBSP}: environ 3,39${NBSP}$ (choisi)`,
-      `Haiku${NBSP}5.5${NBSP}: environ 0,17${NBSP}$`,
+      `GPT-6.2${NBSP}Astra${NBSP}: environ 13,44${NBSP}$ (choisi)`,
+      `GPT-6.2${NBSP}Sol${NBSP}: environ 3,36${NBSP}$`,
+      `GPT-6${NBSP}Luna${NBSP}: environ 0,17${NBSP}$`,
     ])
-    expect(lines.filter((line) => line.chosen).map((line) => line.model)).toEqual(['claude-sonnet-5-5'])
-    expect(monthlyEstimateLines('claude-opus-5-5')[0]?.text).toMatch(/\(choisi\)$/)
+    expect(lines.filter((line) => line.chosen).map((line) => line.model)).toEqual(['gpt-6.2-astra'])
+    expect(monthlyEstimateLines('gpt-6.2-sol')[1]?.text).toMatch(/\(choisi\)$/)
     // MONTHLY_PLAN_TEXT décrit ce mois-là en mots : à réécrire si le plan change.
     expect(MONTHLY_PLAN).toEqual({ daily: 30, mealPhoto: 30, chat: 60, ideas: 12, fridge: 8, body: 4 })
   })

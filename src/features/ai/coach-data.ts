@@ -81,7 +81,7 @@ function dailyAverage(entries: readonly FoodEntry[]): CoachData['nutrition']['la
 
 /**
  * Tout ce que le coach sait de l'utilisateur ce jour-là, lu directement dans la base (sans suivi en
- * direct) : à appeler au moment de la demande à Claude, jamais au rendu.
+ * direct) : à appeler au moment de la demande à ChatGPT, jamais au rendu.
  */
 export async function loadCoachData(date: ISODate, database: CaliTrackDB = db): Promise<CoachData> {
   const [profile, settings, goals] = await Promise.all([

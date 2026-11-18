@@ -1,4 +1,4 @@
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/messages'
+import type { AiContent } from '@/content/ai/client'
 import { z } from 'zod'
 // Pas content/ai/structured : ce module sert aussi la carte de l'accueil, qui ne doit pas charger le SDK.
 import { choice } from '@/content/ai/choice'
@@ -31,7 +31,7 @@ import { buildCoachContext, type CoachData } from './context'
 import { COACH_RULES, promptNumber, promptText, quoteUser } from './prompt'
 
 /*
- * Coach du jour : Claude choisit, d'après la forme du jour, de garder la séance prévue, de l'alléger ou de
+ * Coach du jour : ChatGPT choisit, d'après la forme du jour, de garder la séance prévue, de l'alléger ou de
  * conseiller le repos. Il ne choisit que parmi ce que CaliTrack lui propose (moins de séries ou une charge
  * plus légère, une version plus facile de la progression, un exercice retiré) ; sa réponse est ramenée
  * dans ces limites avant d'être gardée.
@@ -138,10 +138,10 @@ export function slotOptions(
 }
 
 /* ------------------------------------------------------------------ */
-/* La réponse de Claude, puis son nettoyage                            */
+/* La réponse de ChatGPT, puis son nettoyage                            */
 /* ------------------------------------------------------------------ */
 
-/** Ce que Claude renvoie : une forme souple (chaînes et nombres), ramenée dans les limites ensuite. */
+/** Ce que ChatGPT renvoie : une forme souple (chaînes et nombres), ramenée dans les limites ensuite. */
 export const dailyAdviceOutput = z.object({
   decision: z
     .string()
@@ -221,7 +221,7 @@ export function snapLoad(
 
 const clampSets = (sets: number, max: number) => Math.min(max, Math.max(1, Math.round(sets)))
 
-/** Un changement proposé par Claude, s'il est permis ; null sinon (ou s'il ne change rien). */
+/** Un changement proposé par ChatGPT, s'il est permis ; null sinon (ou s'il ne change rien). */
 function cleanChange(raw: DailyAdviceOutput['changes'][number], option: SlotOption): CoachChange | null {
   const action = choice(raw.action, CHANGE_ACTIONS, 'keep')
   if (action === 'keep' || !option.actions.includes(action)) return null
@@ -252,7 +252,7 @@ function cleanChange(raw: DailyAdviceOutput['changes'][number], option: SlotOpti
 }
 
 /**
- * Le conseil de Claude ramené dans les limites : une décision connue, seulement des changements permis
+ * Le conseil de ChatGPT ramené dans les limites : une décision connue, seulement des changements permis
  * (un par exercice, séries comptées sur la séance du jour, charges disponibles), et des textes courts.
  * Sans séance prévue, seuls les textes comptent (« Conseils du jour »).
  */
@@ -426,7 +426,7 @@ export interface DailyPromptArgs {
  */
 export function dailyPrompt({ data, session, options, checkIn, basis }: DailyPromptArgs): {
   system: string
-  content: TextBlockParam[]
+  content: AiContent[]
 } {
   const context = buildCoachContext(data, [
     'profile',

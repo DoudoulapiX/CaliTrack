@@ -1,10 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
 import { DAILY_LIGHTER, DAILY_REST } from './coach-fixtures'
-import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, type SentToClaude } from './nutrition-helpers'
+import { OPENAI_KEY, collectErrors, fakeOpenAi, onboard, type SentToOpenAi } from './nutrition-helpers'
 
 // Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : l'API
-// Claude simulée exige de le bloquer.
+// ChatGPT simulée exige de le bloquer.
 test.use({ serviceWorkers: 'block' })
 
 /** Le mercredi 21 octobre 2026 à midi et demi : une séance du programme (lundi, mercredi, vendredi). */
@@ -19,10 +19,10 @@ interface PlannedRow {
   sets: number
 }
 
-/** Le texte envoyé à Claude (un seul bloc de texte). */
+/** Le texte envoyé à ChatGPT (un seul bloc de texte). */
 function promptOf(body: unknown): string {
-  const request = body as { messages?: { content?: { text?: string }[] }[] } | null
-  return request?.messages?.[0]?.content?.[0]?.text ?? ''
+  const request = body as { input?: { content?: { text?: string }[] }[] } | null
+  return request?.input?.[0]?.content?.[0]?.text ?? ''
 }
 
 /** Le premier exercice hors échauffement que le coach peut alléger (plus d'une série). */
@@ -56,25 +56,25 @@ function lighterAnswer(rows: PlannedRow[]) {
   }
 }
 
-/** Les requêtes parties ailleurs que vers l'appli et l'API Claude simulée. */
+/** Les requêtes parties ailleurs que vers l'appli et l’API OpenAI simulée. */
 function foreignRequests(page: Page): string[] {
   const foreign: string[] = []
   page.on('request', (request) => {
     const url = new URL(request.url())
     if (url.protocol === 'data:' || url.protocol === 'blob:') return
-    if (url.hostname === 'localhost' || url.hostname === 'api.anthropic.com') return
+    if (url.hostname === 'localhost' || url.hostname === 'api.openai.com') return
     foreign.push(request.url())
   })
   return foreign
 }
 
-const messagesSent = (sent: SentToClaude[]) => sent.filter((request) => request.url.endsWith('/v1/messages'))
+const messagesSent = (sent: SentToOpenAi[]) => sent.filter((request) => request.url.endsWith('/v1/responses'))
 
 async function saveKey(page: Page) {
   await page.goto('more/ai')
-  await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+  await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
   await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-  await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+  await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
 }
 
 /** La carte de la séance du jour, sur l'accueil. */
@@ -93,7 +93,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
       const foreign = foreignRequests(page)
       await page.clock.setFixedTime(NOW)
       const rows: PlannedRow[] = []
-      const sent = await fakeClaude(page, { daily: lighterAnswer(rows) })
+      const sent = await fakeOpenAi(page, { daily: lighterAnswer(rows) })
       await onboard(page)
       await saveKey(page)
 
@@ -128,7 +128,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
 
       const [request] = messagesSent(sent)
       expect(request?.task).toBe('daily')
-      expect(request?.key).toBe(CLAUDE_KEY)
+      expect(request?.key).toBe(OPENAI_KEY)
       const prompt = promptOf(request?.body)
       expect(prompt).toContain('<note>\nGrosse journée de travail\n</note>')
       expect(prompt).toContain('- sommeil : mauvais')
@@ -163,7 +163,7 @@ test('coach du jour : repos conseillé, pris depuis l’accueil puis annulé', a
   const errors = collectErrors(page)
   const foreign = foreignRequests(page)
   await page.clock.setFixedTime(NOW)
-  const sent = await fakeClaude(page, { daily: DAILY_REST })
+  const sent = await fakeOpenAi(page, { daily: DAILY_REST })
   await onboard(page)
   await saveKey(page)
 

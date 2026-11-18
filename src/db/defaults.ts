@@ -19,8 +19,8 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardKey[] = [
   'records',
 ]
 
-/** Modèle Claude par défaut (changeable dans les réglages). */
-export const DEFAULT_AI_MODEL: AiModel = 'claude-opus-5-5'
+/** Modèle d'OpenAI par défaut (changeable dans les réglages). */
+export const DEFAULT_AI_MODEL: AiModel = 'gpt-6.2-sol'
 
 export function defaultSettings(now: string = nowISO()): AppSettings {
   return {

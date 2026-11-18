@@ -1,25 +1,24 @@
 import {
   AI_ERROR_CASES,
-  fakeAnthropicFetch,
+  fakeOpenAiFetch,
   streamController,
   streamResponse,
+  usageWith,
   type Answer,
-} from '@/test/anthropic'
-import { streamChat, type ChatRequest } from './chat'
+} from '@/test/openai'
+import { CHAT_MAX_TOKENS, streamChat, type ChatRequest } from './chat'
 
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
+const SYSTEM = 'Tu es le coach.\n\n<donnees>\n</donnees>'
 const USAGE = { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 0, cacheWriteTokens: 0 }
 
 function chat(answer: Response | Answer, patch: Partial<ChatRequest> = {}) {
-  const fake = fakeAnthropicFetch(answer)
+  const fake = fakeOpenAiFetch(answer)
   const deltas: string[] = []
   const result = streamChat({
     apiKey: KEY,
-    model: 'claude-sonnet-5-5',
-    system: [
-      { type: 'text', text: 'Tu es le coach.' },
-      { type: 'text', text: '<donnees>\n</donnees>', cache_control: { type: 'ephemeral' } },
-    ],
+    model: 'gpt-6.2-sol',
+    system: SYSTEM,
     messages: [
       { role: 'user', content: 'Bonjour' },
       { role: 'assistant', content: 'Salut !' },
@@ -58,7 +57,7 @@ describe('discussion avec le coach', () => {
     const thinking = chat(streamResponse('Repose-toi aujourd’hui.'))
     expect(await thinking.result).toMatchObject({ ok: true, text: 'Repose-toi aujourd’hui.' })
     expect(thinking.deltas.join('')).toBe('Repose-toi aujourd’hui.')
-    const cut = chat(streamResponse('Commence par', 'max_tokens'))
+    const cut = chat(streamResponse('Commence par', 'max_output_tokens'))
     expect(await cut.result).toEqual({ ok: true, text: 'Commence par', usage: USAGE })
   })
 
@@ -66,6 +65,11 @@ describe('discussion avec le coach', () => {
     expect(await chat(streamResponse('  \n ')).result).toEqual({ ok: false, problem: 'failed', usage: USAGE })
     expect(await chat(streamResponse(null)).result).toEqual({ ok: false, problem: 'failed', usage: USAGE })
     expect(await chat(streamResponse(null, 'refusal')).result).toEqual({
+      ok: false,
+      problem: 'refused',
+      usage: USAGE,
+    })
+    expect(await chat(streamResponse(null, 'content_filter')).result).toEqual({
       ok: false,
       problem: 'refused',
       usage: USAGE,
@@ -89,11 +93,11 @@ describe('discussion avec le coach', () => {
 
   it('reconnaît chaque problème de l’API', async () => {
     for (const errorCase of AI_ERROR_CASES.filter((c) => c.structuredOnly !== true)) {
-      const fake = fakeAnthropicFetch(...errorCase.answers())
+      const fake = fakeOpenAiFetch(...errorCase.answers())
       const result = await streamChat({
         apiKey: KEY,
-        model: 'claude-opus-5-5',
-        system: [{ type: 'text', text: 'Tu es le coach.' }],
+        model: 'gpt-6.2-sol',
+        system: 'Tu es le coach.',
         messages: [{ role: 'user', content: 'Bonjour' }],
         onText: () => undefined,
         fetchImpl: fake.fetchImpl,
@@ -102,24 +106,34 @@ describe('discussion avec le coach', () => {
     }
   })
 
-  it('envoie le texte seul, avec le cache de la conversation', async () => {
+  it('envoie le texte seul, consignes en tête, sans rien garder chez OpenAI', async () => {
     const { result, requests } = chat(streamResponse('Oui.'))
     await result
+    expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
+    expect(requests[0]?.headers.get('authorization')).toBe(`Bearer ${KEY}`)
     expect(requests[0]?.body).toEqual({
-      model: 'claude-sonnet-5-5',
-      max_tokens: 8000,
-      system: [
-        { type: 'text', text: 'Tu es le coach.' },
-        { type: 'text', text: '<donnees>\n</donnees>', cache_control: { type: 'ephemeral' } },
-      ],
-      messages: [
+      model: 'gpt-6.2-sol',
+      instructions: SYSTEM,
+      input: [
         { role: 'user', content: 'Bonjour' },
         { role: 'assistant', content: 'Salut !' },
         { role: 'user', content: 'Comment progresser ?' },
       ],
-      cache_control: { type: 'ephemeral' },
-      output_config: { effort: 'medium' },
+      max_output_tokens: 8000,
+      reasoning: { effort: 'medium' },
+      store: false,
       stream: true,
+    })
+    expect(CHAT_MAX_TOKENS).toBe(8000)
+  })
+
+  it('compte les jetons relus dans le cache à part', async () => {
+    const { result } = chat(
+      streamResponse('Oui.', 'completed', { usage: usageWith({ cached: 5000, written: 1500 }) }),
+    )
+    expect(await result).toMatchObject({
+      ok: true,
+      usage: { inputTokens: 1850, outputTokens: 420, cacheReadTokens: 5000, cacheWriteTokens: 1500 },
     })
   })
 })

@@ -20,10 +20,13 @@ import {
   todayCoachState,
 } from './coach-today-view'
 
-// La carte de l'accueil passe par ce module : il ne doit jamais charger le SDK de Claude (lourd, et
-// inutile tant qu'on ne demande rien). S'il l'importait, ce fichier de tests ne se chargerait pas.
-vi.mock('@anthropic-ai/sdk', () => {
-  throw new Error('Le SDK de Claude ne doit pas être chargé par la carte de la séance du jour')
+// La carte de l'accueil passe par ce module : il ne doit jamais charger le client de l'API d'OpenAI
+// (inutile tant qu'on ne demande rien). S'il l'importait, ce fichier de tests ne se chargerait pas.
+vi.mock('@/content/ai/client', () => {
+  throw new Error('Le client de l’API ne doit pas être chargé par la carte de la séance du jour')
+})
+vi.mock('@/content/ai/responses', () => {
+  throw new Error('Le client de l’API ne doit pas être chargé par la carte de la séance du jour')
 })
 
 const DATE = '2026-10-21'

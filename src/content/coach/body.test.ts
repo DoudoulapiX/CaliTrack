@@ -1,7 +1,7 @@
 import { jsonSchemaOf } from '@/content/ai/structured'
 import { defaultNutritionGoals } from '@/db/defaults'
 import { bodyReviewSchema } from '@/db/schema'
-import { BODY_CUT_LEAN, coachData } from '@/test/anthropic'
+import { BODY_CUT_LEAN, coachData } from '@/test/openai'
 import {
   bmiOf,
   BODY_PHOTO_MAX,
@@ -40,7 +40,7 @@ describe('accès au coach physique', () => {
     expect(gate()).toBeNull()
   })
 
-  it('demande d’abord une clé Claude', () => {
+  it('demande d’abord une clé OpenAI', () => {
     expect(gate({ hasKey: false })).toBe('noKey')
     expect(gate({ hasKey: false, profile: { birthYear: null, heightCm: null }, weightKg: null })).toBe(
       'noKey',
@@ -64,7 +64,7 @@ describe('accès au coach physique', () => {
   })
 })
 
-describe('réponse de Claude', () => {
+describe('réponse de ChatGPT', () => {
   it('garde une réponse raisonnable telle quelle', () => {
     expect(cleanBodyReview(BODY_CUT_LEAN)).toEqual({
       suggestedPhase: 'cut',
@@ -197,7 +197,7 @@ describe('analyse à enregistrer', () => {
     weightKg: 80,
     goals: { activity: 'moderate' as const },
     date: '2026-10-21',
-    model: 'claude-sonnet-5-5',
+    model: 'gpt-6.2-astra',
     now: '2026-10-21T09:30:00.000Z',
   }
 
@@ -205,7 +205,7 @@ describe('analyse à enregistrer', () => {
     const review = bodyReviewFrom(args)
     expect(review).toEqual({
       date: '2026-10-21',
-      model: 'claude-sonnet-5-5',
+      model: 'gpt-6.2-astra',
       suggestedPhase: 'cut',
       phase: 'maintain',
       bodyFat: { low: 8, high: 11 },
@@ -242,7 +242,7 @@ describe('analyse à enregistrer', () => {
   })
 })
 
-describe('demande à Claude', () => {
+describe('demande à ChatGPT', () => {
   const photos = [
     { view: 'front', base64: 'RkFDRQ==' },
     { view: 'back', base64: 'RE9T' },
@@ -255,8 +255,8 @@ describe('demande à Claude', () => {
     expect(system).toContain('readable à false')
     expect(content).toHaveLength(3)
     expect(content.slice(0, 2)).toEqual([
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'RkFDRQ==' } },
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'RE9T' } },
+      { type: 'image', jpegBase64: 'RkFDRQ==' },
+      { type: 'image', jpegBase64: 'RE9T' },
     ])
     const text = content[2]?.type === 'text' ? content[2].text : ''
     expect(text).toContain('<donnees>')

@@ -3,7 +3,7 @@ import { Button, ButtonLink } from '@/ui/Button'
 import { AI_SETTINGS_PATH, canRetry, needsAiSettings, problemText, type AiTask } from './ai-view'
 
 /**
- * Ce qui a empêché Claude de répondre, avec la suite possible : réessayer (problème passager) ou ouvrir
+ * Ce qui a empêché ChatGPT de répondre, avec la suite possible : réessayer (problème passager) ou ouvrir
  * les réglages de l'IA (clé ou modèle refusés).
  */
 export function AiProblemNote({

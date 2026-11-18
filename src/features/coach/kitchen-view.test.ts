@@ -1,5 +1,5 @@
 import { cleanIdeas } from '@/content/coach/kitchen'
-import { IDEAS } from '@/test/anthropic'
+import { IDEAS } from '@/test/openai'
 import { pantryItem } from '@/test/fixtures'
 import {
   afterIdeaText,

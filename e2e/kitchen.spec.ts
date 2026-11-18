@@ -1,10 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
 import { expectAccessible } from './a11y-helpers'
 import { FRIDGE_ITEMS, IDEAS } from './coach-fixtures'
-import { CLAUDE_KEY, collectErrors, fakeClaude, onboard, solidPng } from './nutrition-helpers'
+import { OPENAI_KEY, collectErrors, fakeOpenAi, onboard, solidPng } from './nutrition-helpers'
 
 // Sous WebKit, page.route ne voit pas les requêtes d'une page que le service worker contrôle : les
-// services simulés (Open Food Facts, Claude, Oura) exigent de le bloquer.
+// services simulés (Open Food Facts, ChatGPT, Oura) exigent de le bloquer.
 test.use({ serviceWorkers: 'block' })
 
 /** La même vérification en thème sombre puis clair (l'appli suit le réglage de l'iPhone). */
@@ -18,7 +18,7 @@ async function expectAccessibleInBothThemes(page: Page, screen: string) {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 }
 
-/** Une demande envoyée à Claude, en texte, pour y chercher un passage. */
+/** Une demande envoyée à ChatGPT, en texte, pour y chercher un passage. */
 function sentText(body: unknown): string {
   return JSON.stringify(body)
 }
@@ -32,22 +32,22 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
   const errors = collectErrors(page)
   // Le mercredi 21 octobre 2026 à 12 h 30 : l'heure du déjeuner.
   await page.clock.setFixedTime(new Date('2026-10-21T12:30:00+02:00'))
-  const sent = await fakeClaude(page, { fridge: FRIDGE_ITEMS, ideas: IDEAS })
-  // Rien d'autre ne sort de l'appli que les demandes à l'API Claude (simulée). WebKit signale aussi
+  const sent = await fakeOpenAi(page, { fridge: FRIDGE_ITEMS, ideas: IDEAS })
+  // Rien d'autre ne sort de l'appli que les demandes à l’API OpenAI (simulée). WebKit signale aussi
   // l'aperçu de la photo (adresse blob:), qui reste sur le téléphone : seuls http et https comptent.
   const outside: string[] = []
   context.on('request', (request) => {
     const url = new URL(request.url())
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return
-    if (url.hostname !== 'localhost' && url.hostname !== 'api.anthropic.com') outside.push(request.url())
+    if (url.hostname !== 'localhost' && url.hostname !== 'api.openai.com') outside.push(request.url())
   })
   await onboard(page)
 
   // La clé, collée dans les réglages de l'IA.
   await page.goto('more/ai')
-  await page.getByLabel('Clé API Claude').fill(CLAUDE_KEY)
+  await page.getByLabel('Clé API OpenAI').fill(OPENAI_KEY)
   await page.getByRole('button', { name: 'Enregistrer la clé' }).click()
-  await expect(page.getByText('sk-ant-…ghij')).toBeVisible()
+  await expect(page.getByText('sk-proj-…ghij')).toBeVisible()
 
   // Un frigo vide, rempli d'une photo.
   await page.goto('nutrition/kitchen')
@@ -69,9 +69,9 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
   const seen = page.getByRole('list', { name: 'Aliments vus' })
   await expect(seen.getByRole('group')).toHaveCount(7)
   const fridgeRequest = sent.find((request) => request.task === 'fridge')
-  expect(fridgeRequest?.key).toBe(CLAUDE_KEY)
+  expect(fridgeRequest?.key).toBe(OPENAI_KEY)
   expect(sentText(fridgeRequest?.body)).toContain('Voici une photo de mon frigo.')
-  expect(sentText(fridgeRequest?.body)).toContain('"media_type":"image/jpeg"')
+  expect(sentText(fridgeRequest?.body)).toContain('"image_url":"data:image/jpeg;base64,')
   await expectAccessibleInBothThemes(page, 'photo du frigo')
   await page.getByRole('checkbox', { name: 'Garder Lait demi-écrémé' }).uncheck()
   await page.getByRole('button', { name: 'Enregistrer 6 aliments' }).click()
@@ -106,7 +106,7 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
     'Poulet, riz et tomates',
   ])
   const ideasRequest = sent.find((request) => request.task === 'ideas')
-  expect(ideasRequest?.key).toBe(CLAUDE_KEY)
+  expect(ideasRequest?.key).toBe(OPENAI_KEY)
   const ideasText = sentText(ideasRequest?.body)
   expect(ideasText).toContain('Repas : déjeuner')
   expect(ideasText).toMatch(/Reste à manger pour la journée : \d+ kcal/)
@@ -146,7 +146,7 @@ test('frigo : photo vérifiée puis enregistrée, idée choisie puis ajoutée au
   await page.getByRole('button', { name: 'Ajouter', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Ajouter au dîner', level: 1 })).toBeVisible()
 
-  // Deux demandes à Claude seulement, chacune après un geste.
+  // Deux demandes à ChatGPT seulement, chacune après un geste.
   expect(sent.filter((request) => request.task !== null).map((request) => request.task)).toEqual([
     'fridge',
     'ideas',

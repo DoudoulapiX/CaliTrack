@@ -4,7 +4,7 @@ import { aiUsageSchema } from './schema'
 import type { AiUsage, AiUsageRow } from './types'
 
 /**
- * Ajoute une demande à Claude au compteur du mois (AAAA-MM), sur cet appareil seulement. Le coût de la
+ * Ajoute une demande à ChatGPT au compteur du mois (AAAA-MM), sur cet appareil seulement. Le coût de la
  * demande, en dollars, est calculé par l'appelant au prix du modèle qui a répondu.
  */
 export async function recordAiUsage(
@@ -42,7 +42,7 @@ export async function recordAiUsage(
   })
 }
 
-/** Les demandes à Claude d'un mois (AAAA-MM) sur cet appareil ; undefined : aucune. */
+/** Les demandes à ChatGPT d'un mois (AAAA-MM) sur cet appareil ; undefined : aucune. */
 export async function usageOfMonth(
   month: string,
   database: CaliTrackDB = defaultDb,

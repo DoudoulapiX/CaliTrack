@@ -114,7 +114,7 @@ export function AboutPage() {
       <Section title="Tes données">
         <Paragraph>
           {frenchSpacing(
-            'Tout reste sur ton iPhone, dans l’appli : pas de compte, pas de serveur. Rien ne part ailleurs, sauf quand tu t’en sers : la photo d’un repas (vers Anthropic, avec ta clé), les demandes au coach IA et leurs photos (aussi vers Anthropic), un code-barres (cherché sur Open Food Facts) et la lecture de ta bague (demandée à Oura par ton relais). CaliTrack ne garde aucune de ces photos, pas même celles de ton corps pour le coach physique. Le compteur de répétitions regarde l’image de la caméra sur l’iPhone même : aucune image n’est envoyée ni enregistrée. Enregistre une sauvegarde dans Fichiers de temps en temps pour ne rien perdre.',
+            'Tout reste sur ton iPhone, dans l’appli : pas de compte, pas de serveur. Rien ne part ailleurs, sauf quand tu t’en sers : la photo d’un repas (vers OpenAI, avec ta clé), les demandes au coach IA et leurs photos (aussi vers OpenAI), un code-barres (cherché sur Open Food Facts) et la lecture de ta bague (demandée à Oura par ton relais). CaliTrack ne garde aucune de ces photos, pas même celles de ton corps pour le coach physique. Le compteur de répétitions regarde l’image de la caméra sur l’iPhone même : aucune image n’est envoyée ni enregistrée. Enregistre une sauvegarde dans Fichiers de temps en temps pour ne rien perdre.',
           )}
         </Paragraph>
         <ListGroup className="mt-3">

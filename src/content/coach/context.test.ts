@@ -1,5 +1,5 @@
 import { ALL_SECTIONS, buildCoachContext } from './context'
-import { coachData } from '@/test/anthropic'
+import { coachData } from '@/test/openai'
 
 /** Le contexte complet du mercredi 21 octobre 2026 (voir coachData). */
 const FULL_CONTEXT = [

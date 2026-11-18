@@ -32,7 +32,7 @@ import {
 } from './photo-view'
 import { PhotoItemSheet } from './PhotoItemSheet'
 
-/** Longueur maximale des précisions données à Claude. */
+/** Longueur maximale des précisions données à ChatGPT. */
 const NOTE_MAX = 200
 
 type Phase =
@@ -41,7 +41,7 @@ type Phase =
   | { kind: 'result'; items: PhotoItem[] }
   | { kind: 'problem'; title: string; text: string; retry: boolean; settings: boolean }
 
-/** Photographier son repas : Claude reconnaît les aliments et estime leurs valeurs, à vérifier avant l'ajout. */
+/** Photographier son repas : ChatGPT reconnaît les aliments et estime leurs valeurs, à vérifier avant l'ajout. */
 export function PhotoPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
@@ -175,8 +175,8 @@ export function PhotoPage() {
       <Page {...pageProps}>
         <EmptyState
           icon={<Sparkles size={36} aria-hidden />}
-          title="Ajoute ta clé Claude"
-          text="L’analyse des photos passe par Claude, avec ta propre clé, gardée sur cet iPhone."
+          title="Ajoute ta clé OpenAI"
+          text="L’analyse des photos passe par ChatGPT, avec ta propre clé, gardée sur cet iPhone."
           action={<ButtonLink to={AI_SETTINGS_PATH}>Ajouter ma clé</ButtonLink>}
         />
       </Page>
@@ -243,7 +243,7 @@ export function PhotoPage() {
       {phase.kind === 'analyzing' && (
         <div className="flex flex-col gap-3">
           <p role="status" className="px-1 text-[15px] text-ink-2">
-            Claude regarde ton assiette…
+            ChatGPT regarde ton assiette…
           </p>
           <Button variant="secondary" onClick={cancel}>
             Annuler

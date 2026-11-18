@@ -1,13 +1,13 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { db } from '@/db/db'
 import { saveSecret } from '@/db/secrets'
-import { fakeAnthropicFetch } from '@/test/anthropic'
+import { fakeOpenAiFetch } from '@/test/openai'
 import { pantryItem } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 
 const PAGE = '/nutrition/kitchen'
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
 /** Deux aliments au frigo, un aux placards. */
 const stocked = () =>
@@ -29,12 +29,12 @@ describe('frigo et placards', () => {
     vi.unstubAllGlobals()
   })
 
-  it('n’appelle jamais Claude à l’ouverture', async () => {
-    const fake = fakeAnthropicFetch()
+  it('n’appelle jamais ChatGPT à l’ouverture', async () => {
+    const fake = fakeOpenAiFetch()
     vi.stubGlobal('fetch', fake.fetchImpl)
     await renderApp(PAGE, {
       setup: async () => {
-        await saveSecret('anthropic', KEY)
+        await saveSecret('openai', KEY)
         await stocked()
       },
     })

@@ -24,9 +24,7 @@ const spaced = (text: string) => !/ [:;!?%»]/.test(text) && !/« /.test(text)
 describe('textes du coach physique', () => {
   it('prévient que c’est une estimation, et que les photos ne sont pas gardées', () => {
     expect(BODY_DISCLAIMER).toBe('C’est une estimation pour guider tes phases, pas un avis médical.')
-    expect(PHOTO_NOTE).toBe(
-      `Tes photos partent vers Anthropic pour l’analyse${NB}; CaliTrack ne les garde pas.`,
-    )
+    expect(PHOTO_NOTE).toBe(`Tes photos partent vers OpenAI pour l’analyse${NB}; CaliTrack ne les garde pas.`)
     expect(UNREADABLE_PHOTO).toBe('Cette photo ne s’ouvre pas. Choisis-en une autre.')
     expect(ANALYZING_TEXT).toBe('Le coach regarde tes photos…')
   })

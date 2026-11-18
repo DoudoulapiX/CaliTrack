@@ -39,7 +39,7 @@ type Phase =
   | { kind: 'review'; items: ReviewItem[] }
   /** La photo ne s'ouvre pas : rien n'est envoyé. */
   | { kind: 'photoError'; text: string }
-  /** Claude ne voit ni frigo ni aliments. */
+  /** ChatGPT ne voit ni frigo ni aliments. */
   | { kind: 'unreadable'; reason: string }
   | { kind: 'problem'; problem: AiProblem }
 
@@ -48,7 +48,7 @@ type Mode = 'merge' | 'replace'
 const INLINE_INPUT =
   'min-w-0 rounded-lg bg-surface-2 px-2.5 py-2 text-[16px] text-ink placeholder:text-ink-3 outline-none focus:ring-2 focus:ring-accent'
 
-/** Photographier son frigo ou ses placards : Claude note les aliments, à vérifier avant de les enregistrer. */
+/** Photographier son frigo ou ses placards : ChatGPT note les aliments, à vérifier avant de les enregistrer. */
 export function KitchenPhotoPage() {
   const settings = useSettings()
   const apiKey = useAiKey()
@@ -210,7 +210,7 @@ export function KitchenPhotoPage() {
             <Camera size={36} className="text-ink-3" aria-hidden />
             <p className="text-[14px] text-ink-2">
               {frenchSpacing(
-                'Ouvre la porte en grand et photographie les étagères d’assez près : Claude note ce qu’il reconnaît.',
+                'Ouvre la porte en grand et photographie les étagères d’assez près : ChatGPT note ce qu’il reconnaît.',
               )}
             </p>
           </div>
@@ -219,7 +219,7 @@ export function KitchenPhotoPage() {
       {phase.kind === 'analyzing' && (
         <div className="flex flex-col gap-3">
           <p role="status" className="px-1 text-[15px] text-ink-2">
-            Claude regarde ta photo…
+            ChatGPT regarde ta photo…
           </p>
           <Button variant="secondary" onClick={stop}>
             Annuler

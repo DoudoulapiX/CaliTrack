@@ -58,7 +58,7 @@ import {
 /** Analyses montrées dans l'historique. */
 const HISTORY_SIZE = 6
 
-/** Ce que dit l'écran quand Claude ne voit pas de silhouette, sans explication de sa part. */
+/** Ce que dit l'écran quand ChatGPT ne voit pas de silhouette, sans explication de sa part. */
 const UNREADABLE_DEFAULT =
   'Ces photos ne permettent pas l’analyse. Essaie avec d’autres, en pied et en tenue de sport.'
 
@@ -80,7 +80,7 @@ type Phase =
   | { kind: 'unreadable'; text: string }
 
 /**
- * Coach physique : une à trois photos, analysées par Claude (phase conseillée et masse grasse estimée),
+ * Coach physique : une à trois photos, analysées par ChatGPT (phase conseillée et masse grasse estimée),
  * puis la phase appliquée aux objectifs caloriques. Les photos ne quittent la mémoire que pour l'analyse :
  * jamais enregistrées, leurs aperçus libérés en les remplaçant et en quittant l'écran.
  */

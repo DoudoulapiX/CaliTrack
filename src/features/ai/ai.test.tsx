@@ -1,19 +1,16 @@
 import { act, screen, within } from '@testing-library/react'
 import { db } from '@/db/db'
-import { errorResponse, fakeAnthropicFetch } from '@/test/anthropic'
+import { errorResponse, fakeOpenAiFetch, modelsResponse } from '@/test/openai'
 import { aiUsageRow } from '@/test/fixtures'
 import { renderApp } from '@/test/render-app'
 import { expectFrenchSpacing } from '@/test/typography'
 
-const KEY = 'sk-ant-api03-test-0123456789abcdefghij'
+const KEY = 'sk-proj-test-0123456789abcdefghij'
 
-const modelsOk = () =>
-  new Response(JSON.stringify({ data: [], has_more: false, first_id: null, last_id: null }), {
-    headers: { 'content-type': 'application/json' },
-  })
+const modelsOk = modelsResponse
 
 function stubFetch(...answers: (Response | Error)[]) {
-  const fake = fakeAnthropicFetch(...answers)
+  const fake = fakeOpenAiFetch(...answers)
   vi.stubGlobal('fetch', fake.fetchImpl)
   return fake
 }
@@ -34,30 +31,44 @@ describe('réglages de l’IA', () => {
   })
 
   it('vérifient la clé avant de la garder, puis la masquent', async () => {
-    const { requests } = stubFetch(errorResponse(401, 'authentication_error'), modelsOk(), modelsOk())
+    const { requests } = stubFetch(errorResponse(401, 'invalid_api_key'), modelsOk(), modelsOk())
     const { user } = await renderApp('/more/ai')
-    const field = await screen.findByLabelText('Clé API Claude')
+    const field = await screen.findByLabelText('Clé API OpenAI')
     expect(field).toHaveAttribute('type', 'password')
 
     await user.type(field, 'ma clé')
     await user.click(screen.getByRole('button', { name: 'Enregistrer la clé' }))
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Ce n’est pas une clé Claude : elle commence par « sk-ant- ».',
+      'Ce n’est pas une clé OpenAI : elle commence par « sk-proj- » ou « sk- ».',
+    )
+    // Une clé Claude collée par habitude : on le dit, sans l'envoyer nulle part.
+    await user.clear(field)
+    await user.type(field, 'sk-ant-api03-test-0123456789abcdefghij')
+    await user.click(screen.getByRole('button', { name: 'Enregistrer la clé' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'C’est une clé Claude : colle ici une clé OpenAI, qui commence par « sk-proj- ».',
     )
     expect(requests).toHaveLength(0)
 
     await user.clear(field)
     await user.type(field, KEY)
     await user.click(screen.getByRole('button', { name: 'Enregistrer la clé' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent(/^Anthropic refuse cette clé/)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/^OpenAI refuse cette clé/)
     expect(await db.secrets.count()).toBe(0)
 
     await user.click(screen.getByRole('button', { name: 'Enregistrer la clé' }))
     expect(await screen.findByText('Clé enregistrée', { selector: 'p' })).toBeInTheDocument()
-    expect(screen.getByText('sk-ant-…ghij')).toBeInTheDocument()
+    expect(screen.getByText('sk-proj-…ghij')).toBeInTheDocument()
     expect(screen.queryByText(KEY)).not.toBeInTheDocument()
-    expect(await db.secrets.get('anthropic')).toMatchObject({ value: KEY })
-    expect(requests.map((request) => request.headers.get('x-api-key'))).toEqual([KEY, KEY])
+    expect(await db.secrets.get('openai')).toMatchObject({ value: KEY })
+    expect(requests.map((request) => request.headers.get('authorization'))).toEqual([
+      `Bearer ${KEY}`,
+      `Bearer ${KEY}`,
+    ])
+    expect(requests.map((request) => request.url)).toEqual([
+      'https://api.openai.com/v1/models',
+      'https://api.openai.com/v1/models',
+    ])
 
     await user.click(screen.getByRole('button', { name: 'Vérifier la clé' }))
     expect(await screen.findByText('Ta clé fonctionne')).toBeInTheDocument()
@@ -66,7 +77,7 @@ describe('réglages de l’IA', () => {
   it('gardent une clé sans connexion, et la suppriment sur demande', async () => {
     stubFetch(new TypeError('Load failed'), new TypeError('Load failed'))
     const { user } = await renderApp('/more/ai')
-    await user.type(await screen.findByLabelText('Clé API Claude'), KEY)
+    await user.type(await screen.findByLabelText('Clé API OpenAI'), KEY)
     await user.click(screen.getByRole('button', { name: 'Enregistrer la clé' }))
     expect(
       await screen.findByText('Clé enregistrée, pas encore vérifiée', {}, { timeout: 5000 }),
@@ -81,16 +92,19 @@ describe('réglages de l’IA', () => {
     ).toBeInTheDocument()
     expectFrenchSpacing()
     await user.click(within(confirm).getByRole('button', { name: 'Supprimer' }))
-    expect(await screen.findByLabelText('Clé API Claude')).toHaveValue('')
+    expect(await screen.findByLabelText('Clé API OpenAI')).toHaveValue('')
     expect(await db.secrets.count()).toBe(0)
   })
 
   it('changent de modèle', async () => {
     const { user } = await renderApp('/more/ai')
-    expect(await screen.findByText('Le plus précis, le plus cher.')).toBeInTheDocument()
-    await user.click(screen.getByRole('radio', { name: 'Haiku 5.5' }))
+    expect(await screen.findByText('Bon compromis entre précision et prix.')).toBeInTheDocument()
+    expect(screen.getByText(/^Crée ta clé sur platform\.openai\.com/)).toHaveTextContent(
+      'L’abonnement ChatGPT ne compte pas',
+    )
+    await user.click(screen.getByRole('radio', { name: 'GPT-6 Luna' }))
     expect(await screen.findByText('Le moins cher, un peu moins précis.')).toBeInTheDocument()
-    expect((await db.settings.get('app'))?.aiModel).toBe('claude-haiku-5-5')
+    expect((await db.settings.get('app'))?.aiModel).toBe('gpt-6-luna')
   })
 
   it('estiment le coût d’un mois avec chaque modèle et comptent les demandes du mois', async () => {
@@ -103,11 +117,11 @@ describe('réglages de l’IA', () => {
     expect(
       screen.getByText(/^Chaque demande au coach et chaque analyse de photo est facturée/),
     ).toHaveTextContent(/CaliTrack ne garde pas les photos\.$/)
-    expect(screen.getByText('Opus 5.5 : environ 6,72 $ (choisi)')).toBeInTheDocument()
-    expect(screen.getByText('Sonnet 5.5 : environ 3,39 $')).toBeInTheDocument()
-    expect(screen.getByText('Haiku 5.5 : environ 0,17 $')).toBeInTheDocument()
+    expect(screen.getByText('GPT-6.2 Astra : environ 13,44 $')).toBeInTheDocument()
+    expect(screen.getByText('GPT-6.2 Sol : environ 3,36 $ (choisi)')).toBeInTheDocument()
+    expect(screen.getByText('GPT-6 Luna : environ 0,17 $')).toBeInTheDocument()
     expect(
-      screen.getByText('Estimation calculée sur cet iPhone ; ta facture Anthropic fait foi.'),
+      screen.getByText('Estimation calculée sur cet iPhone ; ta facture OpenAI fait foi.'),
     ).toBeInTheDocument()
     expectFrenchSpacing()
 
@@ -117,9 +131,9 @@ describe('réglages de l’IA', () => {
     expect(await screen.findByText('Ce mois-ci sur cet iPhone : 0,42 $ pour 37 demandes')).toBeInTheDocument()
     expect(screen.queryByText('Aucune demande ce mois-ci.')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('radio', { name: 'Haiku 5.5' }))
-    expect(await screen.findByText('Haiku 5.5 : environ 0,17 $ (choisi)')).toBeInTheDocument()
-    expect(screen.getByText('Opus 5.5 : environ 6,72 $')).toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: 'GPT-6 Luna' }))
+    expect(await screen.findByText('GPT-6 Luna : environ 0,17 $ (choisi)')).toBeInTheDocument()
+    expect(screen.getByText('GPT-6.2 Sol : environ 3,36 $')).toBeInTheDocument()
     expectFrenchSpacing()
   })
 })

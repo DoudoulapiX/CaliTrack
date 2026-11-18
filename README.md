@@ -17,8 +17,8 @@ une mise à jour).
 ## Tes données
 
 Les données sont gardées dans l'appli, sur l'iPhone. Rien ne part ailleurs, sauf quand tu te sers de ces
-fonctions : la photo d'un repas (envoyée à Anthropic avec ta clé Claude), les demandes au coach IA et
-leurs photos (envoyées à Anthropic de la même façon), un code-barres scanné (cherché sur Open Food Facts)
+fonctions : la photo d'un repas (envoyée à OpenAI avec ta clé), les demandes au coach IA et
+leurs photos (envoyées à OpenAI de la même façon), un code-barres scanné (cherché sur Open Food Facts)
 et la lecture de ta bague (demandée à Oura par ton relais). Le compteur de répétitions analyse l'image de
 la caméra sur l'iPhone même : aucune image n'est envoyée ni enregistrée. Pour ne rien perdre :
 
@@ -49,9 +49,9 @@ la caméra sur l'iPhone même : aucune image n'est envoyée ni enregistrée. Pou
   aliments perso, saisie rapide, repas de la veille à recopier ; objectifs de calories et de macros
   calculés d'après le profil et l'objectif (sèche, maintien, prise de masse), ou fixés à la main.
 - **Code-barres** : scan à la caméra (ou code tapé), produit lu sur Open Food Facts puis gardé.
-- **Photo du repas** : Claude reconnaît les aliments et estime quantités et valeurs, à vérifier avant
-  l'ajout. Il faut ta propre clé Claude (Plus → Intelligence artificielle), gardée sur l'iPhone et hors
-  des sauvegardes ; chaque analyse est facturée par Anthropic sur ton compte.
+- **Photo du repas** : ChatGPT reconnaît les aliments et estime quantités et valeurs, à vérifier avant
+  l'ajout. Il faut ta propre clé API OpenAI (Plus → Intelligence artificielle), gardée sur l'iPhone et
+  hors des sauvegardes ; chaque analyse est facturée par OpenAI sur ton compte.
 - **Bague Oura** : sommeil et récupération de la nuit sur l'accueil, relus à l'ouverture quand ils
   ont plus d'une heure.
 
@@ -71,9 +71,15 @@ Oura**.
 
 ## Coach IA
 
-La troisième étape ajoute un coach qui passe par Claude, avec ta propre clé (**Plus → Intelligence
-artificielle**). Ses quatre parties sont dans **Plus → Coach IA**. Rien n'est demandé à Claude tant que
-tu ne touches pas le bouton qui lance la demande.
+La troisième étape ajoute un coach qui passe par ChatGPT (l'API d'OpenAI), avec ta propre clé
+(**Plus → Intelligence artificielle**). Ses quatre parties sont dans **Plus → Coach IA**. Rien n'est
+demandé à ChatGPT tant que tu ne touches pas le bouton qui lance la demande.
+
+La clé se crée sur [platform.openai.com](https://platform.openai.com/api-keys) (« API keys », elle
+commence par `sk-proj-`). L'abonnement ChatGPT (Plus, Pro) ne compte pas : l'API se paie à part, avec du
+crédit acheté sur le même site. Jusqu'en novembre 2026, le coach passait par Claude d'Anthropic : la mise
+à jour efface l'ancienne clé Claude de l'iPhone et remplace le modèle choisi par son équivalent chez
+OpenAI (Opus et Sonnet par GPT-6.2 Sol, Haiku par GPT-6 Luna).
 
 - **Coach du jour** (aussi sur la carte de la séance du jour : « Ajuster avec le coach ») : tu dis
   comment tu te sens (énergie, courbatures, et sommeil quand la bague Oura ne l'a pas mesuré). D'après
@@ -85,7 +91,7 @@ tu ne touches pas le bouton qui lance la demande.
   de dos). Le coach estime ta masse grasse et conseille une phase : sèche, maintien ou prise de masse.
   CaliTrack la ramène au maintien quand elle ne convient pas à ta corpulence (pas de sèche si tu es déjà
   mince ou sec, pas de prise de masse en obésité), puis calcule elle-même les calories et les macros :
-  Claude ne fixe jamais ces chiffres. Réservé aux adultes : il faut ton année de naissance et au moins
+  ChatGPT ne fixe jamais ces chiffres. Réservé aux adultes : il faut ton année de naissance et au moins
   18 ans. C'est une estimation pour guider tes phases, pas un avis médical.
 - **Frigo et placards** : la liste de ce que tu as, tenue à la main ou d'après une photo du frigo (les
   aliments reconnus sont à vérifier avant l'enregistrement). Le coach en tire des idées de repas pour un
@@ -95,20 +101,21 @@ tu ne touches pas le bouton qui lance la demande.
   séances et ton escalade, ton sommeil, tes pesées, tes repas, ton frigo et ta dernière analyse physique.
   L'appli garde les 200 derniers messages.
 
-Ce qui part vers Anthropic : ta demande, ses photos et les données utiles au coach (profil sans ton
+Ce qui part vers OpenAI : ta demande, ses photos et les données utiles au coach (profil sans ton
 prénom, programme, séances et escalade récentes, nuits Oura, pesées, repas, frigo, dernière analyse
 physique avec sa phase et sa masse grasse estimée). Les photos sont réduites avant l'envoi et CaliTrack
 n'en garde aucune, celles de ton corps pas plus que les autres. Les conseils, les analyses (sans les
 photos), le frigo et la discussion vont dans les sauvegardes ; la clé et le compteur des demandes restent
-sur l'iPhone.
+sur l'iPhone. Les demandes partent avec `store: false` : OpenAI ne garde pas les réponses pour les
+relire plus tard.
 
-Ce que ça coûte : chaque demande est facturée par Anthropic sur ton compte, en dollars ; son prix
+Ce que ça coûte : chaque demande est facturée par OpenAI sur ton compte, en dollars ; son prix
 habituel est affiché sous le bouton qui la lance. Pour un mois d'usage régulier (un conseil et une photo
 de repas par jour, une soixantaine de messages, quelques idées de repas, photos du frigo et analyses du
-coach physique), compte environ 6,72 $ avec Opus 5.5 (le modèle par défaut), 3,39 $ avec Sonnet 5.5 et
-0,17 $ avec Haiku 5.5. **Plus → Intelligence artificielle** affiche ces estimations et le compteur du
-mois : ce qu'ont coûté les demandes faites sur cet iPhone, calculé sur place (ta facture Anthropic fait
-foi).
+coach physique), compte environ 3,36 $ avec GPT-6.2 Sol (le modèle par défaut), 13,44 $ avec GPT-6.2
+Astra (le plus précis) et 0,17 $ avec GPT-6 Luna. **Plus → Intelligence artificielle** affiche ces
+estimations et le compteur du mois : ce qu'ont coûté les demandes faites sur cet iPhone, calculé sur
+place (ta facture OpenAI fait foi).
 
 ## Ce que fait la quatrième étape
 

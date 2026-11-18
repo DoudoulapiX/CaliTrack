@@ -7,12 +7,12 @@ describe('secrets', () => {
   beforeEach(resetDb)
 
   it('enregistre, remplace et supprime une clé', async () => {
-    await saveSecret('anthropic', '  sk-ant-une  ')
-    expect(await db.secrets.get('anthropic')).toMatchObject({ value: 'sk-ant-une', expiresAt: null })
-    await saveSecret('anthropic', 'sk-ant-deux')
-    expect(validSecret(await db.secrets.get('anthropic'))).toBe('sk-ant-deux')
-    await deleteSecret('anthropic')
-    expect(validSecret(await db.secrets.get('anthropic'))).toBeNull()
+    await saveSecret('openai', '  sk-proj-une  ')
+    expect(await db.secrets.get('openai')).toMatchObject({ value: 'sk-proj-une', expiresAt: null })
+    await saveSecret('openai', 'sk-proj-deux')
+    expect(validSecret(await db.secrets.get('openai'))).toBe('sk-proj-deux')
+    await deleteSecret('openai')
+    expect(validSecret(await db.secrets.get('openai'))).toBeNull()
   })
 
   it('ignore un jeton expiré ou vide', () => {
@@ -28,11 +28,11 @@ describe('secrets', () => {
   })
 
   it('reste hors des sauvegardes, survit à une restauration et part avec « Tout effacer »', async () => {
-    await saveSecret('anthropic', 'sk-ant-secret')
+    await saveSecret('openai', 'sk-proj-secret')
     const backup = await collectBackup()
-    expect(serializeBackup(backup)).not.toContain('sk-ant-secret')
+    expect(serializeBackup(backup)).not.toContain('sk-proj-secret')
     await restoreBackup(backup)
-    expect(validSecret(await db.secrets.get('anthropic'))).toBe('sk-ant-secret')
+    expect(validSecret(await db.secrets.get('openai'))).toBe('sk-proj-secret')
     await resetAllData()
     expect(await db.secrets.count()).toBe(0)
   })

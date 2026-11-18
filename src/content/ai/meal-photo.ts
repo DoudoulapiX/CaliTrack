@@ -4,7 +4,7 @@ import { roundNutrients } from '@/content/nutrition/nutrients'
 import type { AiProblem } from './client'
 import { askStructured } from './structured'
 
-/** Ce que Claude renvoie pour une photo de repas (contrôlé par l'API, puis par zod). */
+/** Ce que ChatGPT renvoie pour une photo de repas (contrôlé par l'API, puis par zod). */
 export const mealPhotoSchema = z.object({
   isMeal: z.boolean().describe('Vrai si la photo montre de la nourriture ou une boisson qu’on peut estimer.'),
   problem: z
@@ -88,7 +88,7 @@ export function cleanItems(items: z.infer<typeof mealPhotoSchema>['items']): Est
     }))
 }
 
-/** Demande à Claude les aliments d'une photo de repas et leurs valeurs nutritionnelles. */
+/** Demande à ChatGPT les aliments d'une photo de repas et leurs valeurs nutritionnelles. */
 export async function estimateMealPhoto(request: MealPhotoRequest): Promise<MealPhotoResult> {
   const note = request.note.trim()
   const result = await askStructured({
@@ -96,7 +96,7 @@ export async function estimateMealPhoto(request: MealPhotoRequest): Promise<Meal
     model: request.model,
     system: SYSTEM_PROMPT,
     content: [
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: request.imageBase64 } },
+      { type: 'image', jpegBase64: request.imageBase64 },
       { type: 'text', text: note === '' ? 'Estime ce repas.' : `Estime ce repas. Précisions : ${note}` },
     ],
     schema: mealPhotoSchema,

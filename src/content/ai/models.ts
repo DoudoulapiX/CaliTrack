@@ -6,13 +6,13 @@ export interface AiModelOption {
   hint: string
 }
 
-/** Les modèles Claude proposés, du plus précis au moins cher. */
+/** Les modèles d'OpenAI proposés, du plus précis au moins cher. */
 export const AI_MODEL_OPTIONS: readonly AiModelOption[] = [
-  { id: 'claude-opus-5-5', label: 'Opus 5.5', hint: 'Le plus précis, le plus cher.' },
-  { id: 'claude-sonnet-5-5', label: 'Sonnet 5.5', hint: 'Bon compromis entre précision et prix.' },
-  { id: 'claude-haiku-5-5', label: 'Haiku 5.5', hint: 'Le moins cher, un peu moins précis.' },
+  { id: 'gpt-6.2-astra', label: 'GPT-6.2 Astra', hint: 'Le plus précis, le plus cher.' },
+  { id: 'gpt-6.2-sol', label: 'GPT-6.2 Sol', hint: 'Bon compromis entre précision et prix.' },
+  { id: 'gpt-6-luna', label: 'GPT-6 Luna', hint: 'Le moins cher, un peu moins précis.' },
 ]
 
 export function aiModelOption(id: AiModel): AiModelOption {
-  return AI_MODEL_OPTIONS.find((option) => option.id === id) ?? (AI_MODEL_OPTIONS[0] as AiModelOption)
+  return AI_MODEL_OPTIONS.find((option) => option.id === id) ?? (AI_MODEL_OPTIONS[1] as AiModelOption)
 }

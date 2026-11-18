@@ -17,8 +17,8 @@ export type DashboardCardKey =
 /** Modules que l'on peut masquer. */
 export type ModuleKey = 'climbing'
 
-/** Modèles Claude proposés pour l'IA (photo de repas, coach). */
-export type AiModel = 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'claude-haiku-5-5'
+/** Modèles d'OpenAI proposés pour l'IA (photo de repas, coach). */
+export type AiModel = 'gpt-6.2-astra' | 'gpt-6.2-sol' | 'gpt-6-luna'
 
 export interface AppSettings {
   id: 'app'
@@ -39,7 +39,7 @@ export interface AppSettings {
   climbingGym: string
   /** Lieu utilisé pour filtrer les exercices « avec mon matériel ». */
   currentLocationId: string | null
-  /** Modèle Claude utilisé par l'IA. */
+  /** Modèle d'OpenAI utilisé par l'IA. */
   aiModel: AiModel
   /** Identifiant de l'application Oura créée par l'utilisateur ('' : pas encore). */
   ouraClientId: string
@@ -680,7 +680,7 @@ export type CoachDecision = 'asPlanned' | 'lighter' | 'rest'
 /** Le conseil du coach pour une journée (un par jour : redemander le remplace). */
 export interface CoachDay {
   date: ISODate
-  /** Modèle Claude qui a répondu (jamais limité à la liste actuelle : un ancien modèle reste lisible). */
+  /** Modèle d'IA qui a répondu (jamais limité à la liste actuelle : un ancien modèle reste lisible). */
   model: string
   checkIn: CoachCheckIn
   basis: CoachBasis
@@ -704,14 +704,14 @@ export interface CoachDay {
 export interface BodyReview {
   date: ISODate
   model: string
-  /** Phase proposée par Claude. */
+  /** Phase proposée par ChatGPT. */
   suggestedPhase: NutritionPhase
   /** Phase conseillée par CaliTrack (une sèche ou une prise de masse peut être ramenée au maintien). */
   phase: NutritionPhase
-  /** Masse grasse estimée, en % ; null si Claude ne l'a pas estimée. */
+  /** Masse grasse estimée, en % ; null si ChatGPT ne l'a pas estimée. */
   bodyFat: { low: number; high: number } | null
   weightKg: number
-  /** Objectifs calculés par CaliTrack pour cette phase (jamais par Claude). */
+  /** Objectifs calculés par CaliTrack pour cette phase (jamais par ChatGPT). */
   targets: { kcal: number; proteinG: number; carbsG: number; fatG: number }
   summary: string
   observations: string[]
@@ -749,7 +749,7 @@ export interface CoachMessage {
   createdAt: string
 }
 
-/** Jetons comptés par Anthropic pour une demande (réflexion comprise dans la sortie). */
+/** Jetons comptés par OpenAI pour une demande (réflexion comprise dans la sortie). */
 export interface AiUsage {
   inputTokens: number
   outputTokens: number
@@ -757,7 +757,7 @@ export interface AiUsage {
   cacheWriteTokens: number
 }
 
-/** Demandes à Claude d'un mois sur cet appareil (jamais dans les sauvegardes). */
+/** Demandes à ChatGPT d'un mois sur cet appareil (jamais dans les sauvegardes). */
 export interface AiUsageRow {
   /** Mois AAAA-MM. */
   month: string
@@ -776,7 +776,7 @@ export interface AiUsageRow {
 /* ------------------------------------------------------------------ */
 
 export interface Secret {
-  id: 'anthropic' | 'oura'
+  id: 'openai' | 'oura'
   value: string
   /** Fin de validité (jeton Oura) ; null : sans limite. */
   expiresAt: string | null

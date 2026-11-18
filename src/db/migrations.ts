@@ -1,4 +1,5 @@
-import { DEFAULT_AI_MODEL, DEFAULT_DASHBOARD_CARDS, DEFAULT_TABS } from './defaults'
+import { DEFAULT_DASHBOARD_CARDS, DEFAULT_TABS } from './defaults'
+import type { AiModel } from './types'
 
 /*
  * Conversions des données d'une version à la suivante. Elles servent deux fois : à la mise à jour de
@@ -15,6 +16,9 @@ export const V1_DEFAULT_DASHBOARD_CARDS = [
   'weight',
   'records',
 ] as const
+
+/** Modèle d'IA par défaut en version 2 (Claude, avant le passage à OpenAI de la version 4). */
+export const V2_DEFAULT_AI_MODEL = 'claude-opus-5-5'
 
 /** Les cartes apparues en version 2. */
 const V2_NEW_CARDS = ['recovery', 'nutrition'] as const
@@ -40,8 +44,27 @@ export function settingsV1toV2(row: Row): Row {
     dashboardCards: sameList(cards, V1_DEFAULT_DASHBOARD_CARDS)
       ? [...DEFAULT_DASHBOARD_CARDS]
       : [...cards, ...V2_NEW_CARDS.filter((card) => !cards.includes(card))],
-    aiModel: row.aiModel ?? DEFAULT_AI_MODEL,
+    aiModel: row.aiModel ?? V2_DEFAULT_AI_MODEL,
     ouraClientId: row.ouraClientId ?? '',
     ouraRelayUrl: row.ouraRelayUrl ?? '',
+  }
+}
+
+/**
+ * Modèles Claude des versions 2 et 3, et leur remplaçant chez OpenAI (version 4) : Opus, l'ancien
+ * modèle par défaut, prend le nouveau modèle par défaut ; Haiku, choisi pour son prix, le moins cher.
+ */
+export const V4_MODEL_OF_CLAUDE: Readonly<Record<string, AiModel>> = {
+  [V2_DEFAULT_AI_MODEL]: 'gpt-6.2-sol',
+  'claude-sonnet-5-5': 'gpt-6.2-sol',
+  'claude-haiku-5-5': 'gpt-6-luna',
+}
+
+/** Réglages de la version 3 vers la version 4 : l'IA passe de Claude (Anthropic) à ChatGPT (OpenAI). */
+export function settingsV3toV4(row: Row): Row {
+  const model = typeof row.aiModel === 'string' ? row.aiModel : ''
+  return {
+    ...row,
+    aiModel: Object.hasOwn(V4_MODEL_OF_CLAUDE, model) ? V4_MODEL_OF_CLAUDE[model] : row.aiModel,
   }
 }

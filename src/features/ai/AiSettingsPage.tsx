@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { KeyRound } from 'lucide-react'
 import { useSettings } from '@/app/data-context'
-import { checkApiKey, looksLikeApiKey } from '@/content/ai/client'
+import { checkApiKey, looksLikeApiKey, looksLikeClaudeKey } from '@/content/ai/client'
 import { AI_MODEL_OPTIONS, aiModelOption } from '@/content/ai/models'
 import { usageOfMonth } from '@/db/ai-usage'
 import { deleteSecret, saveSecret } from '@/db/secrets'
@@ -34,7 +34,7 @@ function Note({ children }: { children: string }) {
   return <p className="mt-2 px-1 text-[13px] text-ink-3">{frenchSpacing(children)}</p>
 }
 
-/** Coller sa clé Claude : vérifiée (gratuitement) avant d'être gardée sur l'iPhone. */
+/** Coller sa clé OpenAI : vérifiée (gratuitement) avant d'être gardée sur l'iPhone. */
 function KeyForm() {
   const toast = useToast()
   const [draft, setDraft] = useState('')
@@ -43,20 +43,24 @@ function KeyForm() {
 
   const save = async () => {
     const key = draft.trim()
+    if (looksLikeClaudeKey(key)) {
+      setError(
+        frenchSpacing('C’est une clé Claude : colle ici une clé OpenAI, qui commence par « sk-proj- ».'),
+      )
+      return
+    }
     if (!looksLikeApiKey(key)) {
-      setError(frenchSpacing('Ce n’est pas une clé Claude : elle commence par « sk-ant- ».'))
+      setError(frenchSpacing('Ce n’est pas une clé OpenAI : elle commence par « sk-proj- » ou « sk- ».'))
       return
     }
     setBusy(true)
     try {
       const problem = await checkApiKey(key)
       if (problem === 'invalidKey') {
-        setError(
-          frenchSpacing('Anthropic refuse cette clé : vérifie qu’elle est complète et toujours active.'),
-        )
+        setError(frenchSpacing('OpenAI refuse cette clé : vérifie qu’elle est complète et toujours active.'))
         return
       }
-      await saveSecret('anthropic', key)
+      await saveSecret('openai', key)
       setDraft('')
       toast(problem === null ? 'Clé enregistrée' : 'Clé enregistrée, pas encore vérifiée')
     } catch (e) {
@@ -75,7 +79,7 @@ function KeyForm() {
       }}
     >
       <TextField
-        label="Clé API Claude"
+        label="Clé API OpenAI"
         type="password"
         value={draft}
         placeholder="sk-ant-…"
@@ -129,7 +133,7 @@ function SavedKey({ apiKey }: { apiKey: string }) {
         open={confirm}
         onClose={() => setConfirm(false)}
         onConfirm={() => {
-          void deleteSecret('anthropic').then(() => toast('Clé supprimée'))
+          void deleteSecret('openai').then(() => toast('Clé supprimée'))
         }}
         title={frenchSpacing('Supprimer la clé ?')}
         message={DELETE_KEY_TEXT}
@@ -164,18 +168,19 @@ function CostAndPrivacy({ model }: { model: AiModel }) {
   )
 }
 
-/** Réglages de l'IA : la clé Claude (gardée sur l'iPhone), le modèle utilisé et ce qu'il coûte. */
+/** Réglages de l'IA : la clé OpenAI (gardée sur l'iPhone), le modèle utilisé et ce qu'il coûte. */
 export function AiSettingsPage() {
   const settings = useSettings()
   const apiKey = useAiKey()
 
   return (
     <Page title="Intelligence artificielle" back backTo="/more" backLabel="Plus">
-      <Section title="Clé Claude">
+      <Section title="Clé OpenAI">
         {apiKey === undefined ? <PageSpinner /> : apiKey ? <SavedKey apiKey={apiKey} /> : <KeyForm />}
         <Note>
-          Crée ta clé sur platform.claude.com, rubrique API Keys. Elle reste sur cet iPhone, hors des
-          sauvegardes, et n’est envoyée qu’à Anthropic.
+          Crée ta clé sur platform.openai.com, rubrique API keys. L’abonnement ChatGPT ne compte pas : l’API
+          se paie à part, avec du crédit acheté sur ce site. La clé reste sur cet iPhone, hors des
+          sauvegardes, et n’est envoyée qu’à OpenAI.
         </Note>
       </Section>
       <Section title="Modèle">
